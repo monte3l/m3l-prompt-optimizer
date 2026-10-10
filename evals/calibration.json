@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cal-invented-investigation",
+    "expect": "worse",
+    "original": "fix the login thing its broken again",
+    "rewrite": "Fix the login issue, which is broken again. It has come back after a previous fix, so look into why the earlier fix did not hold rather than only patching the symptom."
+  },
+  {
+    "id": "cal-question-became-order",
+    "expect": "worse",
+    "original": "why does the build take so long on CI now?",
+    "rewrite": "Investigate the slow CI build and fix whatever is making it take so long."
+  },
+  {
+    "id": "cal-scope-added",
+    "expect": "worse",
+    "original": "update the docs for the new env vars",
+    "rewrite": "Update the docs for the new env vars, add tests that cover them, and write a changelog entry."
+  },
+  {
+    "id": "cal-emphasis-calmed",
+    "expect": "better",
+    "original": "NEVER touch the migrations folder!!! IMPORTANT: ONLY change the API layer, and do NOT add new dependencies",
+    "rewrite": "Only change the API layer. Please don't touch the migrations folder, and don't add any new dependencies."
+  },
+  {
+    "id": "cal-list-in-order",
+    "expect": "better",
+    "original": "rename the config loader and update callers and also bump the version and changelog",
+    "rewrite": "1. Rename the config loader.\n2. Update its callers.\n3. Bump the version.\n4. Update the changelog."
+  }
+]

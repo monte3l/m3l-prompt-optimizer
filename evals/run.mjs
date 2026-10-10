@@ -119,6 +119,20 @@ await Promise.all(
 )
 results.sort((x, y) => cases.findIndex(c => c.id === x.id) - cases.findIndex(c => c.id === y.id))
 
+// ---- judge calibration: pairs with a known answer ------------------------------
+// If the judge cannot flag a known-bad rewrite, every "better" above means little.
+const calibration = isGateOnly ? [] : JSON.parse(readFileSync(join(root, 'evals/calibration.json'), 'utf8'))
+const calibrated = []
+for (const pair of calibration) {
+  try {
+    const judged = await judge(pair.original, pair.rewrite)
+    const isRight = pair.expect === 'worse' ? judged.verdict === 'worse' : judged.verdict !== 'worse'
+    calibrated.push({ ...pair, verdict: judged.verdict, isRight, reason: judged.reason })
+  } catch (error) {
+    calibrated.push({ ...pair, verdict: 'error', isRight: false, reason: String(error?.message ?? error).slice(0, 200) })
+  }
+}
+
 // ---- summary and bars -------------------------------------------------------
 const count = (list, outcome) => list.filter(r => r.outcome === outcome).length
 const gated = results.filter(r => r.expect === 'skipped')
@@ -133,6 +147,7 @@ if (!isGateOnly) {
     ['no rewrite judged worse reached the model', count(results, 'worse') === 0],
     ['at least 90% of "unchanged" cases left untouched', count(unchangedCases, 'unchanged') >= Math.ceil(unchangedCases.length * 0.9)],
     ['at least 70% of "rewrite" cases judged better', count(rewriteCases, 'better') >= Math.ceil(rewriteCases.length * 0.7)],
+    ['the judge is right on every calibration pair', calibrated.every(c => c.isRight)],
   )
 }
 
@@ -145,6 +160,16 @@ const lines = [
   `| --- | --- | --- | --- |`,
   ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} | ${(r.detail ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ')} |`),
   ``,
+  ...(calibrated.length === 0
+    ? []
+    : [
+        `Judge calibration (known answers):`,
+        ``,
+        `| pair | known answer | judge said | right |`,
+        `| --- | --- | --- | --- |`,
+        ...calibrated.map(c => `| ${c.id} | ${c.expect} | ${c.verdict} | ${c.isRight ? 'yes' : '**no**'} |`),
+        ``,
+      ]),
   `Counts: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(results, o)}`).join(', ')}`,
   ``,
   `| bar | met |`,
@@ -157,7 +182,7 @@ const lines = [
 
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 mkdirSync(join(root, 'evals/.results'), { recursive: true })
-writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify(results, null, 2))
+writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify({ results, calibrated }, null, 2))
 if (!isGateOnly) writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
 console.log(lines.join('\n'))
 process.exit(bars.every(([, met]) => met) ? 0 : 1)

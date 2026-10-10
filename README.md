@@ -19,8 +19,16 @@ Answer `y` to add the marketplace, then pick the user scope so the mod is active
 in every repository. The repository is private for now, so this works where your
 `gh` or git credentials can read it. Requires Claude Code 2.1.296 or newer.
 
-To try it from a checkout instead, start a session with
-`claude --plugin-dir /path/to/m3l-prompt-optimizer`.
+To install from a local checkout instead, add the folder as a marketplace. Edits
+to the folder then apply after `/reload-plugins`, with no reinstall:
+
+```zsh
+claude plugin marketplace add /path/to/m3l-prompt-optimizer
+claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user
+```
+
+`claude --plugin-dir` loads the mod for one session, but `claude plugin configure`
+needs it installed, so set the key after installing.
 
 ## What it does
 
@@ -75,12 +83,12 @@ Use a dedicated key with a low spend limit.
    process listings (`read` and `printf` are zsh builtins):
 
    ```zsh
-   read -s "?Anthropic key: " K && printf '{"apiKey":"%s"}' "$K" | claude plugin configure m3l-prompt-optimizer --values-stdin; unset K
+   read -s "?Anthropic key: " K && printf '{"apiKey":"%s"}' "$K" | claude plugin configure m3l-prompt-optimizer@monte3l-prompt-optimizer --values-stdin; unset K
    ```
 
    The key is stored in secure storage (the macOS Keychain), not in
    `settings.json`. Check that it is set with
-   `claude plugin configure m3l-prompt-optimizer`, which never prints the value.
+   `claude plugin configure m3l-prompt-optimizer@monte3l-prompt-optimizer`, which never prints the value.
 
 At about $0.00015 per prompt, $5 covers roughly 30,000 rewrites. Max and Team
 plan API credits apply to the whole linked organization, so they cover this use
@@ -103,8 +111,15 @@ session with `claude --debug-file /tmp/optimizer.log`, then:
 3. Type a prompt with an image and an `@mention`, a slash command, and a
    `/loop` prompt. The first should pass the guard or be reverted; the others
    are skipped.
-4. Search the log for `m3l-prompt-optimizer:`. Each line gives an outcome and
-   a request id, never prompt text.
+4. List the outcome lines (plugin load and registration lines also mention the
+   mod's name, so match the outcomes):
+
+   ```zsh
+   grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|skipped|rewrite refused|paused)' /tmp/optimizer.log
+   ```
+
+   Each line gives an outcome and a request id, never prompt text. A prompt the
+   gate skips writes no line at all.
 
 ## When it pauses
 
@@ -152,9 +167,15 @@ original and the result in random order against the rubric, answering
 | worse | The judge prefers the original; counts against the bars |
 | reverted | The guard refused the rewrite, so the original was sent (a safe miss, counted separately) |
 
+Before it trusts the judge, the run checks it against 5 pairs with a known
+answer in [`evals/calibration.json`](evals/calibration.json): three bad rewrites
+(an invented investigation step, a question turned into an order, added scope)
+that must be judged `worse`, and two good ones that must not be.
+
 Bars: no "worse" result reaches the model, at least 90% of the clear and
 question prompts stay unchanged, at least 70% of the rewrite-expected prompts are
-judged better, and every gated prompt is skipped before any call. Run it live
+judged better, the judge is right on every calibration pair, and every gated
+prompt is skipped before any call. Run it live
 with the key on that one command:
 
 ```zsh
