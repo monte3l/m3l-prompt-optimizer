@@ -11,6 +11,7 @@ Settled by probes on 2026-10-10 (Claude Code 2.1.296, interactive session and
 | 10 | Managed settings blocking mods | None on this machine: the mod was admitted at the user tier. |
 | (headless) | `claude -p` prompts | Skipped by origin; the hook ran in 48 ms with no API call. |
 | (logs) | Key in the debug logs | No `sk-ant` string in either log. |
+| 12 | Rewrite quality across the eval set (2026-10-10, one live run, rewriter Haiku 5.5, judge Opus 5.5) | All bars met: 6 better, 4 equal, 0 worse, 11 unchanged, 0 reverted, 5 skipped; the judge was right on all 5 calibration pairs. One judgment per case, so it is a sample, not a measurement of variance. |
 
 Still open:
 
@@ -23,4 +24,3 @@ Still open:
 | 8 | Whether a key can be limited to particular models or to read-only access. | Check the Console key dialog; the docs mention neither. |
 | 9 | The Console prompt improver and prompt generator docs, which now redirect to the best-practices page. | None needed; the 2024 post stands in and only its grammar advice is used. |
 | 11 | Type-checking uses a tsconfig kept outside this folder, because the engine writes `.claude-plugin/types/` only when it loads a mod from a watched folder. | `tsc -p .` here should agree once those types exist. |
-| 12 | Rewrite quality across the 21 eval prompts, after the probe 1 fixes (growth cap, worked examples kept out of the eval set). | `node evals/run.mjs` with the key, as in the README. |
