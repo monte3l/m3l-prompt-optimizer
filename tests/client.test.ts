@@ -130,7 +130,7 @@ describe('optimize', () => {
   test('does not retry a spend limit and reports the latch', async () => {
     const { d, sent } = deps([error(400, 'invalid_request_error', 'You have reached your specified workspace API usage limits.')])
     const r = await optimize(d, cfg, 'some prompt text here')
-    expect(r.kind).toBe('latch')
+    expect(r).toEqual({ kind: 'latch', reason: 'spend limit reached', requestId: 'req_1' })
     expect(sent.length).toBe(1)
   })
 
@@ -142,7 +142,7 @@ describe('optimize', () => {
   test('skips when the call outlasts the deadline', async () => {
     const { d } = deps(['hang'])
     d.timeout = () => Promise.resolve()
-    expect(await optimize(d, cfg, 'some prompt text here')).toEqual({ kind: 'skip', reason: 'timeout' })
+    expect(await optimize(d, cfg, 'some prompt text here')).toEqual({ kind: 'skip', reason: 'timeout', requestId: 'none' })
   })
 
   test('never puts the key or the prompt into its result', async () => {

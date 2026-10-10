@@ -41,12 +41,12 @@ export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string
 
     if (result.kind === 'latch') {
       ctx.isLatched = true
-      ui.log(`${NAME}: paused for this session (${result.reason})`)
+      ui.log(`${NAME}: paused for this session (${result.reason}; ${result.requestId}; ${seen})`)
       ui.toast(`${NAME} paused: ${result.reason}. Prompts are sent as typed.`)
       return e.text
     }
     if (result.kind === 'skip') {
-      ui.log(`${NAME}: skipped (${result.reason})`)
+      ui.log(`${NAME}: skipped (${result.reason}; ${result.requestId}; ${seen})`)
       return e.text
     }
 

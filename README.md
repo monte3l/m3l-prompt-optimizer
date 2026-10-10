@@ -157,6 +157,22 @@ deadline is simply abandoned and ends at the host's own 30-second timeout. To
 turn the mod off, set **Rewrite prompts** off in `/config`, or run
 `claude plugin disable m3l-prompt-optimizer`.
 
+### If the log says `key rejected (401)`
+
+A 401 means the key reached Anthropic and was refused. The log line carries the
+request id (`req_…`), which Anthropic support can look up. Find out whether the
+key or its stored copy is at fault by testing a key against the free models
+endpoint, typed fresh in your own terminal:
+
+```zsh
+read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https://api.anthropic.com/v1/models -H "x-api-key: $K" -H "anthropic-version: 2023-06-01"; unset K
+```
+
+| Result | Meaning | Fix |
+| --- | --- | --- |
+| `200` | The key is valid and the stored copy differs | Run the key command from "Set up the key" again |
+| `401` | The key is invalid: deleted, disabled, expired or from an archived workspace | In the Console under API keys, check its status, then create a new key and run the key command |
+
 ## Privacy and keys
 
 - The key is read from secure storage by the mod and sent only to

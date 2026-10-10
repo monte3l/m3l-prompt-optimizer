@@ -29,8 +29,8 @@ export type Outcome =
 
 export type Result =
   | { kind: 'reply'; text: string; requestId: string }
-  | { kind: 'latch'; reason: string }
-  | { kind: 'skip'; reason: string }
+  | { kind: 'latch'; reason: string; requestId: string }
+  | { kind: 'skip'; reason: string; requestId: string }
 
 /** Builds the Messages API call: no sampling parameters, thinking off, low effort. */
 export const buildRequest = (config: ClientConfig, text: string): { url: string; init: HttpInit } => ({
@@ -132,13 +132,15 @@ export const optimize = async (deps: Deps, config: ClientConfig, text: string): 
     if (left < (tries === 0 ? 1 : MIN_RETRY_MS)) break
 
     last = await attempt(deps, config, text, left)
-    if (last === TIMED_OUT) return { kind: 'skip', reason: 'timeout' }
+    if (last === TIMED_OUT) return { kind: 'skip', reason: 'timeout', requestId: 'none' }
     if (last.kind === 'ok') return { kind: 'reply', text: last.reply, requestId: last.requestId }
-    if (last.kind === 'latch') return { kind: 'latch', reason: last.reason }
-    if (last.kind === 'skip') return { kind: 'skip', reason: last.reason }
+    if (last.kind === 'latch') return { kind: 'latch', reason: last.reason, requestId: last.requestId }
+    if (last.kind === 'skip') return { kind: 'skip', reason: last.reason, requestId: last.requestId }
 
     await deps.sleep(last.afterMs)
   }
 
-  return { kind: 'skip', reason: last === TIMED_OUT ? 'timeout' : 'gave up after retry' }
+  return last === TIMED_OUT
+    ? { kind: 'skip', reason: 'timeout', requestId: 'none' }
+    : { kind: 'skip', reason: 'gave up after retry', requestId: last.requestId }
 }

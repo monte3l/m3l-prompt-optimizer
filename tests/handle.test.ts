@@ -172,6 +172,22 @@ describe('handler', () => {
     expect(seen).toEqual([e])
   })
 
+  test('names the request and the token counts when it pauses or skips', async () => {
+    const rejected = { status: 401, body: { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } } }
+    const withTokens = 'compare this to the design in @README.md and tell me what differs here'
+    const f = fake([rejected])
+    const { next, seen } = passes()
+    const handle = makeHandler(options)
+    await handle(f.$, event(withTokens), next)
+    expect(seen.map(e => e.text)).toEqual([withTokens])
+    const line = f.logs.find(l => l.includes('paused for this session'))
+    expect(line?.includes('key rejected (401); req_9; images 0, mentions 1')).toBe(true)
+
+    const g = fake([{ status: 404, body: { error: { message: 'nope' } } }])
+    await makeHandler(options)(g.$, event(withTokens), passes().next)
+    expect(g.logs.some(l => l.includes('skipped (status 404; req_9; images 0, mentions 1)'))).toBe(true)
+  })
+
   test('pauses for the session after a spend limit and says so once', async () => {
     const limit = { status: 400, body: { error: { type: 'invalid_request_error', message: 'You have reached your specified workspace API usage limits.' } } }
     const f = fake([limit, rewriteOf(REWRITE)])
