@@ -112,7 +112,7 @@ const attempt = async (deps: Deps, config: ClientConfig, text: string, ms: numbe
   try {
     const won = await Promise.race([
       deps.fetch(url, init),
-      deps.timeout(ms, stop.signal).then(() => TIMED_OUT),
+      deps.timeout(ms, stop.signal).then((): typeof TIMED_OUT => TIMED_OUT),
     ])
     return won === TIMED_OUT ? TIMED_OUT : classify(won)
   } catch {

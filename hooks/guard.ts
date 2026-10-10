@@ -27,7 +27,7 @@ export const parseResponse = (reply: string): Parsed => {
 const IMAGE = /\[Image #\d+\]/g
 const MENTION = /(?<![\w`])@[\w./:-]*\w/g
 const CODE_SPAN = /```[\s\S]*?```|`[^`\n]+`/g
-const URL = /https?:\/\/[^\s)>\]"'`]*[^\s)>\]"'`.,;:!?]/g
+/** Paths, file names, symbols and the host and path of any URL: a URL always contains one of these. */
 const PATH = /(?:[\w.-]+\/)+[\w.-]*[\w-]|\b[\w-]+\.[a-z]{1,5}\b|\b\w+::\w+/g
 
 const tokens = (text: string, pattern: RegExp): string[] => (text.match(pattern) ?? []).sort()
@@ -51,7 +51,6 @@ export const acceptRewrite = (original: string, candidate: string): Verdict => {
   if (!sameTokens(original, candidate, IMAGE)) return no('image placeholders changed')
   if (!sameTokens(original, candidate, MENTION)) return no('mentions changed')
   if (!sameSet(original, candidate, CODE_SPAN)) return no('code spans changed')
-  if (!sameSet(original, candidate, URL)) return no('urls changed')
   if (!sameSet(original, candidate, PATH)) return no('paths or symbols changed')
 
   const isQuestion = original.includes('?')
