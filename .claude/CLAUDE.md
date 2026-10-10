@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**This file lives in `.claude/`, not the repository root.** The repository root is the plugin root, and `claude plugin validate --strict .` fails on a `CLAUDE.md` there.
+
 ## What this is
 
 A Claude Code mod (plugin) that rewrites prompts the user types, using Claude
