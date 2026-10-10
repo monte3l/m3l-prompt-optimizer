@@ -23,4 +23,4 @@ Still open:
 | 8 | Whether a key can be limited to particular models or to read-only access. | Check the Console key dialog; the docs mention neither. |
 | 9 | The Console prompt improver and prompt generator docs, which now redirect to the best-practices page. | None needed; the 2024 post stands in and only its grammar advice is used. |
 | 11 | Type-checking uses a tsconfig kept outside this folder, because the engine writes `.claude-plugin/types/` only when it loads a mod from a watched folder. | `tsc -p .` here should agree once those types exist. |
-| 12 | Rewrite quality across the 21 eval prompts, after the probe 1 fix. | `node evals/run.mjs` with the key, as in the README. |
+| 12 | Rewrite quality across the 21 eval prompts, after the probe 1 fixes (growth cap, worked examples kept out of the eval set). | `node evals/run.mjs` with the key, as in the README. |

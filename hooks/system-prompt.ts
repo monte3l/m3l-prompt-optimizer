@@ -12,6 +12,7 @@
  *   prompting-claude-opus-5-5.
  * - Three worked examples (a vague prompt polished and left vague, a question left
  *   alone, run-together asks listed): prompting best-practices on examples.
+ *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
  * - Ideas or a plan first on request: prompting-claude-sonnet-5-5.
  * - No reasoning or verification scaffolding: prompting-claude-opus-5 and 5-5.
  * - Verbatim tokens: Claude Code common-workflows (@mentions, [Image #N]).
@@ -34,21 +35,20 @@ Keep the developer's intent exactly: a question remains a question, a request fo
 Examples:
 
 <example>
-<prompt>fix the login thing its broken again</prompt>
-<rewrite>Fix the login issue; it has broken again.</rewrite>
+<prompt>make the search page better its kinda slow and ugly</prompt>
+<rewrite>Make the search page better; it is slow and ugly.</rewrite>
 </example>
 
 <example>
-<prompt>why does the build take so long on CI now?</prompt>
+<prompt>how does the retry logic in the upload service decide when to give up?</prompt>
 <unchanged/>
 </example>
 
 <example>
-<prompt>rename the config loader and update callers and also bump the version and changelog</prompt>
-<rewrite>1. Rename the config loader.
-2. Update its callers.
-3. Bump the version.
-4. Update the changelog.</rewrite>
+<prompt>add a loading spinner to the profile page and fix the avatar upload and write tests for both</prompt>
+<rewrite>1. Add a loading spinner to the profile page.
+2. Fix the avatar upload.
+3. Write tests for both.</rewrite>
 </example>
 
 The prompt is inside <prompt> tags. Reply with exactly one of:

@@ -33,6 +33,15 @@ const [{ shouldRewrite }, { acceptRewrite, parseResponse }, { optimize }] = awai
 ])
 
 const cases = JSON.parse(readFileSync(join(root, 'evals/cases.json'), 'utf8'))
+
+// The system prompt's worked examples must not be eval prompts, or the eval only
+// measures whether the model can copy an example.
+const { SYSTEM_PROMPT } = await load('system-prompt.ts')
+const leaked = cases.filter(c => SYSTEM_PROMPT.includes(`<prompt>${c.prompt}</prompt>`))
+if (leaked.length > 0) {
+  console.error(`These eval prompts appear as examples in the system prompt: ${leaked.map(c => c.id).join(', ')}`)
+  process.exit(2)
+}
 const apiKey = process.env.ANTHROPIC_API_KEY ?? ''
 if (!isGateOnly && apiKey === '') {
   console.error('Set ANTHROPIC_API_KEY for this run, or pass --gate-only.')
