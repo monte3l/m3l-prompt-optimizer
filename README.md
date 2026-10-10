@@ -2,6 +2,167 @@
 
 A Claude Code mod that refines the prompts you type, following Anthropic's
 current prompt-engineering guidance. A clear prompt passes through unchanged.
-If anything goes wrong, your original prompt is sent as typed.
+If anything goes wrong, your original prompt is sent exactly as typed.
 
-Work in progress: the full README arrives with the implementation.
+> [!IMPORTANT]
+> Every prompt this mod rewrites is sent to the Anthropic API with a key you
+> provide, and the refined text replaces what you typed. Prompts it skips
+> (listed below) are never sent anywhere.
+
+## Install
+
+```
+/plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-prompt-optimizer
+```
+
+Answer `y` to add the marketplace, then pick the user scope so the mod is active
+in every repository. The repository is private for now, so this works where your
+`gh` or git credentials can read it. Requires Claude Code 2.1.296 or newer.
+
+To try it from a checkout instead, start a session with
+`claude --plugin-dir /path/to/m3l-prompt-optimizer`.
+
+## What it does
+
+1. **Gate.** A prompt is considered only when all of these hold. Anything else is
+   sent untouched and never leaves your machine.
+
+   | Skipped when | Why |
+   | --- | --- |
+   | It did not come from your own Enter (`/loop`, scheduled tasks, `claude -p`, other plugins, peers, notifications) | Only prompts you type are yours to refine |
+   | It starts with `/`, `!` or `#` | Slash commands, bash mode and memory notes |
+   | It contains pasted content | Pasted text must stay byte for byte |
+   | It is under 25 characters or 5 words, or over 4,000 characters | Too short to improve, or too costly |
+   | It starts with `\raw ` | Your per-prompt opt-out; the prefix is removed and the rest sent as typed |
+   | The mod is switched off, has no key, or paused itself | See "When it pauses" |
+
+2. **Rewrite.** Claude Haiku 5.5 (thinking off, low effort) returns either
+   `<unchanged/>` or one refined prompt. The system prompt is in
+   [`hooks/system-prompt.ts`](hooks/system-prompt.ts); each rule is traced to
+   its source in [`docs/research-notes.md`](docs/research-notes.md).
+
+3. **Guard.** The refined prompt replaces yours only if it passes every check.
+   Any miss sends your original.
+
+   | Check | Keeps you safe from |
+   | --- | --- |
+   | The reply is exactly the unchanged marker or one rewrite block | Chatty or malformed replies |
+   | `[Image #N]` placeholders and `@mentions` are identical | Lost or invented attachments and files |
+   | Code spans, paths, file names, symbols and URLs are identical | Invented or altered technical details |
+   | A question keeps its question mark, and a request does not become a question | Changed intent |
+   | The rewrite is at most twice the original plus 300 characters | Runaway padding |
+   | The rewrite does not start with `/`, `!` or `#` | A prompt turning into a command |
+   | The API stopped normally (no refusal, no cut-off) | Partial answers |
+
+The rewrite changes only what the guidance supports: calming shouting, saying
+what to do next to what to avoid, placing a stated reason beside its
+instruction, spelling out a clearly meant "every item", making "ideas or a plan
+first" explicit, turning run-together asks into a short numbered list, and fixing
+unclear spelling. It adds no facts, files, checks, scope or reasoning
+instructions.
+
+## Set up the key
+
+Use a dedicated key with a low spend limit.
+
+1. In the Console, create a workspace named `m3l-prompt-optimizer`. Under
+   Spend limits set a monthly limit of **$5** with an alert at $2. Optionally
+   lower the Haiku 5.5 requests-per-minute limit on that workspace to 60.
+2. Create a service account `m3l-prompt-optimizer-sa`, add it to that workspace,
+   and create an API key for it, limited to that workspace, expiring in **30
+   days**.
+3. Enter the key in your own terminal, so it stays out of chat, shell history and
+   process listings (`read` and `printf` are zsh builtins):
+
+   ```zsh
+   read -s "?Anthropic key: " K && printf '{"apiKey":"%s"}' "$K" | claude plugin configure m3l-prompt-optimizer --values-stdin; unset K
+   ```
+
+   The key is stored in secure storage (the macOS Keychain), not in
+   `settings.json`. Check that it is set with
+   `claude plugin configure m3l-prompt-optimizer`, which never prints the value.
+
+At about $0.00015 per prompt, $5 covers roughly 30,000 rewrites. Max and Team
+plan API credits apply to the whole linked organization, so they cover this use
+too, while the workspace limit stays the only cap on this project.
+
+**Revoke the key** when its 30 days end (it stops working by itself; create a
+new one and run step 3 again), if you suspect it leaked, or if you uninstall the
+mod. In the Console, delete the key under API keys, or archive the workspace to
+end every key in it at once.
+
+## First run
+
+These probes settle the open items in [`UNVERIFIED.md`](UNVERIFIED.md). Start a
+session with `claude --debug-file /tmp/optimizer.log`, then:
+
+1. Run `/status` and `/plugin` and confirm the mod is loaded and no managed
+   setting blocks it.
+2. Type a vague prompt such as `fix the login thing its broken again`. The
+   message you see is the refined one.
+3. Type a prompt with an image and an `@mention`, a slash command, and a
+   `/loop` prompt. The first should pass the guard or be reverted; the others
+   are skipped.
+4. Search the log for `m3l-prompt-optimizer:`. Each line gives an outcome and
+   a request id, never prompt text.
+
+## When it pauses
+
+A spend limit, an empty credit balance or a rejected key stops the mod for the
+rest of the session. It shows one notice, and your prompts go out as typed.
+Other errors (rate limits, overload, a network problem, a call slower than 6.5
+seconds) are tried once more at most and then skipped for that prompt only. To
+turn the mod off, set **Rewrite prompts** off in `/config`, or run
+`claude plugin disable m3l-prompt-optimizer`.
+
+## Privacy and keys
+
+- The key is read from secure storage by the mod and sent only to
+  `api.anthropic.com`. It is never logged, never put in the environment, and
+  never visible to Claude's Bash tool.
+- Log lines name the outcome and the request id only.
+- Anything that disables mods on your machine (managed settings, `--safe-mode`,
+  `--bare`) also disables this one, and prompts then go through as typed.
+
+## Development
+
+```
+claude plugin validate --strict .   # manifest, hook shape, the `$` calls the mod makes
+claude plugin test .                # unit tests
+node scripts/guard-break.mjs        # breaks each guard in turn; every break must fail a test
+node evals/run.mjs --gate-only      # offline check of which eval prompts are sent
+```
+
+The `$` calls live only in [`hooks/register.ts`](hooks/register.ts), because
+`claude plugin validate` follows `$` only within one file. The gate, guard, client
+and decision logic are plain modules in `hooks/`, tested directly.
+
+### Evaluation
+
+[`evals/cases.json`](evals/cases.json) holds 26 prompts: vague, clear, emphatic,
+question, image, mention, multi-part and gated. `evals/run.mjs` runs each through
+the real gate, client and guard, then asks Claude Opus 5.5 to compare the
+original and the result in random order against the rubric, answering
+`better`, `equal` or `worse`.
+
+| Result | Meaning |
+| --- | --- |
+| better | The judge prefers the refined prompt and the guard accepted it |
+| equal | The prompt came back unchanged, or the judge sees no difference |
+| worse | The judge prefers the original; counts against the bars |
+| reverted | The guard refused the rewrite, so the original was sent (a safe miss, counted separately) |
+
+Bars: no "worse" result reaches the model, at least 90% of the clear and
+question prompts stay unchanged, at least 70% of the rewrite-expected prompts are
+judged better, and every gated prompt is skipped before any call. Run it live
+with the key on that one command:
+
+```zsh
+read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node evals/run.mjs; unset ANTHROPIC_API_KEY
+```
+
+Results are written to [`evals/results.md`](evals/results.md).
+
+## Licence
+
+MIT

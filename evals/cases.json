@@ -1,0 +1,35 @@
+[
+  { "id": "vague-1", "category": "vague", "expect": "rewrite", "prompt": "fix the login thing its broken again" },
+  { "id": "vague-2", "category": "vague", "expect": "rewrite", "prompt": "make the dashboard faster, users keep complaining about it being slow" },
+  { "id": "vague-3", "category": "vague", "expect": "rewrite", "prompt": "clean up the api code a bit, its getting messy and hard to follow" },
+
+  { "id": "clear-1", "category": "clear", "expect": "unchanged", "prompt": "In src/auth/session.ts, make refreshToken retry once on a 401 response, and add a test for it in tests/auth/session.test.ts that covers the retry and the second failure." },
+  { "id": "clear-2", "category": "clear", "expect": "unchanged", "prompt": "Rename the exported function loadConfig to readConfig in src/config/loader.ts and update every import of it across the repo." },
+  { "id": "clear-3", "category": "clear", "expect": "unchanged", "prompt": "Run the unit tests for the payments package and summarize which ones fail and why." },
+
+  { "id": "emphatic-1", "category": "emphatic", "expect": "rewrite", "prompt": "NEVER touch the migrations folder!!! IMPORTANT: ONLY change the API layer, and do NOT add new dependencies" },
+  { "id": "emphatic-2", "category": "emphatic", "expect": "rewrite", "prompt": "You MUST write tests first. THIS IS CRITICAL. DO NOT skip this step under ANY circumstances when adding the invoice export feature" },
+  { "id": "emphatic-3", "category": "emphatic", "expect": "rewrite", "prompt": "please update the README install section, and NEVER mention the old CLI name anywhere" },
+
+  { "id": "question-1", "category": "question", "expect": "unchanged", "prompt": "why does the build take so long on CI now?" },
+  { "id": "question-2", "category": "question", "expect": "unchanged", "prompt": "can you suggest a few ways to cut down the bundle size of the web app?" },
+  { "id": "question-3", "category": "question", "expect": "unchanged", "prompt": "what is the difference between the staging and preview environments in this repo?" },
+
+  { "id": "image-1", "category": "image", "expect": "any", "prompt": "[Image #1] the button overlaps the header here, can you fix it" },
+  { "id": "image-2", "category": "image", "expect": "any", "prompt": "this layout looks wrong on mobile [Image #1] [Image #2] compare it to the design and tell me what differs" },
+  { "id": "image-3", "category": "image", "expect": "any", "prompt": "[Image #1] why is this error showing up when I open the settings page?" },
+
+  { "id": "mention-1", "category": "mention", "expect": "any", "prompt": "@src/api/client.ts @docs/api.md make the client match the docs" },
+  { "id": "mention-2", "category": "mention", "expect": "any", "prompt": "look at @src/components/Table.tsx and explain how sorting works, then suggest improvements" },
+  { "id": "mention-3", "category": "mention", "expect": "any", "prompt": "update @package.json to use the new test runner and fix the scripts in @.github/workflows/ci.yml" },
+
+  { "id": "multi-1", "category": "multi-part", "expect": "rewrite", "prompt": "rename the config loader and update callers and also bump the version and changelog" },
+  { "id": "multi-2", "category": "multi-part", "expect": "rewrite", "prompt": "add a dark mode toggle to settings then persist it in local storage and make sure the charts follow the theme also write tests" },
+  { "id": "multi-3", "category": "multi-part", "expect": "any", "prompt": "I need three things: the retry logic in the client reviewed, the flaky checkout test fixed, and the docs for the new env vars written" },
+
+  { "id": "gated-short", "category": "gated", "expect": "skipped", "prompt": "fix it" },
+  { "id": "gated-slash", "category": "gated", "expect": "skipped", "prompt": "/loop 5m check the deploy status of the web app" },
+  { "id": "gated-bash", "category": "gated", "expect": "skipped", "prompt": "!git status --short --branch please" },
+  { "id": "gated-paste", "category": "gated", "expect": "skipped", "prompt": "why does this fail?\n<pasted_content id=\"1\">\nTypeError: x is undefined\n    at foo (a.ts:1)\n</pasted_content id=\"1\">" },
+  { "id": "gated-scheduled", "category": "gated", "expect": "skipped", "origin": { "kind": "scheduled-trigger" }, "prompt": "check the deploy status of the web app and report anything unusual" }
+]
