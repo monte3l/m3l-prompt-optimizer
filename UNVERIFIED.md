@@ -7,7 +7,6 @@ in the "Follow-up research" section of [`docs/research-notes.md`](docs/research-
 
 | # | Item | Why it is open | How to close it |
 | --- | --- | --- | --- |
-| 13 | Why the stored key is rejected while the same key typed fresh returns 200 on `/v1/models` (observed 2026-10-10 10:01 and 10:05 UTC; the key worked at 08:58 UTC). The plugin had been disabled and re-enabled in between. | The 401 log line now adds the stored key's prefix check and length (never the key). Re-enter the key with the command in "Set up the key", start a fresh session and read the line. |
 | 2 | Whether a typed slash command, `!` line or `/loop` ever reaches `prompt.submit` | The docs route slash commands through `command.run` and skills through `UserPromptExpansion`; they do not say whether `prompt.submit` also fires. One probe showed no `gate skipped` line for `/help` or `!echo hi`, which suggests they do not, but the mod was paused by a rejected key at the time. | The debug log now records `gate skipped (<reason>)` for every prompt the hook sees, so a `/help` that reaches it leaves a line and one that does not leaves none. |
 
 Item 2 is safe whichever way it turns out, because the gate skips any prompt that starts with `/` or `!`; it only decides whether the mod is shielded twice or once.
@@ -16,6 +15,7 @@ Item 2 is safe whichever way it turns out, because the gate skips any prompt tha
 
 | # | Item | Result |
 | --- | --- | --- |
+| 13 | Why the stored key was rejected (401) while the same key typed fresh returned 200 on `/v1/models` | The stored copy was stale. Re-entering the key with the command in "Set up the key" fixed it: the next three prompts reached the API (2026-10-10 10:21 to 10:22 UTC). The cause was not identified; the plugin had been disabled and re-enabled between the working and failing runs, which is the suspect. If it recurs, the 401 log line now carries the stored key's shape and the request id. |
 | 1 | Whether `e.text` keeps the literal `[Image #N]` placeholder and the raw `@path` token | **Yes.** The debug log of 2026-10-10 10:05 UTC, for a pasted screenshot plus `@README.md`, reads `images 1, mentions 1`: both reached the hook as typed. |
 | 3 | `claude plugin configure` for the mod | Needs the plugin installed and its full id, `m3l-prompt-optimizer@monte3l-prompt-optimizer`; a `--plugin-dir` mod is not found. |
 | 4 | Whether the key reaches `options` | Yes, in an interactive session: rewrites happened with the stored key. Headless sessions are skipped by origin. |
