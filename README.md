@@ -121,30 +121,26 @@ session with `claude --debug-file /tmp/optimizer.log`, then:
    Each line gives an outcome and a request id, never prompt text. A prompt the
    gate skips writes no line at all.
 
-## Probe for items 1 and 2
+## Reading the debug log
 
-Two questions in [`UNVERIFIED.md`](UNVERIFIED.md) need one interactive look. The debug log
-records only reasons and counts, never prompt text:
-
-```zsh
-mkdir -p ~/scratch/probe && cd ~/scratch/probe && echo hi > README.md
-claude --debug-file /tmp/optimizer2.log
-```
-
-In that session type `/help`, then `!echo hi`, then paste a screenshot with Cmd+V and type
-`this layout looks wrong on mobile, compare it to the design in @README.md and tell me what differs`.
-Stop the turn with `Esc` each time, exit, and run:
+The mod writes one debug line per prompt it considers: reasons and counts, never prompt
+text. Start a session with `claude --debug-file /tmp/optimizer.log`, then:
 
 ```zsh
-grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer2.log
+grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer.log
 ```
 
-| You see | It means |
+| Line | Meaning |
 | --- | --- |
-| `gate skipped (slash command)` or `(bash mode)` | That input reaches `prompt.submit` and the gate stops it |
-| No line for `/help` or `!echo hi` | That input never reaches `prompt.submit` at all |
-| `images 1, mentions 1` on the image prompt | `e.text` keeps `[Image #1]` and `@README.md` as typed |
-| `images 0, mentions 1` | The placeholder is not in `e.text`; tell the maintainer before relying on the guard for images |
+| `rewritten (req_…; images N, mentions M)` | The refined prompt was sent. The counts are the placeholders and mentions it carried |
+| `left unchanged (…)` | The model judged the prompt fine, or the rewrite equalled it |
+| `rewrite refused (<reason>; …)` | The guard rejected the rewrite, so your original was sent |
+| `gate skipped (<reason>)` | The gate stopped the prompt before any call: an origin other than your Enter, a paste, too short or long, `\raw`, switched off, no key, or paused |
+| `skipped (<reason>; req_…; …)` | The call failed or timed out; your original was sent |
+| `paused for this session (<reason>; …)` | A spend limit, empty balance or rejected key stopped the mod |
+
+Typed slash commands and `!` shell lines never reach the mod, so they leave no line. A
+pasted screenshot with an `@mention` arrives as typed, so the counts match what you see.
 
 ## When it pauses
 
@@ -170,7 +166,7 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 
 | Result | Meaning | Fix |
 | --- | --- | --- |
-| `200` | The key is valid and the stored copy differs | Run the key command from "Set up the key" again |
+| `200` | The key is valid and the stored copy differs (seen once on 2026-10-10, cause unknown) | Run the key command from "Set up the key" again, then start a fresh session |
 | `401` | The key is invalid: deleted, disabled, expired or from an archived workspace | In the Console under API keys, check its status, then create a new key and run the key command |
 
 ## Privacy and keys

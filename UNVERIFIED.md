@@ -5,18 +5,15 @@ in the "Follow-up research" section of [`docs/research-notes.md`](docs/research-
 
 ## Still open
 
-| # | Item | Why it is open | How to close it |
-| --- | --- | --- | --- |
-| 2 | Whether a typed slash command, `!` line or `/loop` ever reaches `prompt.submit` | The docs route slash commands through `command.run` and skills through `UserPromptExpansion`; they do not say whether `prompt.submit` also fires. One probe showed no `gate skipped` line for `/help` or `!echo hi`, which suggests they do not, but the mod was paused by a rejected key at the time. | The debug log now records `gate skipped (<reason>)` for every prompt the hook sees, so a `/help` that reaches it leaves a line and one that does not leaves none. |
-
-Item 2 is safe whichever way it turns out, because the gate skips any prompt that starts with `/` or `!`; it only decides whether the mod is shielded twice or once.
+Nothing that blocks use. Two limits remain by design, listed at the end.
 
 ## Closed
 
 | # | Item | Result |
 | --- | --- | --- |
-| 13 | Why the stored key was rejected (401) while the same key typed fresh returned 200 on `/v1/models` | The stored copy was stale. Re-entering the key with the command in "Set up the key" fixed it: the next three prompts reached the API (2026-10-10 10:21 to 10:22 UTC). The cause was not identified; the plugin had been disabled and re-enabled between the working and failing runs, which is the suspect. If it recurs, the 401 log line now carries the stored key's shape and the request id. |
 | 1 | Whether `e.text` keeps the literal `[Image #N]` placeholder and the raw `@path` token | **Yes.** The debug log of 2026-10-10 10:05 UTC, for a pasted screenshot plus `@README.md`, reads `images 1, mentions 1`: both reached the hook as typed. |
+| 2 | Whether a typed slash command or `!` line reaches `prompt.submit` | **No.** With the mod running and unpaused (2026-10-10 10:22 UTC), typing `/help` and then `!echo hi` after three prompts that logged outcomes added no line at all, where a prompt that reached the hook would have logged `gate skipped (slash command)` or `(bash mode)`. They are routed elsewhere first, as the docs describe for `command.run`. A typed `/loop …` line was not probed separately; it is a slash command, and the gate would catch it anyway. |
+| 13 | A stored key rejected with 401 while the same key typed fresh returned 200 on `/v1/models` (10:01 and 10:05 UTC; it had worked at 08:58 UTC) | Re-entering the key with `claude plugin configure … --values-stdin` fixed it: the next three prompts logged `rewritten`, `left unchanged` and `rewritten`. The stored copy had gone stale or wrong; why is unknown. The plugin had been disabled and re-enabled in between, which is the only change recorded. If it recurs, the 401 log line now gives the stored key's length and prefix check. |
 | 3 | `claude plugin configure` for the mod | Needs the plugin installed and its full id, `m3l-prompt-optimizer@monte3l-prompt-optimizer`; a `--plugin-dir` mod is not found. |
 | 4 | Whether the key reaches `options` | Yes, in an interactive session: rewrites happened with the stored key. Headless sessions are skipped by origin. |
 | 5 | Whether a fetch still running after the 6.5-second race is cancelled | **No.** Measured on 2026-10-10 with a local server that held the request: the host does not cancel it when the hook returns. The hook returned at +1.6 s and the turn finished normally, but the host closed the connection at exactly 30 s, and a headless `claude -p` stayed alive for those 30 s (3 s without the probe). The docs are silent. Effect on this mod: none for prompts (the deadline works), and none headless (those prompts never call the API); an interactive request that times out lingers at most 30 s. |
