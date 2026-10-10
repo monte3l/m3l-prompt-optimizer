@@ -58,7 +58,7 @@ needs it installed, so set the key after installing.
    | `[Image #N]` placeholders and `@mentions` are identical | Lost or invented attachments and files |
    | Code spans, paths, file names, symbols and URLs are identical | Invented or altered technical details |
    | A question keeps its question mark, and a request does not become a question | Changed intent |
-   | The rewrite is at most twice the original plus 300 characters | Runaway padding |
+   | The rewrite is at most one and a half times the original plus 40 characters | Runaway padding |
    | The rewrite does not start with `/`, `!` or `#` | A prompt turning into a command |
    | The API stopped normally (no refusal, no cut-off) | Partial answers |
 
