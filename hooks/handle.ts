@@ -15,6 +15,10 @@ export type Ui = { log: (text: string) => void; toast: (text: string) => void }
 
 export const newContext = (options: PluginOptions): Context => ({ options, isLatched: false })
 
+/** The shape of a key, for a rejected-key log line: a public prefix check and a length, never the key. */
+export const describeKey = (key: string): string =>
+  `key sk-ant- prefix ${key.trimStart().startsWith('sk-ant-') ? 'yes' : 'no'}, length ${key.length}${/\s/.test(key) ? ', has whitespace' : ''}`
+
 const asString = (value: unknown, fallback: string): string => (typeof value === 'string' && value !== '' ? value : fallback)
 
 /**
@@ -41,7 +45,8 @@ export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string
 
     if (result.kind === 'latch') {
       ctx.isLatched = true
-      ui.log(`${NAME}: paused for this session (${result.reason}; ${result.requestId}; ${seen})`)
+      const shape = result.reason.startsWith('key rejected') ? `; ${describeKey(apiKey)}` : ''
+      ui.log(`${NAME}: paused for this session (${result.reason}; ${result.requestId}; ${seen}${shape})`)
       ui.toast(`${NAME} paused: ${result.reason}. Prompts are sent as typed.`)
       return e.text
     }

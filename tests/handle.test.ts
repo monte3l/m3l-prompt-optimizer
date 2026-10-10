@@ -188,6 +188,21 @@ describe('handler', () => {
     expect(g.logs.some(l => l.includes('skipped (status 404; req_9; images 0, mentions 1)'))).toBe(true)
   })
 
+  test('describes the shape of a rejected key without revealing it', async () => {
+    const rejected = { status: 401, body: { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } } }
+    for (const [key, expected] of [
+      ['sk-ant-test-key', 'key sk-ant- prefix yes, length 15'],
+      ['***', 'key sk-ant- prefix no, length 3'],
+      ['sk-ant-api03-abcdefghijklmnopqrstuvwxyz\n', 'key sk-ant- prefix yes, length 40, has whitespace'],
+    ] as const) {
+      const f = fake([rejected])
+      await makeHandler({ ...options, apiKey: key })(f.$, event(PROMPT), passes().next)
+      const line = f.logs.find(l => l.includes('paused for this session')) ?? ''
+      expect(line.includes(expected)).toBe(true)
+      expect(f.logs.join('\n').includes(key.trim())).toBe(false)
+    }
+  })
+
   test('pauses for the session after a spend limit and says so once', async () => {
     const limit = { status: 400, body: { error: { type: 'invalid_request_error', message: 'You have reached your specified workspace API usage limits.' } } }
     const f = fake([limit, rewriteOf(REWRITE)])
