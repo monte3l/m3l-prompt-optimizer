@@ -1,0 +1,6 @@
+evals/.results/
+.claude-plugin/types/
+node_modules/
+.env
+.env.*
+.DS_Store
