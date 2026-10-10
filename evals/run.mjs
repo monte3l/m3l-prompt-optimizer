@@ -62,19 +62,9 @@ const deps = {
   now: async () => Date.now(),
 }
 
-const RUBRIC = `Better means the version is clearer for a coding agent without changing what the developer asked: a stated reason sits beside its instruction, a clearly meant "every item" is spelled out, shouting is calm, a request for ideas or a plan says so, run-together asks are a short numbered list in the original order, and unclear spelling is fixed.
-Worse means any of these: the intent changed (a question became an order or the other way round), scope was added or dropped, a fact was invented (a path, a name, a command, a requirement), a placeholder like [Image #1] or an @mention was altered, reasoning or verification instructions were added, heavy structure was added to a short prompt, or the developer's voice was lost.
-Equal means the two versions would lead a capable agent to the same work.`
+const { JUDGE_SYSTEM, judgeMessage, readVerdict } = await import(pathToFileURL(join(root, 'evals/judge.ts')).href)
 
-const JUDGE_SYSTEM = `You compare two versions of a prompt that a developer typed into Claude Code, a coding agent working in their repository. Both versions carry the same request. Decide which version the agent would handle better, using this rubric:
-
-${RUBRIC}
-
-Reply with JSON only, in this shape: {"verdict":"A","reason":"one sentence"} where verdict is "A", "B" or "equal".`
-
-const judge = async (original, rewrite) => {
-  const isFlipped = Math.random() < 0.5
-  const [a, b] = isFlipped ? [rewrite, original] : [original, rewrite]
+const judge = async (original, proposal) => {
   const res = await deps.fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
@@ -82,15 +72,11 @@ const judge = async (original, rewrite) => {
       model: JUDGE_MODEL,
       max_tokens: 2000,
       system: JUDGE_SYSTEM,
-      messages: [{ role: 'user', content: `<version_a>\n${a}\n</version_a>\n\n<version_b>\n${b}\n</version_b>` }],
+      messages: [{ role: 'user', content: judgeMessage(original, proposal) }],
     }),
   })
   const body = JSON.parse(res.text)
-  const text = body.content?.find(block => block.type === 'text')?.text ?? ''
-  const json = JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim())
-  if (json.verdict === 'equal') return { verdict: 'equal', reason: json.reason }
-  const picked = json.verdict === 'A' ? a : b
-  return { verdict: picked === rewrite ? 'better' : 'worse', reason: json.reason }
+  return readVerdict(body.content?.find(block => block.type === 'text')?.text ?? '')
 }
 
 const evaluate = async c => {

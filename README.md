@@ -156,9 +156,16 @@ and decision logic are plain modules in `hooks/`, tested directly.
 
 [`evals/cases.json`](evals/cases.json) holds 26 prompts: vague, clear, emphatic,
 question, image, mention, multi-part and gated. `evals/run.mjs` runs each through
-the real gate, client and guard, then asks Claude Opus 5.5 to compare the
-original and the result in random order against the rubric, answering
-`better`, `equal` or `worse`.
+the real gate, client and guard, then asks Claude Opus 5.5 whether the result
+serves the developer better than their own words. The judge is told which text
+you typed and which is the proposal ([`evals/judge.ts`](evals/judge.ts)); a blind
+A/B comparison could not tell added scope from dropped scope.
+
+Each case says what to expect. `rewrite` cases (shouting, run-together asks) must
+be judged better, `unchanged` cases must come back untouched, and `any` cases may
+be improved, polished or left alone but never judged worse. The vague cases are
+`any`: the rewriter cannot see your repository, so it may only polish the wording
+and never fill the gaps in, which makes "equal" their intended result.
 
 | Result | Meaning |
 | --- | --- |
