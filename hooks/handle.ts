@@ -2,7 +2,7 @@ import type { PluginOptions, PromptOrigin } from 'claude-code'
 
 import { optimize, type Deps } from './client.js'
 import { shouldRewrite } from './gate.js'
-import { acceptRewrite, parseResponse } from './guard.js'
+import { acceptRewrite, countTokens, parseResponse } from './guard.js'
 
 const NAME = 'm3l-prompt-optimizer'
 const DEFAULT_MODEL = 'claude-haiku-5-5'
@@ -29,7 +29,13 @@ export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string
       { text: e.text, origin: e.origin },
       { enabled: ctx.options.enabled !== false, hasKey: apiKey !== '', isLatched: ctx.isLatched },
     )
-    if (!gate.isGo) return gate.text ?? e.text
+    if (!gate.isGo) {
+      ui.log(`${NAME}: gate skipped (${gate.reason})`)
+      return gate.text ?? e.text
+    }
+
+    const { images, mentions } = countTokens(e.text)
+    const seen = `images ${images}, mentions ${mentions}`
 
     const result = await optimize(deps, { apiKey, model: asString(ctx.options.model, DEFAULT_MODEL) }, e.text)
 
@@ -46,17 +52,17 @@ export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string
 
     const parsed = parseResponse(result.text)
     if (parsed.kind !== 'rewrite' || parsed.text === e.text.trim()) {
-      ui.log(`${NAME}: left unchanged (${result.requestId})`)
+      ui.log(`${NAME}: left unchanged (${result.requestId}; ${seen})`)
       return e.text
     }
 
     const verdict = acceptRewrite(e.text, parsed.text)
     if (!verdict.isOk) {
-      ui.log(`${NAME}: rewrite refused (${verdict.reason})`)
+      ui.log(`${NAME}: rewrite refused (${verdict.reason}; ${seen})`)
       return e.text
     }
 
-    ui.log(`${NAME}: rewritten (${result.requestId})`)
+    ui.log(`${NAME}: rewritten (${result.requestId}; ${seen})`)
     return parsed.text
   } catch {
     return e.text

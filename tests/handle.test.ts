@@ -102,6 +102,22 @@ describe('handler', () => {
     expect(seen.map(e => e.text)).toEqual([PROMPT, PROMPT, PROMPT])
   })
 
+  test('logs why the gate skipped, and which kinds of token reached the hook', async () => {
+    const f = fake([{ status: 200, body: okBody('<unchanged/>') }])
+    const { next } = passes()
+    const handle = makeHandler(options)
+    await handle(f.$, event('/help'), next)
+    await handle(f.$, event(PROMPT, { kind: 'sdk' }), next)
+    const withTokens = 'compare [Image #1] to the design in @README.md and tell me what differs here'
+    await handle(f.$, event(withTokens), next)
+    expect(f.logs.some(l => l.includes('gate skipped (slash command)'))).toBe(true)
+    expect(f.logs.some(l => l.includes('gate skipped (origin sdk)'))).toBe(true)
+    expect(f.logs.some(l => l.includes('images 1, mentions 1'))).toBe(true)
+    const shown = f.logs.join('\n')
+    expect(shown.includes('README')).toBe(false)
+    expect(shown.includes('compare')).toBe(false)
+  })
+
   test('calls nothing without a key or when switched off', async () => {
     const f = fake([rewriteOf(REWRITE)])
     const { next, seen } = passes()

@@ -94,3 +94,25 @@ build's own `claude-code.d.ts` (2.1.296).
 | Testing | `claude plugin test --help`; d.ts `claude-code/testing` | Runs each `*.test.ts` in the mod's environment, with no network. | Pure modules are tested directly; `register` is tested with a capturing `on` and a fake `$`. |
 | Admin | `admin` | `allowManagedModsOnly`, `allowManagedHooksOnly`, `disableAllHooks`, `disableSideloadFlags`, network policy for `$.http.fetch`, `--safe-mode`, `--bare`. Mods are not sandboxed. | Any of these silently disables the mod, and prompts then go through as typed. |
 | Versions | CHANGELOG 2.1.295, 2.1.296 | 2.1.295 fixed prompt history keeping the typed text after a rewrite; 2.1.296 fixed interrupts during a slow `prompt.submit` hook. | Require 2.1.296 or newer. |
+
+## Follow-up research: the open items (2026-10-10)
+
+Two read-only research passes and three local experiments. Base URLs:
+`https://platform.claude.com/docs/en/` (API and Console),
+`https://code.claude.com/docs/en/` (Claude Code).
+
+| Item | Source | What it says | Result |
+| --- | --- | --- | --- |
+| 1 `[Image #N]` and `@mention` in `e.text` | `code.claude.com/docs/en/hooks`; `interactive-mode`; d.ts `PromptSubmitInput` | Pastes arrive expanded between `<pasted_content>` lines. Ctrl+V "inserts an `[Image #N]` chip". `attachments` lists image kinds only, with no id linking a placeholder to its attachment. `prompt.mention` fires after `prompt.submit`, so file content is not inlined at submit. Nothing states the literal text. | Open; probe added |
+| 2 Slash, `!` and `#` input | `…/plugins/mods/events`; `hooks` (UserPromptExpansion); `interactive-mode` | Slash commands reach `command.run`; skills and custom commands also fire `UserPromptExpansion`. The docs do not say whether `prompt.submit` also fires, and document no hook for `!` shell mode or a `#` memory shortcut. | Open; probe added |
+| 5 Fetch cancellation | `…/plugins/mods/api`, `reference`; d.ts `HttpInit`, `HookBudget` | `$.http.fetch` takes `method`, `headers`, `body`, `auth`, `socketPath` only: no timeout and no signal. A hook's budget excludes `$` calls. `next.signal` aborts on interrupt but cannot be passed to fetch. Nothing on cancellation. | **Measured**: not cancelled; the host closes at 30 s. Closed |
+| 7 Credit-balance status | `platform…/about-claude/api-credits-for-subscribers`; `api/errors`; `api/rate-limits`; `support.claude.com/en/articles/8977456` | "When the balance is exhausted, requests return: `Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.`" The errors page lists 400 for spend limits you set and 402 `billing_error` for payment problems, and does not connect either to this message. 429 is documented only for the tier cap. | Message confirmed, status unverified; classifier matches the message on any status. Closed as mitigated |
+| 8 Key scoping | `platform…/manage-claude/authentication`, `workspaces`; `api/organization/api_keys/update` | Keys bind to identity type, workspace, expiry (set at creation) and name and status. The update endpoint accepts only `name` and `status`. Workspaces limit spend and per-model rate limits, with no model allowlist. | Confirmed by the docs. Closed |
+| 9 Console prompt tools | `platform…/release-notes/overview`; `build-with-claude/prompt-engineering/overview`, `claude-prompting-best-practices`; `claude.com/blog/prompt-improver` | The tool URLs redirect to best practices. A 2026-07-17 release note retires the experimental `generate_prompt`, `improve_prompt` and `templatize_prompt` endpoints with the Workbench on 2026-08-17 (read through a summarizer). No current section on automated rewriting; prefill is unsupported on 4.6 and later, and reasoning requests "may be declined" on the newest models. | Retired; design agrees with current docs. Closed |
+| 11 Type-checking | `…/plugins/mods/create`; the engine-written `tsconfig.json` and `.claude-plugin/types/` of this plugin's installed copy | Types are written for a mod loaded from `--plugin-dir` in an interactive session; `tsc -p <mod folder>` checks it. This machine's installed copy also received them. | `tsc -p .` passes with the engine's own config. Closed |
+
+Local experiments: (a) a throwaway mod racing a `$.http.fetch` to a server that
+held the request for 60 s, with a control run without the mod, in the session
+scratch area; (b) `tsc -p .` against the engine-written types; (c) the three
+earlier headless and interactive probes read from `--debug-file` logs.
+

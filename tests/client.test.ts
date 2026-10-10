@@ -85,6 +85,15 @@ describe('classify', () => {
     }
   })
 
+  test('latches on the credit-balance message whatever status carries it', () => {
+    const message = 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'
+    for (const status of [400, 402, 429, 403]) {
+      expect(classify(error(status, 'billing_error', message)).kind).toBe('latch')
+    }
+    const slow = { ...error(429, 'rate_limit_error', message), headers: { 'request-id': 'req_1', 'retry-after': '1' } }
+    expect(classify(slow).kind).toBe('latch')
+  })
+
   test('retries a short rate limit and server trouble, skips a long wait', () => {
     expect(classify(error(429, 'rate_limit_error', 'slow', {}))).toEqual({ kind: 'retry', afterMs: 1000, requestId: 'req_1' })
     const waits = { ...error(429, 'rate_limit_error', 'slow'), headers: { 'request-id': 'req_1', 'retry-after': '1' } }

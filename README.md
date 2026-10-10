@@ -121,12 +121,39 @@ session with `claude --debug-file /tmp/optimizer.log`, then:
    Each line gives an outcome and a request id, never prompt text. A prompt the
    gate skips writes no line at all.
 
+## Probe for items 1 and 2
+
+Two questions in [`UNVERIFIED.md`](UNVERIFIED.md) need one interactive look. The debug log
+records only reasons and counts, never prompt text:
+
+```zsh
+mkdir -p ~/scratch/probe && cd ~/scratch/probe && echo hi > README.md
+claude --debug-file /tmp/optimizer2.log
+```
+
+In that session type `/help`, then `!echo hi`, then paste a screenshot with Cmd+V and type
+`this layout looks wrong on mobile, compare it to the design in @README.md and tell me what differs`.
+Stop the turn with `Esc` each time, exit, and run:
+
+```zsh
+grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer2.log
+```
+
+| You see | It means |
+| --- | --- |
+| `gate skipped (slash command)` or `(bash mode)` | That input reaches `prompt.submit` and the gate stops it |
+| No line for `/help` or `!echo hi` | That input never reaches `prompt.submit` at all |
+| `images 1, mentions 1` on the image prompt | `e.text` keeps `[Image #1]` and `@README.md` as typed |
+| `images 0, mentions 1` | The placeholder is not in `e.text`; tell the maintainer before relying on the guard for images |
+
 ## When it pauses
 
 A spend limit, an empty credit balance or a rejected key stops the mod for the
 rest of the session. It shows one notice, and your prompts go out as typed.
 Other errors (rate limits, overload, a network problem, a call slower than 6.5
-seconds) are tried once more at most and then skipped for that prompt only. To
+seconds) are tried once more at most and then skipped for that prompt only. The
+host cannot cancel a request already in flight, so one that outlasts the 6.5-second
+deadline is simply abandoned and ends at the host's own 30-second timeout. To
 turn the mod off, set **Rewrite prompts** off in `/config`, or run
 `claude plugin disable m3l-prompt-optimizer`.
 
@@ -144,9 +171,14 @@ turn the mod off, set **Rewrite prompts** off in `/config`, or run
 ```
 claude plugin validate --strict .   # manifest, hook shape, the `$` calls the mod makes
 claude plugin test .                # unit tests
+tsc -p .                            # type-check, using the types the engine writes
 node scripts/guard-break.mjs        # breaks each guard in turn; every break must fail a test
 node evals/run.mjs --gate-only      # offline check of which eval prompts are sent
 ```
+
+`tsc -p .` reads [`tsconfig.json`](tsconfig.json), which extends the declarations Claude
+Code lays in `.claude-plugin/types/` (gitignored) when it loads the mod from a folder.
+In a fresh clone, install the mod once from the folder so the engine writes them.
 
 The `$` calls live only in [`hooks/register.ts`](hooks/register.ts), because
 `claude plugin validate` follows `$` only within one file. The gate, guard, client

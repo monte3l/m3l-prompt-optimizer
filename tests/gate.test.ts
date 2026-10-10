@@ -50,6 +50,24 @@ describe('gate', () => {
 
   test('honours the raw escape and strips it', () => {
     const r = shouldRewrite({ text: `\\raw ${GOOD}`, origin: composer }, on)
-    expect(r).toEqual({ isGo: false, text: GOOD })
+    expect(r).toEqual({ isGo: false, reason: 'raw escape', text: GOOD })
+  })
+
+  test('says why it skipped, never quoting the prompt', () => {
+    const why = (text: string, origin: object = composer, cfg = on) => {
+      const r = shouldRewrite({ text, origin } as never, cfg)
+      return r.isGo ? 'go' : r.reason
+    }
+    expect(why(GOOD, { kind: 'scheduled-trigger' })).toBe('origin scheduled-trigger')
+    expect(why(GOOD, { kind: 'sdk' })).toBe('origin sdk')
+    expect(why('/loop 5m check the deploy status')).toBe('slash command')
+    expect(why('!ls -la the whole directory now')).toBe('bash mode')
+    expect(why('# remember that we use pnpm here')).toBe('memory note')
+    expect(why(`${GOOD}\n<pasted_content id="1">x</pasted_content id="1">`)).toBe('paste')
+    expect(why('fix it')).toBe('too short')
+    expect(why('word '.repeat(1000))).toBe('too long')
+    expect(why(GOOD, composer, { ...on, enabled: false })).toBe('switched off')
+    expect(why(GOOD, composer, { ...on, hasKey: false })).toBe('no key')
+    expect(why(GOOD, composer, { ...on, isLatched: true })).toBe('paused')
   })
 })

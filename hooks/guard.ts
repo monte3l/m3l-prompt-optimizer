@@ -64,3 +64,9 @@ export const acceptRewrite = (original: string, candidate: string): Verdict => {
 
   return { isOk: true }
 }
+
+/** How many placeholders and mentions a prompt holds; safe to log, since it names none of them. */
+export const countTokens = (text: string): { images: number; mentions: number } => ({
+  images: (text.match(IMAGE) ?? []).length,
+  mentions: (text.match(MENTION) ?? []).length,
+})

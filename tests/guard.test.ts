@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { acceptRewrite, parseResponse } from '../hooks/guard.js'
+import { acceptRewrite, countTokens, parseResponse } from '../hooks/guard.js'
 
 describe('parseResponse', () => {
   test('reads the unchanged marker', () => {
@@ -98,5 +98,12 @@ describe('acceptRewrite', () => {
     for (const lead of ['/clear ', '!rm ', '# ']) {
       expect(acceptRewrite(t, `${lead}${t}`).isOk).toBe(false)
     }
+  })
+})
+
+describe('countTokens', () => {
+  test('counts image placeholders and mentions', () => {
+    expect(countTokens('see [Image #1] and [Image #2] in @src/a.ts and @README.md')).toEqual({ images: 2, mentions: 2 })
+    expect(countTokens('nothing special here')).toEqual({ images: 0, mentions: 0 })
   })
 })

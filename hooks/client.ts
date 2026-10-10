@@ -64,7 +64,8 @@ const parse = (text: string): unknown => {
 const field = (value: unknown, key: string): unknown =>
   typeof value === 'object' && value !== null ? (value as Record<string, unknown>)[key] : undefined
 
-const LATCH_MESSAGES = ['usage limits', 'credit balance is too low']
+const SPEND_MESSAGE = 'usage limits'
+const CREDIT_MESSAGE = 'credit balance is too low'
 
 /** Sorts one HTTP reply into: use it, retry it, stop for the session, or pass the prompt through. */
 export const classify = (res: HttpReply): Outcome => {
@@ -87,9 +88,8 @@ export const classify = (res: HttpReply): Outcome => {
 
   if ([401, 402, 403].includes(res.status)) return { kind: 'latch', reason: `key rejected (${res.status})`, requestId }
   if (code === 'enforced_spend_limit_reached') return { kind: 'latch', reason: 'spend limit reached', requestId }
-  if (res.status === 400 && LATCH_MESSAGES.some(m => message.includes(m))) {
-    return { kind: 'latch', reason: 'spend limit or credit balance', requestId }
-  }
+  if (message.toLowerCase().includes(CREDIT_MESSAGE)) return { kind: 'latch', reason: 'credit balance is empty', requestId }
+  if (res.status === 400 && message.includes(SPEND_MESSAGE)) return { kind: 'latch', reason: 'spend limit reached', requestId }
 
   if (res.status === 429) {
     const seconds = Number(res.headers['retry-after'] ?? '1')
