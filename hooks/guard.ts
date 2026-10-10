@@ -1,4 +1,6 @@
-export const MAX_EXTRA_CHARS = 300
+/** A refined prompt may grow by half plus a little: enough to calm, list and clarify, too little to add steps. */
+export const MAX_GROWTH = 1.5
+export const MAX_EXTRA_CHARS = 40
 
 export type Parsed =
   | { kind: 'unchanged' }
@@ -57,7 +59,7 @@ export const acceptRewrite = (original: string, candidate: string): Verdict => {
   if (isQuestion && !candidate.includes('?')) return no('question lost its question mark')
   if (!isQuestion && candidate.trimEnd().endsWith('?')) return no('request became a question')
 
-  if (candidate.length > 2 * original.length + MAX_EXTRA_CHARS) return no('rewrite is too long')
+  if (candidate.length > MAX_GROWTH * original.length + MAX_EXTRA_CHARS) return no('rewrite is too long')
   if (/^\s*[/!#]/.test(candidate)) return no('rewrite starts like a command')
 
   return { isOk: true }

@@ -21,7 +21,7 @@ const MUTANTS = [
   ['guard: invented paths', 'hooks/guard.ts', "  if (!sameSet(original, candidate, PATH)) return no('paths or symbols changed')\n", ''],
   ['guard: question lost', 'hooks/guard.ts', "  if (isQuestion && !candidate.includes('?')) return no('question lost its question mark')\n", ''],
   ['guard: request became question', 'hooks/guard.ts', "  if (!isQuestion && candidate.trimEnd().endsWith('?')) return no('request became a question')\n", ''],
-  ['guard: length cap', 'hooks/guard.ts', "  if (candidate.length > 2 * original.length + MAX_EXTRA_CHARS) return no('rewrite is too long')\n", ''],
+  ['guard: length cap', 'hooks/guard.ts', "  if (candidate.length > MAX_GROWTH * original.length + MAX_EXTRA_CHARS) return no('rewrite is too long')\n", ''],
   ['guard: command start', 'hooks/guard.ts', "  if (/^\\s*[/!#]/.test(candidate)) return no('rewrite starts like a command')\n", ''],
   ['client: finished-reply check', 'hooks/client.ts', "if (field(body, 'stop_reason') !== 'end_turn') return", 'if (false) return'],
   ['client: spend-limit latch', 'hooks/client.ts', 'LATCH_MESSAGES.some(m => message.includes(m))', 'false'],

@@ -13,6 +13,12 @@ describe('system prompt', () => {
     expect(SYSTEM_PROMPT.includes('ask the developer for details')).toBe(true)
   })
 
+  test('shows worked examples, including a vague prompt that stays vague', () => {
+    expect((SYSTEM_PROMPT.match(/<example>/g) ?? []).length).toBeGreaterThanOrEqual(3)
+    expect(SYSTEM_PROMPT.includes('<rewrite>Fix the login issue; it has broken again.</rewrite>')).toBe(true)
+    expect(SYSTEM_PROMPT.includes('<unchanged/>\n</example>')).toBe(true)
+  })
+
   test('asks for exactly the two reply shapes the parser reads', () => {
     expect(SYSTEM_PROMPT.includes('<unchanged/>')).toBe(true)
     expect(SYSTEM_PROMPT.includes('<rewrite>the refined prompt</rewrite>')).toBe(true)

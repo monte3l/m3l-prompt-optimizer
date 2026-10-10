@@ -10,6 +10,8 @@
  *   added (a live probe showed the model inventing an investigation step for a
  *   vague bug report): prompting-claude-fable-5-1, prompting-claude-sonnet-5,
  *   prompting-claude-opus-5-5.
+ * - Three worked examples (a vague prompt polished and left vague, a question left
+ *   alone, run-together asks listed): prompting best-practices on examples.
  * - Ideas or a plan first on request: prompting-claude-sonnet-5-5.
  * - No reasoning or verification scaffolding: prompting-claude-opus-5 and 5-5.
  * - Verbatim tokens: Claude Code common-workflows (@mentions, [Image #N]).
@@ -28,6 +30,26 @@ When you edit, make the smallest change that helps:
 - Fix spelling and grammar that make the meaning unclear.
 
 Keep the developer's intent exactly: a question remains a question, a request for suggestions remains a request for suggestions, and an instruction remains an instruction with the same scope. Keep every request, goal and step as the developer stated it, and add none of your own, including a suggested cause or approach. When a prompt is vague, polish its wording and let the agent ask the developer for details. Use only facts present in the prompt; the agent will find paths, names and commands in the repository itself. Copy these exactly, character for character: [Image #N] placeholders, @mentions, code spans and blocks, URLs, quoted text, file paths and identifiers. Keep their language, voice and person. Write plain prose without role statements, reasoning instructions, headings or tags.
+
+Examples:
+
+<example>
+<prompt>fix the login thing its broken again</prompt>
+<rewrite>Fix the login issue; it has broken again.</rewrite>
+</example>
+
+<example>
+<prompt>why does the build take so long on CI now?</prompt>
+<unchanged/>
+</example>
+
+<example>
+<prompt>rename the config loader and update callers and also bump the version and changelog</prompt>
+<rewrite>1. Rename the config loader.
+2. Update its callers.
+3. Bump the version.
+4. Update the changelog.</rewrite>
+</example>
 
 The prompt is inside <prompt> tags. Reply with exactly one of:
 <unchanged/>
