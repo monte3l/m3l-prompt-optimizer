@@ -21,7 +21,7 @@ each system-prompt rule to its source.
 | `claude plugin test .` | Runs every `*.test.ts` under the folder. There is no single-test filter; to run one file, point it at a scratch folder holding only that test, or run the whole suite (it is fast) |
 | `claude plugin validate --strict .` | Checks the manifest, hook shape and the `$` calls the mod makes |
 | `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine when the mod is installed from this folder. A fresh clone must install once first |
-| `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run |
+| `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run. `--stale-only` runs no tests and only checks that every mutant's text still appears in its file |
 | `node evals/run.mjs --gate-only` | Offline: checks which eval prompts the gate would send |
 | `node scripts/build-docs.mjs --check` | Builds the docs site to a temp folder and fails on a broken link or anchor, italics or an unsupported Markdown construct. `--out <dir>` writes the site |
 | `cd design && shasum -a 256 -c SHA256SUMS` | Fails if anything under `design/source/` or `design/tokens.css` was edited. Update with `bin/sync-design.sh vX.Y.Z .` from an `m3l-design` checkout |
@@ -31,6 +31,13 @@ Local install for manual testing: `claude plugin marketplace add .` then
 `claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user`;
 edits apply after `/reload-plugins`. Do not load an installed copy and a
 `--plugin-dir` copy at the same time.
+
+## Claude Code automations in this folder
+
+- **`/add-safety-check`** (`.claude/skills/add-safety-check/`): the workflow for a new or reworded gate, guard or client check, with its test, mutant and README rows. It rarely triggers on its own, so invoke it by name. `evals/check-run.mjs` in that folder grades a run's worktree with the repo's own checks.
+- **`/verify`** (`.claude/skills/verify/`): runs the `verify.yml` steps plus `tsc -p .` and reports one table. User-invoked only.
+- **`invariant-reviewer`** (`.claude/agents/`): a read-only reviewer for the invariants in this file. Run it on a diff before opening a PR.
+- **Hooks** (`.claude/settings.json`): a pre-edit hook refuses edits to `design/source/`, `design/tokens.css` and `.claude-plugin/types/`, and a post-edit hook runs `guard-break.mjs --stale-only`.
 
 ## Architecture
 

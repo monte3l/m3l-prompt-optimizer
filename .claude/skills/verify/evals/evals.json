@@ -1,0 +1,18 @@
+{
+  "skill_name": "verify",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/verify",
+      "expected_output": "One pass/fail table covering the six CI steps plus tsc, with an honest SKIPPED for tsc if types are not installed.",
+      "files": [],
+      "expectations": [
+        "The final report is a single table with 7 rows in the CI order",
+        "tsc is reported SKIPPED with a reason if .claude-plugin/types is missing, never PASS without running it",
+        "node evals/run.mjs is only ever run with --gate-only",
+        "No source file is modified or left mutated after the run (git status clean of hooks/ changes)",
+        "Failures are not fixed unprompted"
+      ]
+    }
+  ]
+}
