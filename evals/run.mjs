@@ -153,7 +153,7 @@ const lines = [
   ``,
   `| id | expected | outcome | detail |`,
   `| --- | --- | --- | --- |`,
-  ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} | ${(r.detail ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ')} |`),
+  ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} | ${(r.detail ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ')} |`),
   ``,
   ...(calibrated.length === 0
     ? []
