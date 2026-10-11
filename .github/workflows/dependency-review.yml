@@ -36,7 +36,19 @@ jobs:
           # libvips binaries, which carry LGPL-3.0-or-later. They are only
           # installed (--ignore-scripts) in a CI job that uploads static
           # HTML to Cloudflare, never shipped to anyone.
+          # Also per-package: the pinned Claude Code CLI in .github/ci-tools
+          # (verify.yml) carries Anthropic's proprietary licence. It is only
+          # installed in a CI job and never redistributed.
           allow-dependencies-licenses: >-
+            pkg:npm/%40anthropic-ai/claude-code,
+            pkg:npm/%40anthropic-ai/claude-code-darwin-arm64,
+            pkg:npm/%40anthropic-ai/claude-code-darwin-x64,
+            pkg:npm/%40anthropic-ai/claude-code-linux-arm64,
+            pkg:npm/%40anthropic-ai/claude-code-linux-arm64-musl,
+            pkg:npm/%40anthropic-ai/claude-code-linux-x64,
+            pkg:npm/%40anthropic-ai/claude-code-linux-x64-musl,
+            pkg:npm/%40anthropic-ai/claude-code-win32-arm64,
+            pkg:npm/%40anthropic-ai/claude-code-win32-x64,
             pkg:npm/%40img/sharp-libvips-darwin-arm64,
             pkg:npm/%40img/sharp-libvips-darwin-x64,
             pkg:npm/%40img/sharp-libvips-linux-arm,
