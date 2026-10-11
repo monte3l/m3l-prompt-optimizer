@@ -1,0 +1,35 @@
+{
+  "enabledPlugins": {
+    "context7@anthropic-plugin-directory": true,
+    "skill-creator@anthropic-plugin-directory": true,
+    "github@anthropic-plugin-directory": true,
+    "claude-md-management@anthropic-plugin-directory": true,
+    "security-guidance@anthropic-plugin-directory": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "claude-code-setup@anthropic-plugin-directory": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-edit.mjs\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/guard-break.mjs\" --stale-only || { echo 'Update the MUTANTS table in scripts/guard-break.mjs to match the reworded line.' >&2; exit 2; }"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 // Breaks one guard at a time and confirms `claude plugin test` fails each time.
 // Every file is restored afterwards. Usage: node scripts/guard-break.mjs
+// `--stale-only` runs no tests: it only checks each mutant's text still appears in its file.
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -37,6 +38,12 @@ const MUTANTS = [
   ['handle: catch-all', 'hooks/handle.ts', '  } catch {\n    return e.text\n  }', '  } catch (err) {\n    throw err\n  }'],
   ['register: fail-open catch', 'hooks/register.ts', '.catch(($, e, next) => next(e))', ''],
 ]
+
+if (process.argv.includes('--stale-only')) {
+  const stale = MUTANTS.filter(([, file, find]) => !readFileSync(join(root, file), 'utf8').includes(find))
+  for (const [name, file] of stale) console.error(`STALE     ${name}: pattern not found in ${file}`)
+  process.exit(stale.length === 0 ? 0 : 1)
+}
 
 const runTests = () => {
   const r = spawnSync('claude', ['plugin', 'test', root], { encoding: 'utf8' })

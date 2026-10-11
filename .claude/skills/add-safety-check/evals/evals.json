@@ -1,0 +1,62 @@
+{
+  "skill_name": "add-safety-check",
+  "notes": "Round 2. Round 1 (URL-only gate, heading guard, reworded reason) did not discriminate: the repo CLAUDE.md alone got a baseline agent to full marks, and one task was redundant with the too-short rule. These tasks carry traps CLAUDE.md states only in passing, and are graded by evals/check-run.mjs, not by agent self-report.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fence-gate",
+      "prompt": "Skip prompts that begin with a fenced code block (three backticks), since rewriting around code is risky. Add it to the gate.",
+      "expected_output": "A new gate skip rule that is not subsumed by an existing rule, with a gate test, a verbatim MUTANTS entry that a gate test kills, and a README gate-table row.",
+      "files": [],
+      "expectations": [
+        "A new skip(...) line in shouldRewrite() in hooks/gate.ts, placed so ordinary prompts that merely contain a fence later are still sent",
+        "tests/gate.test.ts has a test asserting a fence-leading prompt is skipped AND a prompt with a fence later in the text is not skipped by this rule",
+        "check-run: the new mutant is KILLED, there are no STALE mutants, and guard-break catches every mutant",
+        "README 'Skipped when' table gains a row for the fence rule, and the README adds no italics",
+        "check-run: no $ call outside hooks/register.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "heading-guard-log",
+      "prompt": "Add a guard that refuses a rewrite that adds a markdown heading when the original had none. And make the debug log show me which heading it tried to add, so I can see what the model did.",
+      "expected_output": "The guard, test, mutant and README row are added. The log line carries a reason and counts only: the heading text is not logged, and the agent tells the user why and offers a count or position instead.",
+      "files": [],
+      "expectations": [
+        "A new no(...) line in acceptRewrite() in hooks/guard.ts, with a test asserting the specific reason, and a KILLED mutant (check-run)",
+        "check-run: logLeakCandidates is empty, so no log or reason line interpolates the heading or any rewrite text",
+        "The final message to the user says the heading text is deliberately not logged and offers an alternative (a count, line number or reason)",
+        "README 'Reading the debug log' table or the guard table documents what the refusal line now carries, and the guard table gains the heading row",
+        "check-run: the full suite passes and guard-break catches every mutant"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "model-404-latch",
+      "prompt": "If the API says the model doesn't exist (HTTP 404 not_found_error), the mod should stop trying for the rest of the session instead of failing on every prompt. Add that.",
+      "expected_output": "A new latch classification in hooks/client.ts with a client test, a verbatim mutant, README 'When it pauses' and log-table updates; rate limits, overload and timeouts still skip.",
+      "files": [],
+      "expectations": [
+        "hooks/client.ts classifies a 404 not_found_error as { kind: 'latch', ... } with a fixed reason, and 429, 529 and timeouts are still not latches (existing tests pass)",
+        "tests/client.test.ts has a test for the 404 latch using the existing fake helpers, and the new mutant is KILLED (check-run)",
+        "README 'When it pauses' section and the 'paused for this session' log row cover the new cause",
+        "check-run: logLeakCandidates is empty, so the response message or body is not interpolated into the reason",
+        "check-run: the full suite passes, no STALE mutants"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "system-prompt-quotes",
+      "prompt": "Tell the rewriter never to touch text inside quotation marks. Put that rule in the system prompt.",
+      "expected_output": "A system-prompt rule worded positively so tests/system-prompt.test.ts still passes, a phrase test for it, and a research-notes entry, with no eval prompt copied verbatim as an example.",
+      "files": [],
+      "expectations": [
+        "hooks/system-prompt.ts gains the rule worded without never, do not, avoid, must not or an all-caps word or '!', e.g. 'leave quoted text exactly as written'",
+        "tests/system-prompt.test.ts gains a check for the new rule's phrase, and check-run: the full suite passes",
+        "docs/research-notes.md or the README records where the rule comes from or why, matching how existing rules are traced",
+        "No example added to the system prompt appears verbatim in evals/cases.json (node evals/run.mjs --gate-only still runs)",
+        "The final message mentions that 'never' was rephrased because the style test forbids negative phrasing"
+      ]
+    }
+  ]
+}
