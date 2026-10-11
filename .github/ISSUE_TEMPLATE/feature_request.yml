@@ -1,0 +1,16 @@
+name: Feature request
+description: Propose a change to what the mod does
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should the mod do instead?
+    validations:
+      required: true

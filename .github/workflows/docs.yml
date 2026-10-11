@@ -1,0 +1,102 @@
+name: Docs
+
+# What this does: builds this repo's docs site (scripts/build-docs.mjs) and
+# deploys it to Cloudflare Workers Static Assets at
+# https://prompt-optimizer.monte3l.com, on a Custom Domain
+# (.github/deploy-tools/wrangler.jsonc). Runs on every push to `main` and on
+# manual dispatch. A pull request's docs changes are checked by verify.yml;
+# this workflow is what ships the result.
+#
+# Cloudflare has no GitHub OIDC, so the deploy job authenticates with a
+# long-lived, narrowly scoped API token (Workers Scripts: Edit on the account,
+# Workers Routes: Edit on the monte3l.com zone), stored as a `docs-cloudflare`
+# environment secret restricted to `main`. The setup is the same as
+# m3l-groundwork's: see docs/cloudflare-docs.md in that repository.
+#
+# There is no post-deploy smoke test. Cloudflare's Bot Fight Mode returns 403
+# to GitHub Actions runner IPs and cannot be skipped by a WAF rule, so a curl
+# from the runner would fail on a healthy site. `wrangler deploy`'s own exit
+# code fails the job if the upload fails.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  # A half-published site is worse than a queued one; let an in-flight
+  # deploy finish rather than cancelling it out from under a viewer.
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      # Belt and suspenders: `verify`'s `docs` step already gates every PR,
+      # but `main`'s ruleset does not require a branch to be up to date
+      # before merging, so two PRs that each pass `verify` can still combine
+      # into a `main` with a broken link. `--check` re-validates the merged
+      # result before `--out` ever writes anything this job would publish.
+      - run: node scripts/build-docs.mjs --check
+
+      - run: node scripts/build-docs.mjs --out _site
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: docs-site
+          path: _site
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: docs-cloudflare
+      url: https://prompt-optimizer.monte3l.com
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: docs-site
+          path: _site
+
+      # --ignore-scripts is safe here: an assets-only `wrangler deploy` (no
+      # bundling, no `wrangler dev`) needs neither esbuild's nor workerd's
+      # postinstall-fetched binaries -- verified locally before adding this
+      # step. Same pattern as release.yml's `npm ci --ignore-scripts --prefix
+      # .github/release-tools`.
+      - run: npm ci --ignore-scripts --prefix .github/deploy-tools
+
+      - name: Deploy to Cloudflare
+        working-directory: .github/deploy-tools
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Opt out of Cloudflare's anonymous usage telemetry for this CI job.
+          WRANGLER_SEND_METRICS: "false"
+        run: node_modules/.bin/wrangler deploy --config wrangler.jsonc

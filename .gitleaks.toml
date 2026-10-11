@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+# The tests use obviously fake, short keys shaped like Anthropic keys
+# (sk-ant-test-key, sk-ant-api03-abcdefghijklmnopqrstuvwxyz). They are
+# not secrets. The allowlist is limited to the test files that hold them.
+[[allowlists]]
+description = "Fake API keys in tests"
+paths = ['''tests/client\.test\.ts''', '''tests/handle\.test\.ts''']

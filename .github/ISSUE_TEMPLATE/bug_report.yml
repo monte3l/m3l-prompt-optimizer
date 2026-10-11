@@ -1,0 +1,31 @@
+name: Bug report
+description: The mod rewrote something it should not have, skipped something it should have sent, or failed
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Found a security vulnerability instead? Use [private vulnerability reporting](https://github.com/monte3l/m3l-prompt-optimizer/security/advisories/new), not this form.
+        Do not paste your prompt text or your API key. The debug log carries only outcomes and request ids, so those are safe to share.
+  - type: input
+    id: version
+    attributes:
+      label: Versions
+      description: The mod version from `/plugin` and your Claude Code version (`claude --version`)
+      placeholder: "mod 0.1.0, Claude Code 2.1.296"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Debug log lines
+      description: Run `claude --debug-file /tmp/optimizer.log`, reproduce, then paste the `m3l-prompt-optimizer` lines from that file. See "Reading the debug log" in the README.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual behavior
+      description: Describe the kind of prompt (length, whether it had code, paths or a question) without pasting it
+    validations:
+      required: true
