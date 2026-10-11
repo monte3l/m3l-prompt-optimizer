@@ -4,3 +4,6 @@ node_modules/
 .env
 .env.*
 .DS_Store
+_site/
+.github/deploy-tools/node_modules/
+.github/ci-tools/node_modules/

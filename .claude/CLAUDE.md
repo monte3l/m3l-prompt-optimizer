@@ -23,6 +23,8 @@ each system-prompt rule to its source.
 | `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine when the mod is installed from this folder. A fresh clone must install once first |
 | `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run |
 | `node evals/run.mjs --gate-only` | Offline: checks which eval prompts the gate would send |
+| `node scripts/build-docs.mjs --check` | Builds the docs site to a temp folder and fails on a broken link or anchor, italics or an unsupported Markdown construct. `--out <dir>` writes the site |
+| `node scripts/build-design-tokens.mjs` | Regenerates `design/tokens.css` from `design/source/dtcg/`. `--check` fails on drift |
 | `node evals/run.mjs` | Live eval with `ANTHROPIC_API_KEY` set for that one command (see README "Evaluation"). Writes `evals/results.md` |
 
 Local install for manual testing: `claude plugin marketplace add .` then
@@ -44,6 +46,10 @@ path sends the original text unchanged (fail open).
 | `hooks/client.ts` | Messages API call with a 6.5 s total deadline, at most one retry, and classification into reply / skip / latch |
 | `hooks/guard.ts` | `parseResponse()` accepts only `<unchanged/>` or one `<rewrite>` block; `acceptRewrite()` holds the rewrite to hard limits (placeholders, mentions, code spans, paths, question shape, length, command prefix) |
 | `hooks/system-prompt.ts` | The rewriter's system prompt |
+| `scripts/build-docs.mjs` | Renders the Markdown pages listed in its `PAGES` table into the docs site, with the vendored m3l-design CSS. Only Node built-ins, no install |
+| `design/` | Vendored m3l-design (`source/`, never hand-edited), the generated `tokens.css` and the site layout in `local/` |
+| `.github/workflows/docs.yml` | Deploys the site to Cloudflare Workers Static Assets at prompt-optimizer.monte3l.com on every push to `main` |
+| `.github/workflows/verify.yml` | The required `verify` check |
 
 Constraints that are not obvious from one file:
 
@@ -71,8 +77,21 @@ Constraints that are not obvious from one file:
 
 ## Docs and style
 
-- The repository follows **m3l-design** at the content tier (see
-  `design/README.md`): bold, never italics; GitHub alerts matched to severity,
+- The repository follows **m3l-design** at the vendored tier (see
+  `design/README.md`): never hand-edit `design/source/`, and put local
+  divergence in `design/local/`. Bold, never italics; GitHub alerts matched to severity,
   at most two in a row; plain direct sentences; tables for tabular data.
 - When behaviour changes, update the README tables (gate, guard, log lines) and,
   if a host behaviour is newly confirmed or open, `UNVERIFIED.md`.
+
+## Docs site
+
+- `scripts/build-docs.mjs` renders a limited Markdown subset: headings to h3,
+  tables, fenced code, lists, blockquotes, GitHub alerts and footnotes. An h4
+  or raw HTML throws. Fix the source page, not the renderer.
+- A page is on the site only if it is in the `PAGES` table. Add new pages there.
+- The site is deployed by `docs.yml` with a Cloudflare API token held in the
+  `docs-cloudflare` environment. The Cloudflare setup is documented in the
+  m3l-groundwork repository's `docs/cloudflare-docs.md`.
+- `verify.yml` does not run `tsc -p .`: it needs the types the engine writes
+  when the mod is installed from a checkout.

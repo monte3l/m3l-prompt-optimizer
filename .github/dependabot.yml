@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # Keeps the action pins in .github/workflows/ from going stale.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+
+  # .github/deploy-tools/ pins the exact wrangler version docs.yml installs,
+  # through a committed lockfile. Its job holds a Cloudflare API token, so it
+  # gets a one-day cooldown.
+  - package-ecosystem: "npm"
+    directory: "/.github/deploy-tools"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 1
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+
+  # .github/ci-tools/ pins the Claude Code and TypeScript versions verify.yml
+  # installs. A bump to Claude Code can change how the mod is validated and
+  # tested, so it arrives as a reviewed PR with the same one-day cooldown.
+  - package-ecosystem: "npm"
+    directory: "/.github/ci-tools"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 1
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"

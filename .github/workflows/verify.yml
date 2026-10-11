@@ -1,0 +1,50 @@
+name: Verify
+
+# What this does: runs this repo's checks on every pull request into `main`
+# and on every push to it. A required check: the org blueprint's `main`
+# ruleset lists `verify`, so keep the job name below.
+#
+# Claude Code is installed from .github/ci-tools/, whose committed lockfile
+# pins it by integrity hash. Its install script runs (it fetches the native
+# binary), so this job holds read-only permissions and no secrets.
+# `claude plugin validate` and `claude plugin test` run without an API key.
+# `tsc -p .` is not run here: it needs types the engine writes when the mod
+# is installed from a checkout. The live eval (`evals/run.mjs` without
+# `--gate-only`) needs a key and is deliberately never run in CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - run: npm ci --prefix .github/ci-tools
+
+      - run: echo "$PWD/.github/ci-tools/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - run: node scripts/build-design-tokens.mjs --check
+      - run: node scripts/build-docs.mjs --check
+      - run: node evals/run.mjs --gate-only
+      - run: claude plugin validate --strict .
+      - run: claude plugin test .
+      - run: node scripts/guard-break.mjs

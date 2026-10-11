@@ -31,7 +31,7 @@ const MUTANTS = [
   ['client: spend-limit latch', 'hooks/client.ts', "res.status === 400 && message.includes(SPEND_MESSAGE)", 'false'],
   ['client: credit-balance latch', 'hooks/client.ts', 'message.toLowerCase().includes(CREDIT_MESSAGE)', 'false'],
   ['client: retry cap', 'hooks/client.ts', 'for (let tries = 0; tries < 2; tries += 1)', 'for (let tries = 0; tries < 5; tries += 1)'],
-  ['client: timeout', 'hooks/client.ts', "if (last === TIMED_OUT) return { kind: 'skip', reason: 'timeout' }", ''],
+  ['client: timeout', 'hooks/client.ts', "if (last === TIMED_OUT) return { kind: 'skip', reason: 'timeout', requestId: 'none' }", ''],
   ['handle: guard applied', 'hooks/handle.ts', 'if (!verdict.isOk) {', 'if (false) {'],
   ['handle: latch kept', 'hooks/handle.ts', '      ctx.isLatched = true\n', ''],
   ['handle: catch-all', 'hooks/handle.ts', '  } catch {\n    return e.text\n  }', '  } catch (err) {\n    throw err\n  }'],
