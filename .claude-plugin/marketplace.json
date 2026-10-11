@@ -1,12 +1,16 @@
 {
   "name": "monte3l-prompt-optimizer",
   "description": "Claude Code mods by monte3l: a prompt optimizer that refines what you type.",
-  "owner": { "name": "Enrico Lionello" },
+  "owner": {
+    "name": "Enrico Lionello"
+  },
   "plugins": [
     {
       "name": "m3l-prompt-optimizer",
       "description": "Refines the prompts you type in Claude Code; a clear prompt passes through unchanged.",
-      "source": "./"
+      "source": "./",
+      "homepage": "https://prompt-optimizer.monte3l.com",
+      "repository": "https://github.com/monte3l/m3l-prompt-optimizer"
     }
   ]
 }

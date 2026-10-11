@@ -2,7 +2,9 @@
   "name": "m3l-prompt-optimizer",
   "version": "0.1.0",
   "description": "Refines the prompts you type in Claude Code using Anthropic's prompt-engineering guidance; a clear prompt passes through unchanged and any failure sends your original.",
-  "author": { "name": "Enrico Lionello" },
+  "author": {
+    "name": "Enrico Lionello"
+  },
   "license": "MIT",
   "userConfig": {
     "apiKey": {
@@ -24,5 +26,7 @@
       "description": "The Claude model that refines prompts.",
       "default": "claude-haiku-5-5"
     }
-  }
+  },
+  "homepage": "https://prompt-optimizer.monte3l.com",
+  "repository": "https://github.com/monte3l/m3l-prompt-optimizer"
 }

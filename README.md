@@ -16,8 +16,8 @@ If anything goes wrong, your original prompt is sent exactly as typed.
 ```
 
 Answer `y` to add the marketplace, then pick the user scope so the mod is active
-in every repository. The repository is private for now, so this works where your
-`gh` or git credentials can read it. Requires Claude Code 2.1.296 or newer.
+in every repository. Requires Claude Code 2.1.296 or newer. The rendered docs are
+at [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
 To install from a local checkout instead, add the folder as a marketplace. Edits
 to the folder then apply after `/reload-plugins`, with no reinstall:
