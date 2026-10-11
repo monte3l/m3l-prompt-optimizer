@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright the m3l-prompt-optimizer contributors
+// SPDX-FileCopyrightText: 2026 Enrico Lionello (enri3l), Giulia Montevecchi (giulmonte), monte3l
 // SPDX-License-Identifier: MIT
 
 /**

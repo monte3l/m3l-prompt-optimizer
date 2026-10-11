@@ -1,8 +1,13 @@
 /*
-   GENERATED FILE -- do not hand-edit. Run `node scripts/build-design-tokens.mjs`
-   to regenerate from design/source/dtcg (the vendored m3l-design tokens).
-   `--check` (used by CI) fails instead of writing on drift.
-   Source of truth: design/source/dtcg (DTCG 2025.10). See design/README.md.
+   SPDX-FileCopyrightText: 2026 Enrico Lionello (enri3l), Giulia Montevecchi (giulmonte), monte3l
+   SPDX-License-Identifier: MIT
+
+   GENERATED FILE -- do not hand-edit. Part of m3l-design, the design system of
+   monte3l (https://github.com/monte3l/m3l-design), made by Enrico Lionello and
+   Giulia Montevecchi. Update it with bin/sync-design.sh from a clone of that
+   repository, never by editing this copy.
+
+   Source of truth: source/dtcg (DTCG 2025.10), next to this file.
 */
 
 @font-face {

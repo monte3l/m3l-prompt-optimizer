@@ -42,7 +42,7 @@ jobs:
 
       - run: echo "$PWD/.github/ci-tools/node_modules/.bin" >> "$GITHUB_PATH"
 
-      - run: node scripts/build-design-tokens.mjs --check
+      - run: cd design && sha256sum -c SHA256SUMS
       - run: node scripts/build-docs.mjs --check
       - run: node evals/run.mjs --gate-only
       - run: claude plugin validate --strict .

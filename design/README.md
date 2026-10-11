@@ -5,8 +5,9 @@ design system for everything published under the `monte3l` GitHub org. It
 styles the docs site at
 [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
-- **Source:** [claude.ai/artifact/AyFoi7PNmQJXLyKUyBxHyk](https://claude.ai/artifact/AyFoi7PNmQJXLyKUyBxHyk)
-- **Version copied:** `1791621112-523a` (v1, signed off 2026-09-26)
+- **Source:** [github.com/monte3l/m3l-design](https://github.com/monte3l/m3l-design)
+- **Version copied:** `v1.0.0`
+- **Last re-synced:** 2026-10-11
 - **Date vendored into this repo:** 2026-10-11
 - **Tier:** vendored. Earlier the repository followed the content tier, while
   it had no CSS, fonts or rendered pages.
@@ -19,32 +20,32 @@ should be one.
 
 ## `source/` is vendored, verbatim -- never hand-edit it
 
-Everything under `design/source/` is copied from the artifact above with its
-content unchanged. To move to a newer version, re-sync file by file (never a
-wholesale overwrite that would also replace this README), and record the new
-version id and date at the top of this file.
+Everything under `design/source/` is copied from a published `m3l-design`
+release with its content unchanged. To move to a newer version, run
+`bin/sync-design.sh vX.Y.Z .` from an `m3l-design` checkout. It replaces
+`source/`, `tokens.css` and `SHA256SUMS`, rewrites the version line above and
+never touches this README's text or `local/`.
 
 | Path | What it holds |
 | --- | --- |
 | `source/dtcg/` | The canonical DTCG 2025.10 token source. It wins whenever it disagrees with `source/tokens.json` |
-| `source/tokens.json` | The artifact's own flattened copy of the tokens. Nothing here reads it |
+| `source/tokens.json` | The system's own flattened copy of the tokens. Nothing here reads it |
 | `source/components/` | The seven v1 components (Callout, CodeBlock, Badge, Button, Input, Card, Nav) as plain HTML and CSS, with each README's markup, tokens and contrast table |
 | `source/foundations/contrast.md` | Every text and UI pairing per theme, all passing WCAG 2.2 AA |
 | `source/fonts/` | Atkinson Hyperlegible Next and Mono, variable weight 200-800, under OFL-1.1 (see `source/licenses/`) |
 | `source/brand-book.md` | The full design brief: personality, colour, type, shape, motion, accessibility, governance. Read this first for why a token or component looks the way it does |
 
-## What this repo generates from it
+## `tokens.css` is vendored too
 
-`design/tokens.css` is **generated and committed** by
-`scripts/build-design-tokens.mjs` from `source/dtcg/`, using the resolver in
-`scripts/lib/design-tokens.mjs`. It holds the light and dark custom
-properties (by `prefers-color-scheme` and by an explicit `data-theme`), the
-non-colour scale, the `@font-face` rules and one class per type style.
+`design/tokens.css` comes from the release, generated upstream by
+`m3l-design`'s own `bin/build-design-tokens.mjs`. It holds the light and dark
+custom properties (by `prefers-color-scheme` and by an explicit `data-theme`),
+the non-colour scale, the `@font-face` rules and one class per type style.
 `prefers-reduced-motion` zeroes every duration.
 
-`node scripts/build-design-tokens.mjs --check` fails if the committed file
-has drifted, and the `verify` workflow runs it. Never hand-edit
-`tokens.css`. Change `source/dtcg/` and regenerate instead.
+`design/SHA256SUMS` covers `source/` and `tokens.css`. The `verify` workflow
+runs `cd design && sha256sum -c SHA256SUMS`, so a hand edit fails the check.
+This repo no longer generates the file itself. Change it upstream.
 
 ## `local/` -- this repo's own divergence
 

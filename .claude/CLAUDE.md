@@ -24,7 +24,7 @@ each system-prompt rule to its source.
 | `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run |
 | `node evals/run.mjs --gate-only` | Offline: checks which eval prompts the gate would send |
 | `node scripts/build-docs.mjs --check` | Builds the docs site to a temp folder and fails on a broken link or anchor, italics or an unsupported Markdown construct. `--out <dir>` writes the site |
-| `node scripts/build-design-tokens.mjs` | Regenerates `design/tokens.css` from `design/source/dtcg/`. `--check` fails on drift |
+| `cd design && shasum -a 256 -c SHA256SUMS` | Fails if anything under `design/source/` or `design/tokens.css` was edited. Update with `bin/sync-design.sh vX.Y.Z .` from an `m3l-design` checkout |
 | `node evals/run.mjs` | Live eval with `ANTHROPIC_API_KEY` set for that one command (see README "Evaluation"). Writes `evals/results.md` |
 
 Local install for manual testing: `claude plugin marketplace add .` then
@@ -47,7 +47,7 @@ path sends the original text unchanged (fail open).
 | `hooks/guard.ts` | `parseResponse()` accepts only `<unchanged/>` or one `<rewrite>` block; `acceptRewrite()` holds the rewrite to hard limits (placeholders, mentions, code spans, paths, question shape, length, command prefix) |
 | `hooks/system-prompt.ts` | The rewriter's system prompt |
 | `scripts/build-docs.mjs` | Renders the Markdown pages listed in its `PAGES` table into the docs site, with the vendored m3l-design CSS. Only Node built-ins, no install |
-| `design/` | Vendored m3l-design (`source/`, never hand-edited), the generated `tokens.css` and the site layout in `local/` |
+| `design/` | Vendored m3l-design (`source/`, never hand-edited), the vendored `tokens.css` and the site layout in `local/` |
 | `.github/workflows/docs.yml` | Deploys the site to Cloudflare Workers Static Assets at prompt-optimizer.monte3l.com on every push to `main` |
 | `.github/workflows/verify.yml` | The required `verify` check |
 
