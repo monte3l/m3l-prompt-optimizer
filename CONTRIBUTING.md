@@ -41,7 +41,7 @@ types in `.claude-plugin/types/`, so install once from this folder first.
 | `node scripts/guard-break.mjs`         | Removing each gate, guard or client check makes the suite fail  |
 | `node evals/run.mjs --gate-only`       | Which eval prompts the gate would send, offline                 |
 | `node scripts/build-docs.mjs --check`  | The docs site builds and every link resolves                    |
-| `node scripts/build-design-tokens.mjs --check` | `design/tokens.css` matches the vendored tokens         |
+| `cd design && shasum -a 256 -c SHA256SUMS` | The vendored `design/source/` and `tokens.css` are unedited |
 
 - **Conventional Commits** for every commit message.
 - New behaviour has a test. A new safety check also gets a mutant in
