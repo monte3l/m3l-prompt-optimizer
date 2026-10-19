@@ -71,3 +71,38 @@ describe('gate', () => {
     expect(why(GOOD, composer, { ...on, isLatched: true })).toBe('paused')
   })
 })
+
+describe('gate size edges', () => {
+  const why = (text: string) => {
+    const r = shouldRewrite({ text, origin: composer }, on)
+    return r.isGo ? 'go' : r.reason
+  }
+  const MIN = 'a b c d eeeeeeeeeeeeeeeee'
+
+  test('passes a prompt of exactly the minimum length and word count', () => {
+    expect([MIN.length, MIN.split(' ').length]).toEqual([25, 5])
+    expect(why(MIN)).toBe('go')
+  })
+
+  test('skips a prompt one character under the minimum length', () => {
+    expect(why(MIN.slice(0, -1))).toBe('too short')
+  })
+
+  test('skips four words however long they are, and passes the fifth', () => {
+    expect(why('extraordinarily lengthy words only')).toBe('too short')
+    expect(why('extraordinarily lengthy words only here')).toBe('go')
+  })
+
+  test('measures the trimmed text, not the padded one', () => {
+    expect(why(`   ${MIN.slice(0, -1)}   `)).toBe('too short')
+    expect(why(`   ${MIN}   `)).toBe('go')
+  })
+
+  test('passes exactly the maximum length and skips one character more', () => {
+    const prompt = (length: number) => `${'word '.repeat(length / 5)}`.slice(0, length - 1) + 'x'
+    expect(prompt(4000).length).toBe(4000)
+    expect(why(prompt(4000))).toBe('go')
+    expect(why(prompt(4001))).toBe('too long')
+    expect(why(`  ${prompt(4000)}  `)).toBe('go')
+  })
+})

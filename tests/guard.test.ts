@@ -107,3 +107,19 @@ describe('countTokens', () => {
     expect(countTokens('nothing special here')).toEqual({ images: 0, mentions: 0 })
   })
 })
+
+describe('acceptRewrite growth cap edge', () => {
+  const original = `${'rename the loader and update its callers '.repeat(50)}`.slice(0, 2000)
+  const atCap = 1.5 * original.length + 40
+
+  test('accepts a rewrite of exactly the cap', () => {
+    expect(original.length).toBe(2000)
+    expect(atCap).toBe(3040)
+    expect(acceptRewrite(original, 'x'.repeat(atCap)).isOk).toBe(true)
+  })
+
+  test('rejects a rewrite one character over the cap', () => {
+    const verdict = acceptRewrite(original, 'x'.repeat(atCap + 1))
+    expect(verdict).toEqual({ isOk: false, reason: 'rewrite is too long' })
+  })
+})
