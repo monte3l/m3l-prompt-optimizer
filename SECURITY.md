@@ -55,3 +55,21 @@ maintainer's shell and never runs in CI.
 Revoke it in the Anthropic Console first, then report it. The README's key
 setup uses a dedicated workspace with a spend limit and a 30-day key, so the
 damage from a leaked key is capped.
+
+## Accepted OpenSSF Scorecard findings
+
+Background, not policy: this explains the Scorecard results for anyone who
+looks them up. `scorecard.yml` runs weekly and surfaces its findings as Code
+Scanning alerts. The ones below are dismissed as deliberate or time-based, not
+defects. Do not "fix" the first one into a standing bypass.
+
+| Check | Score | Why it stays |
+| --- | --- | --- |
+| Branch-Protection | 8 | The top tier asks for two approvals. The organization has two members, so a PR has one reviewer who is not its author, and requiring two would block every merge unless a standing bypass existed. The `main` ruleset has an empty bypass list on purpose. Every other protection is on: a code-owner approval, approval of the last push, stale-review dismissal, an up-to-date branch, required checks, signed commits, and no force-push or deletion |
+| Code-Review | 2 | The first commits landed before the `main` ruleset existed. Every PR since needs a code-owner approval, so the approved share rises as PRs merge. The alert is dismissed only until the score reaches 10 |
+| Maintained | 0 | Scorecard scores any repository under 90 days old as 0. This one was created on 2026-10-10, so it resolves itself on 2027-01-08 |
+| Fuzzing | 0 | Not applicable. The inputs are the maintainer's own typed prompts and replies from `api.anthropic.com` over TLS, read with `JSON.parse`. There is no hand-written parser for untrusted bytes, and the mod has no package manifest of its own to add a fuzzing library to |
+
+The OpenSSF Best Practices badge is a real gap, not an accepted one. The
+project registers for it, and the alert stays open until the badge reaches
+Passing.
