@@ -293,6 +293,7 @@ read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node
 | `--calibration-only` | Only the 12 calibration pairs; writes no `results.md` |
 | `--effort <level>` | The judge's effort: `low`, `medium`, `high`, `xhigh` or `max` |
 | `--repeat <n>` | Judges every pair and case `n` times (1 to 5) |
+| `--rewrites <n>` | Asks the rewriter for `n` independent rewrites of every prompt (1 to 20), one after another, and counts every bar over the samples |
 
 `--repeat` is optional hardening, not something the official evaluation guidance
 asks for. With `--repeat 3` a result is better only if all three judgments say
@@ -300,8 +301,10 @@ better and any "worse" wins, and a bar requires the judge to give one verdict on
 three repeats for at least 90% of the judged cases.
 
 > [!NOTE]
-> The rewriter is sampled once per case, so a single run can miss a defect that
-> happens on some of the samples. `--repeat` measures the judge, not the rewriter.
+> By default the rewriter is sampled once per case, so a single run can miss a
+> defect that shows on only some of the samples. `--repeat` measures the judge,
+> not the rewriter; `--rewrites` measures the rewriter. With `--rewrites 8` the
+> strict "no worse" bar needs all 8 samples of every prompt to be clean.
 
 Results are written to [`evals/results.md`](evals/results.md).
 

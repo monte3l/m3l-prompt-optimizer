@@ -26,8 +26,8 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
   and run before any case, so a wrong judge sends nothing. Every original is new.
 - Changed the eval judge to adaptive thinking at `medium` effort, a reply held
   to a JSON schema, and a check that the reply finished. Added `--effort`,
-  `--calibration-only` and `--repeat` to `evals/run.mjs`, and bars for errored
-  and failed cases and for judge stability.
+  `--calibration-only`, `--repeat` and `--rewrites` to `evals/run.mjs`, and bars
+  for errored and failed cases and for judge stability.
 - Added tests at the exact gate and guard size limits, and four mutants that
   swap `<` for `<=` and `>` for `>=` on them.
 - Added the evaluation counts to `scripts/doc-parity.mjs`.

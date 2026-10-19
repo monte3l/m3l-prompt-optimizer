@@ -7,6 +7,8 @@
 //   --calibration-only   run only the judge calibration pairs; writes no results.md
 //   --effort <level>     the judge's effort: low, medium, high, xhigh or max (default in judge.ts)
 //   --repeat <n>         judge every pair and case n times (1 to 5) and report how stable the verdicts are
+//   --rewrites <n>       ask the rewriter for n independent rewrites of every prompt (1 to 20); the bars
+//                        then count samples, so a defect that shows on some of them is measured, not missed
 //
 // Put the key on the command line of that one run (or export it for the run);
 // it is read from the environment and never written anywhere.
@@ -52,9 +54,11 @@ const isGateOnly = args.includes('--gate-only')
 const isCalibrationOnly = args.includes('--calibration-only')
 const effort = valueOf('--effort') ?? DEFAULT_JUDGE_EFFORT
 const repeat = Number(valueOf('--repeat') ?? 1)
+const rewrites = Number(valueOf('--rewrites') ?? 1)
 if (isGateOnly && isCalibrationOnly) usage('--gate-only and --calibration-only cannot be combined.')
 if (!EFFORTS.includes(effort)) usage(`--effort must be one of: ${EFFORTS.join(', ')}.`)
 if (!Number.isInteger(repeat) || repeat < 1 || repeat > 5) usage('--repeat must be a whole number from 1 to 5.')
+if (!Number.isInteger(rewrites) || rewrites < 1 || rewrites > 20) usage('--rewrites must be a whole number from 1 to 20.')
 
 const cases = JSON.parse(readFileSync(join(root, 'evals/cases.json'), 'utf8'))
 const calibration = JSON.parse(readFileSync(join(root, 'evals/calibration.json'), 'utf8'))
@@ -152,24 +156,41 @@ const calibrate = () =>
   })
 
 // ---- the cases ---------------------------------------------------------------------
+/** One rewrite of one prompt that passed the gate, taken through the client, the parser, the guard and the judge. */
+const sample = async c => {
+  try {
+    const result = await optimize(deps, { apiKey, model: 'claude-haiku-5-5' }, c.prompt)
+    if (result.kind !== 'reply') return { outcome: 'failed', final: c.prompt, detail: `${result.kind}: ${result.reason ?? ''}` }
+
+    const parsed = parseResponse(result.text)
+    if (parsed.kind === 'invalid') return { outcome: 'reverted', final: c.prompt, detail: 'malformed reply' }
+    if (parsed.kind === 'unchanged' || parsed.text === c.prompt.trim()) return { outcome: 'unchanged', final: c.prompt }
+
+    const verdict = acceptRewrite(c.prompt, parsed.text)
+    if (!verdict.isOk) return { outcome: 'reverted', final: c.prompt, detail: verdict.reason, rejected: parsed.text }
+
+    const judged = await judge(c.prompt, parsed.text)
+    return { outcome: judged.verdict, final: parsed.text, detail: judged.reason, verdicts: judged.verdicts, isStable: judged.isStable, thinking: judged.thinking }
+  } catch (error) {
+    return { outcome: 'error', final: c.prompt, detail: String(error?.message ?? error).slice(0, 200) }
+  }
+}
+
+/** The outcome a case shows when its samples differ: the least favourable one. */
+const SEVERITY = ['error', 'failed', 'worse', 'reverted', 'equal', 'unchanged', 'better']
+
 const evaluate = async c => {
   const origin = c.origin ?? { kind: 'composer' }
   const gate = shouldRewrite({ text: c.prompt, origin }, { enabled: true, hasKey: true, isLatched: false })
-  if (!gate.isGo) return { ...c, outcome: 'skipped', final: c.prompt }
-  if (isGateOnly) return { ...c, outcome: 'sent', final: c.prompt }
+  if (!gate.isGo) return { ...c, outcome: 'skipped', final: c.prompt, sampled: [{ outcome: 'skipped' }] }
+  if (isGateOnly) return { ...c, outcome: 'sent', final: c.prompt, sampled: [{ outcome: 'sent' }] }
 
-  const result = await optimize(deps, { apiKey, model: 'claude-haiku-5-5' }, c.prompt)
-  if (result.kind !== 'reply') return { ...c, outcome: 'failed', final: c.prompt, detail: `${result.kind}: ${result.reason ?? ''}` }
-
-  const parsed = parseResponse(result.text)
-  if (parsed.kind === 'invalid') return { ...c, outcome: 'reverted', final: c.prompt, detail: 'malformed reply' }
-  if (parsed.kind === 'unchanged' || parsed.text === c.prompt.trim()) return { ...c, outcome: 'unchanged', final: c.prompt }
-
-  const verdict = acceptRewrite(c.prompt, parsed.text)
-  if (!verdict.isOk) return { ...c, outcome: 'reverted', final: c.prompt, detail: verdict.reason, rejected: parsed.text }
-
-  const judged = await judge(c.prompt, parsed.text)
-  return { ...c, outcome: judged.verdict, final: parsed.text, detail: judged.reason, verdicts: judged.verdicts, isStable: judged.isStable, thinking: judged.thinking }
+  // One after another: the mod's client has a 6.5 second deadline, and many calls at once would turn
+  // a rate limit into a false "failed".
+  const sampled = []
+  for (let i = 0; i < rewrites; i += 1) sampled.push(await sample(c))
+  const shown = sampled.find(s => s.outcome === SEVERITY.find(o => sampled.some(x => x.outcome === o)))
+  return { ...c, ...shown, sampled }
 }
 
 const runCases = () =>
@@ -177,7 +198,8 @@ const runCases = () =>
     try {
       return await evaluate(c)
     } catch (error) {
-      return { ...c, outcome: 'error', final: c.prompt, detail: String(error?.message ?? error).slice(0, 200) }
+      const detail = String(error?.message ?? error).slice(0, 200)
+      return { ...c, outcome: 'error', final: c.prompt, detail, sampled: [{ outcome: 'error', detail }] }
     }
   })
 
@@ -186,12 +208,15 @@ const isCalibrated = calibrated.every(c => c.isRight)
 const results = isCalibrationOnly || !isCalibrated ? [] : await runCases()
 
 // ---- summary and bars -------------------------------------------------------------
-const count = (list, outcome) => list.filter(r => r.outcome === outcome).length
+// Every bar counts samples: with --rewrites 1 that is one per case, so it is the case count.
+const samplesOf = list => list.flatMap(r => r.sampled)
+const count = (samples, outcome) => samples.filter(s => s.outcome === outcome).length
 const gated = results.filter(r => r.expect === 'skipped')
 const reachable = results.filter(r => r.expect !== 'skipped')
-const unchangedCases = results.filter(r => r.expect === 'unchanged')
-const rewriteCases = results.filter(r => r.expect === 'rewrite')
-const judgedCases = results.filter(r => r.isStable !== undefined)
+const unchangedSamples = samplesOf(results.filter(r => r.expect === 'unchanged'))
+const rewriteSamples = samplesOf(results.filter(r => r.expect === 'rewrite'))
+const allSamples = samplesOf(results)
+const judgedSamples = allSamples.filter(s => s.isStable !== undefined)
 
 const bars = []
 if (!isCalibrationOnly) {
@@ -206,16 +231,16 @@ if (!isGateOnly) {
   bars.push(['the judge is right on every calibration pair', isCalibrated])
   if (!isCalibrationOnly && isCalibrated) {
     bars.push(
-      ['no case errored', count(results, 'error') === 0],
-      ['no call failed', count(results, 'failed') === 0],
-      ['no rewrite judged worse reached the model', count(results, 'worse') === 0],
-      ['at least 90% of "unchanged" cases left untouched', count(unchangedCases, 'unchanged') >= Math.ceil(unchangedCases.length * 0.9)],
-      ['at least 70% of "rewrite" cases judged better', count(rewriteCases, 'better') >= Math.ceil(rewriteCases.length * 0.7)],
+      ['no case errored', count(allSamples, 'error') === 0],
+      ['no call failed', count(allSamples, 'failed') === 0],
+      ['no rewrite judged worse reached the model', count(allSamples, 'worse') === 0],
+      ['at least 90% of "unchanged" cases left untouched', count(unchangedSamples, 'unchanged') >= Math.ceil(unchangedSamples.length * 0.9)],
+      ['at least 70% of "rewrite" cases judged better', count(rewriteSamples, 'better') >= Math.ceil(rewriteSamples.length * 0.7)],
     )
     if (repeat > 1) {
       bars.push([
         `the judge gave one verdict on all ${repeat} repeats for at least 90% of judged cases`,
-        judgedCases.filter(r => r.isStable).length >= Math.ceil(judgedCases.length * 0.9),
+        judgedSamples.filter(s => s.isStable).length >= Math.ceil(judgedSamples.length * 0.9),
       ])
     }
   }
@@ -223,9 +248,11 @@ if (!isGateOnly) {
 
 const mode = isGateOnly
   ? 'gate only (no API calls)'
-  : `live, rewriter claude-haiku-5-5, judge ${JUDGE_MODEL} at ${effort} effort, ${repeat} judgment${repeat === 1 ? '' : 's'} per item${isCalibrationOnly ? ', calibration only' : ''}`
+  : `live, rewriter claude-haiku-5-5${rewrites > 1 ? ` (${rewrites} samples per prompt)` : ''}, judge ${JUDGE_MODEL} at ${effort} effort, ${repeat} judgment${repeat === 1 ? '' : 's'} per item${isCalibrationOnly ? ', calibration only' : ''}`
 const cell = text => String(text ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ')
 const stableColumn = repeat > 1
+const sampleColumn = rewrites > 1 && !isGateOnly
+const tally = r => ['better', 'equal', 'worse', 'unchanged', 'reverted', 'failed', 'error'].filter(o => r.sampled.some(x => x.outcome === o)).map(o => `${o} ${count(r.sampled, o)}`).join(', ')
 
 const lines = [
   `# Evaluation results`,
@@ -235,9 +262,9 @@ const lines = [
   ...(results.length === 0
     ? []
     : [
-        `| id | expected | outcome |${stableColumn ? ' judgments |' : ''} detail |`,
-        `| --- | --- | --- |${stableColumn ? ' --- |' : ''} --- |`,
-        ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} |${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`),
+        `| id | expected | outcome |${sampleColumn ? ' samples |' : ''}${stableColumn ? ' judgments |' : ''} detail |`,
+        `| --- | --- | --- |${sampleColumn ? ' --- |' : ''}${stableColumn ? ' --- |' : ''} --- |`,
+        ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} |${sampleColumn ? ` ${tally(r)} |` : ''}${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`),
         ``,
       ]),
   ...(calibrated.length === 0
@@ -252,7 +279,7 @@ const lines = [
       ]),
   ...(results.length === 0
     ? []
-    : [`Counts: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(results, o)}`).join(', ')}`, ``]),
+    : [`Counts${sampleColumn ? ` (samples, ${rewrites} per prompt)` : ''}: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(allSamples, o)}`).join(', ')}`, ``]),
   ...(isGateOnly || stats.calls === 0
     ? []
     : [
