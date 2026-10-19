@@ -1,21 +1,68 @@
 {
-  "enabledPlugins": {
-    "context7@anthropic-plugin-directory": true,
-    "skill-creator@anthropic-plugin-directory": true,
-    "github@anthropic-plugin-directory": true,
-    "claude-md-management@anthropic-plugin-directory": true,
-    "security-guidance@anthropic-plugin-directory": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "claude-code-setup@anthropic-plugin-directory": true
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(./secrets/**)"
+    ]
   },
   "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/write-compact-handoff.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact|resume|startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/reinject-compact-handoff.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-edit.mjs\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-generated-edit.mjs\"",
+            "timeout": 30,
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-js-extension.mjs\"",
+            "timeout": 30,
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secret-writes.mjs\"",
+            "timeout": 30,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-double-background.mjs\"",
+            "timeout": 30,
+            "onFailure": "block"
           }
         ]
       }
@@ -26,10 +73,32 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/guard-break.mjs\" --stale-only || { echo 'Update the MUTANTS table in scripts/guard-break.mjs to match the reworded line.' >&2; exit 2; }"
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/guard-break.mjs\" --stale-only || { echo 'Update the MUTANTS table in scripts/guard-break.mjs to match the reworded line.' >&2; exit 2; }",
+            "timeout": 60
           }
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/statusline.mjs\"",
+    "padding": 1,
+    "refreshInterval": 30
+  },
+  "subagentStatusLine": {
+    "type": "command",
+    "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/subagent-statusline.mjs\""
+  },
+  "enabledPlugins": {
+    "context7@anthropic-plugin-directory": true,
+    "skill-creator@anthropic-plugin-directory": true,
+    "github@anthropic-plugin-directory": true,
+    "claude-md-management@anthropic-plugin-directory": true,
+    "security-guidance@anthropic-plugin-directory": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "claude-code-setup@anthropic-plugin-directory": true,
+    "claude-security@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true
   }
 }
