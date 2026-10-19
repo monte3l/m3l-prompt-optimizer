@@ -1,43 +1,67 @@
 # m3l-prompt-optimizer
 
-A Claude Code mod that refines the prompts you type, following Anthropic's
-current prompt-engineering guidance. A clear prompt passes through unchanged.
-If anything goes wrong, your original prompt is sent exactly as typed.
+[![verify](https://github.com/monte3l/m3l-prompt-optimizer/actions/workflows/verify.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-prompt-optimizer/actions/workflows/verify.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-prompt-optimizer/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-prompt-optimizer)
+[![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-prompt-optimizer)](https://api.reuse.software/info/github.com/monte3l/m3l-prompt-optimizer)
+
+m3l-prompt-optimizer is a Claude Code mod that refines the prompts you type,
+following Anthropic's current prompt-engineering guidance. A clear prompt passes
+through unchanged. If anything goes wrong, your original prompt is sent exactly
+as typed.
+
+Read this project's rendered docs site at
+[prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
 > [!IMPORTANT]
 > Every prompt this mod rewrites is sent to the Anthropic API with a key you
 > provide, and the refined text replaces what you typed. Prompts it skips
-> (listed below) are never sent anywhere.
+> (listed under [How it works](#how-it-works)) are never sent anywhere.
 
-## Install
+## Who is this for
 
-```
-/plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-prompt-optimizer
-```
+- Someone who types **terse, shouted or run-together prompts** into Claude Code
+  and wants them tidied before Claude reads them, without a second tool in the
+  loop.
+- Someone who needs **pasted text, paths, code and attachments to arrive byte
+  for byte**: the guard rejects any rewrite that alters them and sends your
+  original instead.
+- Someone who wants a **hard spend cap**: the mod runs on a dedicated key with a
+  workspace limit, so the worst case is a number you picked.
 
-Answer `y` to add the marketplace, then pick the user scope so the mod is active
-in every repository. Requires Claude Code 2.1.296 or newer, and was tested on 2.1.303. Use 2.1.299 or newer if you paste images: earlier versions could silently drop a rewrite for some prompts with an image. The rendered docs are
-at [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
+## Quickstart
 
-To install from a local checkout instead, add the folder as a marketplace. Edits
-to the folder then apply after `/reload-plugins`, with no reinstall:
+You need [Claude Code](https://docs.claude.com/en/docs/claude-code/overview)
+and an Anthropic account (see [Requirements](#requirements) for versions).
 
-```zsh
-claude plugin marketplace add /path/to/m3l-prompt-optimizer
-claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user
-```
+1. Install the mod:
 
-`claude --plugin-dir` loads the mod for one session, but `claude plugin configure`
-needs it installed, so set the key after installing.
+   ```
+   /plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-prompt-optimizer
+   ```
 
-## What it does
+   Answer `y` to add the marketplace, then pick the user scope so the mod is
+   active in every repository.
+
+2. Create a dedicated, spend-limited key and store it, following
+   [Set up the key](#set-up-the-key).
+3. Start a session and type a vague prompt such as
+   `fix the login thing its broken again`. The message you see is the refined
+   one. [First run](#first-run) shows how to confirm what the mod did.
+
+To skip one prompt, start it with `\raw `. To turn the mod off, see
+[When it pauses](#when-it-pauses).
+
+## How it works
+
+Every prompt goes through gate, rewrite and guard, and every failure path sends
+your original text.
 
 1. **Gate.** A prompt is considered only when all of these hold. Anything else is
    sent untouched and never leaves your machine. The checks run in this order:
 
    | Skipped when | Why |
    | --- | --- |
-   | The mod is switched off, has no key, or paused itself | See "When it pauses" |
+   | The mod is switched off, has no key, or paused itself | See [When it pauses](#when-it-pauses) |
    | It did not come from your own Enter (`/loop`, scheduled tasks, `claude -p`, other plugins, peers, notifications) | Only prompts you type are yours to refine |
    | It starts with `\raw ` | Your per-prompt opt-out; the prefix is removed and the rest sent as typed. Checked before the next rows, on the text as typed |
    | It starts with `/`, `!` or `#` | Slash commands, bash mode and memory notes |
@@ -72,6 +96,29 @@ first" explicit, turning run-together asks into a short numbered list, and fixin
 unclear spelling. It adds no facts, files, checks, scope or reasoning
 instructions.
 
+## Known limits
+
+The aim is that a rewrite never adds, drops or narrows what you asked. The project's
+own evaluation measures how often that fails, and it does fail sometimes. On prompts
+that look like real typing, about 1.5 to 2 rewrites in 100 were judged worse than what
+you typed, 2 to 10 in 100 were judged better, and the rest were left alone or changed
+in ways the judge saw no difference in. About 6 in 100 were refused by the guard, which
+sent your original.
+
+| What can go wrong | Example from the evaluation |
+| --- | --- |
+| A hedge becomes a requirement | "maybe also persist to sessionStorage" came back as a firm requirement |
+| A softener is dropped | "clean up the styles folder a bit" lost "a bit" |
+| A constraint or instruction is added | "only test against the dev tables" gained "do not touch prod" |
+| A non-English prompt is translated | A German prompt came back in English |
+| A reference you left open is settled | "never show it again after that" became "after it is skipped or completed" |
+
+The guard does not catch these, because it checks structure and not meaning. To send a
+prompt exactly as typed, start it with `\raw `. The project holds itself to a limit on
+how often a rewrite may be judged worse, and at the time of writing that limit is not
+met: [`evals/results.md`](evals/results.md) and [`UNVERIFIED.md`](UNVERIFIED.md)
+(items 12 and 14) give the current figures.
+
 ## Set up the key
 
 Use a dedicated key with a low spend limit.
@@ -102,6 +149,14 @@ new one and run step 3 again), if you suspect it leaked, or if you uninstall the
 mod. In the Console, delete the key under API keys, or archive the workspace to
 end every key in it at once.
 
+## Settings
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `apiKey` | none | The Anthropic key, kept in secure storage. See [Set up the key](#set-up-the-key) |
+| **Rewrite prompts** (`enabled`) | on | Turns the optimizer on or off without uninstalling it |
+| **Model** (`model`) | `claude-haiku-5-5` | The Claude model that refines prompts |
+
 ## First run
 
 These probes confirm the results recorded in [`UNVERIFIED.md`](UNVERIFIED.md). Start a
@@ -121,8 +176,8 @@ session with `claude --debug-file /tmp/optimizer.log`, then:
    grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer.log
    ```
 
-   See "Reading the debug log" for what each line gives. A prompt the gate skips
-   writes a `gate skipped` line and never reaches the API.
+   See [Reading the debug log](#reading-the-debug-log) for what each line gives.
+   A prompt the gate skips writes a `gate skipped` line and never reaches the API.
 
 ## Reading the debug log
 
@@ -147,14 +202,6 @@ Typed slash commands and `!` shell lines never reach the mod, so they leave no l
 (confirmed in [`UNVERIFIED.md`](UNVERIFIED.md)). A `#` memory line has not been probed, so
 it may log `gate skipped (memory note)`. A pasted screenshot with an `@mention` arrives
 as typed, so the counts match what you see.
-
-## Settings
-
-| Setting | Default | What it does |
-| --- | --- | --- |
-| `apiKey` | none | The Anthropic key, kept in secure storage. See "Set up the key" |
-| **Rewrite prompts** (`enabled`) | on | Turns the optimizer on or off without uninstalling it |
-| **Model** (`model`) | `claude-haiku-5-5` | The Claude model that refines prompts |
 
 ## When it pauses
 
@@ -189,7 +236,7 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 
 | Result | Meaning | Fix |
 | --- | --- | --- |
-| `200` | The key is valid and the stored copy differs (seen once on 2026-10-10, cause unknown) | Run the key command from "Set up the key" again, then start a fresh session |
+| `200` | The key is valid and the stored copy differs (seen once on 2026-10-10, cause unknown) | Run the key command from [Set up the key](#set-up-the-key) again, then start a fresh session |
 | `401` | The key is invalid: deleted, disabled, expired or from an archived workspace | In the Console under API keys, check its status, then create a new key and run the key command |
 
 ## Privacy and keys
@@ -201,7 +248,30 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 - Anything that disables mods on your machine (managed settings, `--safe-mode`,
   `--bare`) also disables this one, and prompts then go through as typed.
 
-## Development
+## Requirements
+
+- **Claude Code 2.1.296 or newer**, tested on 2.1.303. Use 2.1.299 or newer if you
+  paste images: earlier versions could silently drop a rewrite for some prompts with
+  an image.
+- **An Anthropic API key** in a spend-limited workspace of its own. See
+  [Set up the key](#set-up-the-key).
+- **Node 24 or newer**, only for the docs and eval scripts under `scripts/` and
+  `evals/`. The mod itself has no install step and no build.
+
+## Install from a checkout
+
+To install from a local checkout instead, add the folder as a marketplace. Edits
+to the folder then apply after `/reload-plugins`, with no reinstall:
+
+```zsh
+claude plugin marketplace add /path/to/m3l-prompt-optimizer
+claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user
+```
+
+`claude --plugin-dir` loads the mod for one session, but `claude plugin configure`
+needs it installed, so set the key after installing.
+
+## Working on this repo
 
 ```
 claude plugin validate --strict .   # manifest, hook shape, the `$` calls the mod makes
@@ -347,6 +417,19 @@ comparison, which a neutral result does not.
 
 Results are written to [`evals/results.md`](evals/results.md).
 
-## Licence
+### Project docs
 
-MIT
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) -- how to contribute.
+- [`SECURITY.md`](SECURITY.md) -- reporting a vulnerability.
+- [`UNVERIFIED.md`](UNVERIFIED.md) -- which host behaviours were confirmed by a
+  live probe, and which are still open.
+- [`docs/research-notes.md`](docs/research-notes.md) -- where each rule in the
+  system prompt comes from.
+- [`evals/results.md`](evals/results.md) -- the recorded evaluation run.
+- [`CHANGELOG.md`](CHANGELOG.md) -- what changed in each release.
+- [`.claude/CLAUDE.md`](.claude/CLAUDE.md) -- the architecture and constraints,
+  written for Claude Code agents.
+
+## License
+
+[MIT](LICENSE).

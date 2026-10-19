@@ -142,7 +142,7 @@ for (const [haystack, text, what] of expectations) {
 //    thresholds follow evals/cases.json and evals/calibration.json.
 const cases = JSON.parse(read("evals/cases.json"));
 const pairs = JSON.parse(read("evals/calibration.json"));
-const evalSection = section("Development");
+const evalSection = section("Working on this repo");
 const bucket = (expect) => cases.filter((c) => c.expect === expect).length;
 const reaching = cases.length - bucket("skipped");
 const unchangedCount = bucket("unchanged");
