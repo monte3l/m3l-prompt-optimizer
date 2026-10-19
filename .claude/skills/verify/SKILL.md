@@ -6,12 +6,13 @@ disable-model-invocation: true
 
 # Verify
 
-Run every step below from the repository root, in this order, and keep going after a failure so the table is complete. The first six mirror `.github/workflows/verify.yml`. The seventh is local only, because `tsc` needs the types the engine writes when the mod is installed from a checkout.
+Run every step below from the repository root, in this order, and keep going after a failure so the table is complete. The first seven mirror `.github/workflows/verify.yml`. The eighth is local only, because `tsc` needs the types the engine writes when the mod is installed from a checkout.
 
 | # | Step | Command |
 | --- | --- | --- |
 | 1 | Design tokens match their source | `cd design && shasum -a 256 -c SHA256SUMS` |
 | 2 | Docs build, links, anchors and style | `node scripts/build-docs.mjs --check` |
+| 2b | README matches the code | `node scripts/doc-parity.mjs` |
 | 3 | Eval gate | `node evals/run.mjs --gate-only` |
 | 4 | Manifest, hook shape and `$` calls | `claude plugin validate --strict .` |
 | 5 | Unit tests | `claude plugin test .` |

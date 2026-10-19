@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Found a security vulnerability instead? Use [private vulnerability reporting](https://github.com/monte3l/m3l-prompt-optimizer/security/advisories/new), not this form.
-        Do not paste your prompt text or your API key. The debug log carries only outcomes and request ids, so those are safe to share.
+        Do not paste your prompt text or your API key. The debug log carries outcomes, reasons, counts and request ids, never prompt text or your key, so those lines are safe to share.
   - type: input
     id: version
     attributes:

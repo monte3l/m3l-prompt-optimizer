@@ -23,8 +23,8 @@ const asString = (value: unknown, fallback: string): string => (typeof value ===
 
 /**
  * Decides the text a prompt goes on with. Any problem on the way gives back the
- * prompt exactly as typed. The log lines carry outcomes and request ids only,
- * never prompt text or the key.
+ * prompt exactly as typed. The log lines carry outcomes, reasons, counts and
+ * request ids, never prompt text or the key.
  */
 export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string; origin: PromptOrigin }): Promise<string> => {
   try {
@@ -56,14 +56,18 @@ export const refine = async (ctx: Context, deps: Deps, ui: Ui, e: { text: string
     }
 
     const parsed = parseResponse(result.text)
-    if (parsed.kind !== 'rewrite' || parsed.text === e.text.trim()) {
+    if (parsed.kind === 'invalid') {
+      ui.log(`${NAME}: rewrite refused (malformed reply; ${result.requestId}; ${seen})`)
+      return e.text
+    }
+    if (parsed.kind === 'unchanged' || parsed.text === e.text.trim()) {
       ui.log(`${NAME}: left unchanged (${result.requestId}; ${seen})`)
       return e.text
     }
 
     const verdict = acceptRewrite(e.text, parsed.text)
     if (!verdict.isOk) {
-      ui.log(`${NAME}: rewrite refused (${verdict.reason}; ${seen})`)
+      ui.log(`${NAME}: rewrite refused (${verdict.reason}; ${result.requestId}; ${seen})`)
       return e.text
     }
 

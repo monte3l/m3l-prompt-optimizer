@@ -11,7 +11,9 @@
  *   vague bug report): prompting-claude-fable-5-1, prompting-claude-sonnet-5,
  *   prompting-claude-opus-5-5.
  * - Three worked examples (a vague prompt polished and left vague, a question left
- *   alone, run-together asks listed): prompting best-practices on examples.
+ *   alone, run-together asks listed): the context-engineering post (canonical
+ *   examples); the numbered list and the plain-prose rules are local design
+ *   choices, listed in docs/research-notes.md.
  *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
  * - Ideas or a plan first on request: prompting-claude-sonnet-5-5.
  * - No reasoning or verification scaffolding: prompting-claude-opus-5 and 5-5.

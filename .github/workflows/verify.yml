@@ -44,6 +44,7 @@ jobs:
 
       - run: cd design && sha256sum -c SHA256SUMS
       - run: node scripts/build-docs.mjs --check
+      - run: node scripts/doc-parity.mjs
       - run: node evals/run.mjs --gate-only
       - run: claude plugin validate --strict .
       - run: claude plugin test .

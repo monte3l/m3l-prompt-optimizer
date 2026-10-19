@@ -11,10 +11,10 @@ shown to a Bash command. See "Privacy and keys" in the [README](README.md).
 
 | Version                | Supported |
 | ---------------------- | --------- |
-| Latest release on `main` | Yes       |
+| Latest commit on `main`  | Yes       |
 | Anything else          | No        |
 
-This is a single-maintainer project. Only the latest release gets a fix.
+This is a single-maintainer project. Only the latest commit on `main` gets a fix.
 
 ## Reporting a vulnerability
 

@@ -23,6 +23,18 @@ Base URL: `https://platform.claude.com/docs/en/build-with-claude/prompt-engineer
 | `prompting-claude-opus-5`, `prompting-claude-opus-5-5` | Opus checks its own work, so remove verification instructions and avoid "double-check your answer". It can widen scope, so constrain scope explicitly. Remove "think carefully" lines. Asking for reasoning in the reply can be refused (`reasoning_extraction`). Naming specific things to avoid is fine ("Do not use a cream background"). | Never add "double-check", "think step by step" or "show your reasoning". Keep concrete avoidances the user named. |
 | `prompting-claude-fable-5-1` | When the user "is describing a problem, asking a question, or thinking out loud", the deliverable is the assessment: "Don't apply a fix until they ask for one". "Don't quietly narrow, widen, or swap" the scope. | Strongest source for keeping a question a question and the scope as written. |
 
+### Local design choices
+
+These rules in `hooks/system-prompt.ts` have no direct Anthropic source. Each is a choice made here and checked by the eval set.
+
+| Rule | Why it is here |
+| --- | --- |
+| Put several requests that run together into a short numbered list, in their order | Makes each ask visible to the agent without adding scope. Covered by the multi-part eval cases |
+| Plain prose, with no role statements, reasoning instructions, headings or tags | Follows from "do not pad a prompt" and the Opus 5 guidance on reasoning lines, but no source names role statements |
+| Keep the developer's language, voice and person | The output replaces what they typed, so it must still read as theirs |
+| Add no cause or approach, and let the agent ask for details when a prompt is vague | A live probe showed the model inventing an investigation step for a vague bug report. The Fable 5.1, Sonnet 5 and Opus 5.5 rows give the general rule |
+| Three worked examples | Examples help per the context-engineering row ("canonical examples"). The best-practices page mentions examples only as content to wrap in tags |
+
 ### Console tools, metaprompt and tutorial
 
 | Source | What it says | Design implication |
@@ -64,7 +76,7 @@ Base URL: `https://platform.claude.com/docs/en/`
 
 | Topic | Source | What it says | Design implication |
 | --- | --- | --- | --- |
-| Keys | `manage-claude/authentication` | Three key types: personal, service account, legacy workspace key. A key can be limited to one workspace. Expiry is set at creation (3h, 1d, 7d, 30d, custom, never) and cannot change. Disable is reversible; Delete is permanent. An expired key returns 401. | Service-account key, one workspace, 30-day expiry. No per-model or read-only scoping is documented (**unverified** whether it exists). |
+| Keys | `manage-claude/authentication` | Three key types: personal, service account, legacy workspace key. A key can be limited to one workspace. Expiry is set at creation (3h, 1d, 7d, 30d, custom, never) and cannot change. Disable is reversible; Delete is permanent. An expired key returns 401. | Service-account key, one workspace, 30-day expiry. The docs document no per-model or read-only scoping, and the Admin API confirms none exists (follow-up item 8). |
 | Workspaces | `manage-claude/workspaces` | A workspace holds keys, spend and rate limits. The Default and Claude Code workspaces cannot be limited or given manual keys. Archiving a workspace archives its keys and cannot be undone. | A dedicated workspace; archiving it is the kill switch. |
 | Spend limits | `api/rate-limits` | Reaching a limit you set returns **400** `invalid_request_error` ("You have reached your specified workspace API usage limits"). Reaching the tier cap returns 429 with `error_code: enforced_spend_limit_reached` and no `retry-after`. | Both stop the rewriter for the session; neither is retried. |
 | Limits and errors | `api/rate-limits`, `api/errors` | Token-bucket limits per model. 429 carries `retry-after`. Other codes: 400, 401, 402, 403, 413, 500, 504, 529. Every response has a `request-id` header. | Retry only 429 with a short `retry-after`, 500, 504, 529 and network errors, once. Log `request-id`. |
@@ -103,13 +115,13 @@ Two read-only research passes and three local experiments. Base URLs:
 
 | Item | Source | What it says | Result |
 | --- | --- | --- | --- |
-| 1 `[Image #N]` and `@mention` in `e.text` | `code.claude.com/docs/en/hooks`; `interactive-mode`; d.ts `PromptSubmitInput` | Pastes arrive expanded between `<pasted_content>` lines. Ctrl+V "inserts an `[Image #N]` chip". `attachments` lists image kinds only, with no id linking a placeholder to its attachment. `prompt.mention` fires after `prompt.submit`, so file content is not inlined at submit. Nothing states the literal text. | Open; probe added |
-| 2 Slash, `!` and `#` input | `…/plugins/mods/events`; `hooks` (UserPromptExpansion); `interactive-mode` | Slash commands reach `command.run`; skills and custom commands also fire `UserPromptExpansion`. The docs do not say whether `prompt.submit` also fires, and document no hook for `!` shell mode or a `#` memory shortcut. | Open; probe added |
+| 1 `[Image #N]` and `@mention` in `e.text` | `code.claude.com/docs/en/hooks`; `interactive-mode`; d.ts `PromptSubmitInput` | Pastes arrive expanded between `<pasted_content>` lines. Ctrl+V "inserts an `[Image #N]` chip". `attachments` lists image kinds only, with no id linking a placeholder to its attachment. `prompt.mention` fires after `prompt.submit`, so file content is not inlined at submit. Nothing states the literal text. | **Probed**: both arrive as typed. Closed |
+| 2 Slash, `!` and `#` input | `…/plugins/mods/events`; `hooks` (UserPromptExpansion); `interactive-mode` | Slash commands reach `command.run`; skills and custom commands also fire `UserPromptExpansion`. The docs do not say whether `prompt.submit` also fires, and document no hook for `!` shell mode or a `#` memory shortcut. | **Probed**: `/` and `!` lines never reach `prompt.submit`. `#` was not probed; the gate skips it anyway. Closed |
 | 5 Fetch cancellation | `…/plugins/mods/api`, `reference`; d.ts `HttpInit`, `HookBudget` | `$.http.fetch` takes `method`, `headers`, `body`, `auth`, `socketPath` only: no timeout and no signal. A hook's budget excludes `$` calls. `next.signal` aborts on interrupt but cannot be passed to fetch. Nothing on cancellation. | **Measured**: not cancelled; the host closes at 30 s. Closed |
 | 7 Credit-balance status | `platform…/about-claude/api-credits-for-subscribers`; `api/errors`; `api/rate-limits`; `support.claude.com/en/articles/8977456` | "When the balance is exhausted, requests return: `Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.`" The errors page lists 400 for spend limits you set and 402 `billing_error` for payment problems, and does not connect either to this message. 429 is documented only for the tier cap. | Message confirmed, status unverified; classifier matches the message on any status. Closed as mitigated |
 | 8 Key scoping | `platform…/manage-claude/authentication`, `workspaces`; `api/organization/api_keys/update` | Keys bind to identity type, workspace, expiry (set at creation) and name and status. The update endpoint accepts only `name` and `status`. Workspaces limit spend and per-model rate limits, with no model allowlist. | Confirmed by the docs. Closed |
 | 9 Console prompt tools | `platform…/release-notes/overview`; `build-with-claude/prompt-engineering/overview`, `claude-prompting-best-practices`; `claude.com/blog/prompt-improver` | The tool URLs redirect to best practices. A 2026-07-17 release note retires the experimental `generate_prompt`, `improve_prompt` and `templatize_prompt` endpoints with the Workbench on 2026-08-17 (read through a summarizer). No current section on automated rewriting; prefill is unsupported on 4.6 and later, and reasoning requests "may be declined" on the newest models. | Retired; design agrees with current docs. Closed |
-| 11 Type-checking | `…/plugins/mods/create`; the engine-written `tsconfig.json` and `.claude-plugin/types/` of this plugin's installed copy | Types are written for a mod loaded from `--plugin-dir` in an interactive session; `tsc -p <mod folder>` checks it. This machine's installed copy also received them. | `tsc -p .` passes with the engine's own config. Closed |
+| 11 Type-checking | `…/plugins/mods/create`; the engine-written `tsconfig.json` and `.claude-plugin/types/` of this plugin's installed copy | Types are written for a mod loaded from `--plugin-dir` in an interactive session; `tsc -p <mod folder>` checks it. This machine's installed copy also received them. | `tsc -p .` passes with the project `tsconfig.json`, which extends the engine-written types config. Closed |
 
 Local experiments: (a) a throwaway mod racing a `$.http.fetch` to a server that
 held the request for 60 s, with a control run without the mod, in the session

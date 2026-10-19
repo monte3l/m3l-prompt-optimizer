@@ -92,6 +92,20 @@ describe('handler', () => {
     expect(seen.map(e => e.text)).toEqual([PROMPT])
   })
 
+  test('logs a malformed reply and a guard refusal as refusals that name the request', async () => {
+    const f = fake([{ status: 200, body: okBody('Sure, here you go.') }, rewriteOf(`${REWRITE} Also read src/session.ts.`), rewriteOf(PROMPT), { status: 200, body: okBody('<unchanged/>') }])
+    const { next, seen } = passes()
+    const handle = makeHandler(options)
+    for (let i = 0; i < 4; i += 1) await handle(f.$, event(PROMPT), next)
+    expect(seen.map(e => e.text)).toEqual([PROMPT, PROMPT, PROMPT, PROMPT])
+    expect(f.logs).toEqual([
+      'm3l-prompt-optimizer: rewrite refused (malformed reply; req_9; images 0, mentions 1)',
+      'm3l-prompt-optimizer: rewrite refused (paths or symbols changed; req_9; images 0, mentions 1)',
+      'm3l-prompt-optimizer: left unchanged (req_9; images 0, mentions 1)',
+      'm3l-prompt-optimizer: left unchanged (req_9; images 0, mentions 1)',
+    ])
+  })
+
   test('calls nothing for an origin other than the typed one', async () => {
     const f = fake([rewriteOf(REWRITE)])
     const { next, seen } = passes()

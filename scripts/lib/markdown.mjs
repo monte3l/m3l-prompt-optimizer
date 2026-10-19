@@ -3,9 +3,9 @@
 
 /**
  * A restricted, zero-dependency GFM-to-HTML renderer -- covers exactly the
- * markdown inventory `bin/build-docs.mjs`'s site pages (its own `PAGES`
+ * markdown inventory `scripts/build-docs.mjs`'s site pages (its own `PAGES`
  * list) actually use: ATX headings (h1-h3, GitHub-compatible slug ids),
- * pipe tables (no alignment), `bash`/untagged fenced code, ordered/
+ * pipe tables (no alignment), fenced code (any language tag), ordered/
  * unordered/nested lists, blockquotes (a GitHub alert
  * `> [!NOTE|TIP|IMPORTANT|WARNING|CAUTION]`, or a neutral aside otherwise),
  * footnotes (assurance-case style: an indented, possibly multi-paragraph
