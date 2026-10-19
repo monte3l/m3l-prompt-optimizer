@@ -39,10 +39,10 @@ types in `.claude-plugin/types/`, so install once from this folder first.
 | `claude plugin test .`                 | Every `*.test.ts` under the folder                              |
 | `tsc -p .`                             | Types                                                           |
 | `node scripts/guard-break.mjs`         | Removing each gate, guard or client check makes the suite fail  |
-| `node scripts/doc-parity.mjs`          | The README log, gate and guard tables match the code            |
+| `node scripts/doc-parity.mjs`          | The README tables and quoted numbers match the code (also run by the docs check below) |
 | `node evals/run.mjs --gate-only`       | Which eval prompts the gate would send, offline                 |
 | `node evals/run.mjs --calibration-only` | Live, needs a key: the judge is right on every easy pair and at least 90% of the hard pairs |
-| `node scripts/build-docs.mjs --check`  | The docs site builds and every link resolves                    |
+| `node design/source/docs-kit/build.mjs --check` | The docs site builds, every link resolves, every tracked `.md` is a page or excluded, the vendored design is unedited, and `scripts/doc-parity.mjs` passes |
 | `cd design && shasum -a 256 -c SHA256SUMS` | The vendored `design/source/` and `tokens.css` are unedited |
 
 - **Conventional Commits** for every commit message, each with a
@@ -100,9 +100,12 @@ more than two in a row, and `[!CAUTION]` only for data loss or anything
 irreversible. Write plain, direct sentences and put tabular data in a table.
 The docs site renders a limited Markdown subset: headings up to h3, tables,
 fenced code, lists, blockquotes, alerts, footnotes, links, images and rules.
-Raw HTML is escaped and shown as literal text. `node scripts/build-docs.mjs --check`
-fails on an h4 or deeper heading, italics, a broken link or anchor, and the
-other constructs the renderer rejects.
+Raw HTML is escaped and shown as literal text. A page is on the site only if it
+is in `pages` in `docs.config.mjs`, and a new tracked `.md` file must be added
+there or to `exclude` with a reason. `node design/source/docs-kit/build.mjs --check`
+fails on an h4 or deeper heading, italics, more than two alerts in a row, a
+broken link or anchor, an unlisted `.md` file, and the other constructs the
+kit rejects. Fix the page, never the kit: the kit is vendored from m3l-design.
 
 ## Reporting a vulnerability
 

@@ -6,8 +6,8 @@ styles the docs site at
 [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
 - **Source:** [github.com/monte3l/m3l-design](https://github.com/monte3l/m3l-design)
-- **Version copied:** `v1.0.0`
-- **Last re-synced:** 2026-10-11
+- **Version copied:** `v1.1.0`
+- **Last re-synced:** 2026-10-20
 - **Date vendored into this repo:** 2026-10-11
 - **Tier:** vendored. Earlier the repository followed the content tier, while
   it had no CSS, fonts or rendered pages.
@@ -33,6 +33,7 @@ never touches this README's text or `local/`.
 | `source/components/` | The seven v1 components (Callout, CodeBlock, Badge, Button, Input, Card, Nav) as plain HTML and CSS, with each README's markup, tokens and contrast table |
 | `source/foundations/contrast.md` | Every text and UI pairing per theme, all passing WCAG 2.2 AA |
 | `source/fonts/` | Atkinson Hyperlegible Next and Mono, variable weight 200-800, under OFL-1.1 (see `source/licenses/`) |
+| `source/docs-kit/` | The docs kit: the builder, checks and page shell (`site.css`) that produce this repo's docs site from `docs.config.mjs`. Its README is the contract |
 | `source/brand-book.md` | The full design brief: personality, colour, type, shape, motion, accessibility, governance. Read this first for why a token or component looks the way it does |
 
 ## `tokens.css` is vendored too
@@ -49,11 +50,12 @@ This repo no longer generates the file itself. Change it upstream.
 
 ## `local/` -- this repo's own divergence
 
-`local/site.css` is the docs site's page layout: a sticky header, a sidebar
-and content grid, and the footnotes section. None of the seven vendored
-components covers a page layout. It spends only `tokens.css` properties and
-`bundle.css` classes, never a new colour, space or radius literal. The site
-is built by `scripts/build-docs.mjs`.
+`local/` holds a stylesheet only when this repo needs a layout the vendored
+page shell (`source/docs-kit/site.css`) does not give. It holds none today. A
+file added there may spend only `tokens.css` properties and `bundle.css`
+classes, and `node design/source/docs-kit/build.mjs --check` fails on a colour
+or length literal in it. The site is built from `docs.config.mjs` by the
+docs kit.
 
 ## One open upstream flag
 

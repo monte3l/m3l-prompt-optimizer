@@ -86,14 +86,16 @@ your original text.
 3. **Guard.** The refined prompt replaces yours only if it passes every check.
    Any miss sends your original.
 
-   | Check | Keeps you safe from |
-   | --- | --- |
-   | The reply is exactly the unchanged marker or one rewrite block | Chatty or malformed replies (logged as `rewrite refused (malformed reply; …)`) |
-   | `[Image #N]` placeholders and `@mentions` are identical | Lost or invented attachments and files |
-   | Code spans, paths, file names, symbols and URLs are identical | Invented or altered technical details |
-   | A question keeps its question mark, and a request does not become a question | Changed intent |
-   | The rewrite is at most one and a half times the original plus 40 characters | Runaway padding |
-   | The rewrite does not start with `/`, `!` or `#` | A prompt turning into a command |
+   | Check | Logged as | Keeps you safe from |
+   | --- | --- | --- |
+   | The reply is exactly the unchanged marker or one rewrite block | `malformed reply` | Chatty or malformed replies |
+   | `[Image #N]` placeholders and `@mentions` are identical | `image placeholders changed`, `mentions changed` | Lost or invented attachments and files |
+   | Code spans, paths, file names, symbols and URLs are identical | `code spans changed`, `paths or symbols changed` | Invented or altered technical details |
+   | A question keeps its question mark, and a request does not become a question | `question lost its question mark`, `request became a question` | Changed intent |
+   | The rewrite is at most one and a half times the original plus 40 characters | `rewrite is too long` | Runaway padding |
+   | The rewrite does not start with `/`, `!` or `#` | `rewrite starts like a command` | A prompt turning into a command |
+
+   Each reason appears in the log as `rewrite refused (<reason>; req_…; …)`.
 
    Before the guard sees a reply, the client also requires that the API stopped
    normally (no refusal, no cut-off) and returned text. Otherwise the prompt is
@@ -227,12 +229,16 @@ go out as typed.
 
 Other failures skip only that prompt. The whole call has a 6.5-second deadline:
 
-| Failure | What happens |
-| --- | --- |
-| Server trouble (500, 504, 529) or a network error | One retry, only if at least 2.5 seconds remain |
-| Rate limit (429) | One retry if `retry-after` is 2 seconds or less, otherwise skipped as `rate limited` |
-| A call slower than the deadline | Skipped as `timeout`, with no retry |
-| Any other status, or a reply that is cut off or has no text | Skipped |
+| Failure | What happens | Logged as |
+| --- | --- | --- |
+| A spend limit, an empty credit balance or a rejected key (401, 402, 403) | The mod pauses for the session | `spend limit reached`, `credit balance is empty`, `key rejected (<n>)` |
+| Server trouble (500, 504, 529) or a network error | One retry, only if at least 2.5 seconds remain | `gave up after retry` |
+| Rate limit (429) | One retry if `retry-after` is 2 seconds or less, otherwise skipped | `rate limited` |
+| A call slower than the deadline | Skipped, with no retry | `timeout` |
+| A reply that is cut off or has no text | Skipped | `unfinished reply`, `no text in reply` |
+| Any other status | Skipped | `status <n>` |
+
+In the log, `<n>` is the HTTP status code.
 
 The host cannot cancel a request already in flight, so one that outlasts the 6.5-second
 deadline is simply abandoned and ends at the host's own 30-second timeout. To
@@ -294,8 +300,8 @@ claude plugin validate --strict .   # manifest, hook shape, the `$` calls the mo
 claude plugin test .                # unit tests
 tsc -p .                            # type-check, using the types the engine writes
 node scripts/guard-break.mjs        # breaks each gate, guard and client check in turn; every break must fail a test
-node scripts/doc-parity.mjs         # checks that the README log, gate and guard tables match the code
-node scripts/build-docs.mjs --check # builds the docs site to a temp folder; fails on a broken link or anchor
+node design/source/docs-kit/build.mjs --check  # docs site: builds it, checks links, coverage and design integrity, then runs scripts/doc-parity.mjs (README tables against the code)
+node scripts/doc-parity.mjs         # only the README-against-code checks
 node evals/run.mjs --gate-only      # offline check of which eval prompts are sent
 (cd design && shasum -a 256 -c SHA256SUMS)  # fails if vendored design files were edited
 ```
@@ -389,7 +395,7 @@ before any comparison data existed (see "Decision rules fixed before the compari
 
 | Bar | Applies to | Limit |
 | --- | --- | --- |
-| Judge | Calibration | Every easy pair right, and at least 90% of the hard pairs |
+| Judge | Calibration | Every easy pair right, and at least 90% of the hard pairs, judged by `claude-opus-5-5` |
 | Gate | Both suites | Every gated prompt is skipped before any call, every other prompt passes the gate, and no case errors |
 | Behaviour | Diagnostic suite | at least 11 of the 12 `unchanged` cases stay unchanged and at least 9 of the 12 `rewrite` cases are judged better |
 | Harm | Gate suite | The 95% upper confidence limit of the share of rewrites judged worse is at most 2%, which for 400 decided samples means at most 3 worse |
@@ -404,7 +410,7 @@ that one command:
 read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node evals/run.mjs --rewrites 3; unset ANTHROPIC_API_KEY
 ```
 
-| Option | What it does |
+| run.mjs option | What it does |
 | --- | --- |
 | `--gate-only` | Offline: which prompts the gate sends |
 | `--calibration-only` | Only the 36 calibration pairs; writes no `results.md` |
@@ -430,6 +436,25 @@ reports an exact one-sided McNemar test on the pairs and a sign test across prom
 `evals/crosscheck.mjs` re-judges the stored rewrites with a second model and reports the
 agreement. A prompt change is adopted only if it clears the rule written down before the
 comparison, which a neutral result does not.
+
+| compare.mjs option | What it does |
+| --- | --- |
+| `--a <folder>` | The `hooks/` folder of the first copy. Required |
+| `--b <folder>` | The `hooks/` folder of the second copy. Required |
+| `--samples <n>` | Rewrites per prompt and arm (1 to 20, default 3) |
+| `--concurrency <n>` | Rewriter calls in flight at once (1 to 8, default 3). Failed and timed-out samples are left out of the pairs |
+| `--suite <name>` | `gate` (the default), `diagnostic` or `all` |
+| `--private-cases <file>` | Also compares a private prompt file, leaving nothing that quotes it |
+| `--cases <file>` | Compares the prompts in this JSON file instead of the suite |
+| `--limit <n>` | Compares only the first `n` prompts |
+| `--out <file>` | Writes the full comparison as JSON, which `crosscheck.mjs` reads |
+
+| crosscheck.mjs option | What it does |
+| --- | --- |
+| `<file>` | The JSON file `compare.mjs --out` wrote. Required, and not a flag |
+| `--model <id>` | The second judge's model. Required |
+| `--effort <level>` | The second judge's effort, default as for `run.mjs` |
+| `--out <file>` | Writes the model and its verdicts as JSON |
 
 Results are written to [`evals/results.md`](evals/results.md).
 
