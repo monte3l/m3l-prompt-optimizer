@@ -100,24 +100,27 @@ instructions.
 
 The aim is that a rewrite never adds, drops or narrows what you asked. The project's
 own evaluation measures how often that fails, and it does fail sometimes. On prompts
-that look like real typing, about 1.5 to 2 rewrites in 100 were judged worse than what
-you typed (the 95% upper limits are 2.8% and 3.2%), 2 to 10 in 100 were judged better,
-and the rest were left alone or changed in ways the judge saw no difference in. About 4
-to 9 in 100 were refused by the guard, which sent your original.
+that look like real typing, about 0.2 to 0.3 rewrites in 100 were judged worse than what
+you typed (the 95% upper limits are 0.9% and 1.6%), 3 to 10 in 100 were judged better,
+and the rest were left alone or changed in ways the judge saw no difference in. About 2
+to 4 in 100 were refused by the guard, which sent your original. Harder prompts fare
+worse: on a set built from prompts in other languages and prompts that state
+restrictions, 5.7% of rewrites were judged worse (upper limit 8.4%).
 
 | What can go wrong | Example from the evaluation |
 | --- | --- |
 | A hedge becomes a requirement | "maybe also persist to sessionStorage" came back as a firm requirement |
-| A softener is dropped | "clean up the styles folder a bit" lost "a bit" |
-| A reason or constraint is invented | "DO NOT run the full refresh on prod tables!! only test against the dev schema" came back with "since the prod tables must not be touched", which widens the restriction |
-| A non-English prompt is translated | A German prompt came back in English |
+| A clause is dropped or a word misread | A French prompt lost "refacto rapide", and an Italian "sistema i type hints" (fix) came back as "add" |
+| A reason, constraint or fix step is invented | A shouted restriction came back with "since the prod tables must not be touched" |
 | A reference you left open is settled | "never show it again after that" became "after it is skipped or completed" |
 
-The guard does not catch these, because it checks structure and not meaning. To send a
-prompt exactly as typed, start it with `\raw `. The project holds itself to a limit on
-how often a rewrite may be judged worse, and at the time of writing that limit is not
-met: [`evals/results.md`](evals/results.md) and [`UNVERIFIED.md`](UNVERIFIED.md)
-(items 12 and 14) give the current figures.
+An earlier wording of the prompt translated non-English prompts into English. The
+current wording did not in the held-out set (14 translated samples before, none after).
+The guard does not catch the failures above, because it checks structure and not
+meaning. To send a prompt exactly as typed, start it with `\raw `. The project holds
+itself to limits on how often a rewrite may be judged worse, and the latest run met
+them: [`evals/results.md`](evals/results.md) and [`UNVERIFIED.md`](UNVERIFIED.md)
+(items 12, 14 and 22) give the figures.
 
 ## Set up the key
 

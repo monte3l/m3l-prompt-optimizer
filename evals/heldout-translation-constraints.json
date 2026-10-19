@@ -1,0 +1,476 @@
+[
+ {
+  "id": "f001",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "arregla el bug del CartDrawer, cuando borro el último item no se cierra y se queda el spinner"
+ },
+ {
+  "id": "f002",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Necesito tres cosas: 1) mover la lógica de cálculo de envío de CheckoutPage.tsx a un hook useShippingCost, 2) añadir tests con vitest para los casos de envío gratis a partir de 50€, y 3) actualizar los imports donde se use. No toques el diseño del checkout."
+ },
+ {
+  "id": "f003",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "¿por qué ProductGrid se re-renderiza cada vez que cambio el filtro de talla? ¿es por el useEffect de useProductFilters o por cómo pasamos el contexto de CartContext?"
+ },
+ {
+  "id": "f004",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "NO CAMBIES el schema de Prisma, ya está en producción. Solo necesito que el endpoint /api/orders devuelva también el campo trackingNumber, sácalo de la tabla de shipments con un join"
+ },
+ {
+  "id": "f005",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "renombra formatPrice a formatCurrency en todo el repo y de paso haz que acepte el locale como segundo parámetro, por defecto es-ES"
+ },
+ {
+  "id": "f006",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Oye, el botón de \"Añadir al carrito\" en ProductDetail no hace nada en Safari!! Revisa el onClick, creo que tiene que ver con el form submit. Es urgente, tenemos campaña mañana!"
+ },
+ {
+  "id": "f007",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Quiero añadir paginación al listado de categorías (CategoryPage). Usa cursor-based con el campo createdAt, sin meter librerías nuevas, ya tenemos react-query instalado y con eso debería bastar. Mantén la URL sincronizada con ?cursor="
+ },
+ {
+  "id": "f008",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "revisa el componente SearchBar: añade debounce de 300ms, quita el console.log que se quedó ahí y mira si el aria-label está bien para accesibilidad"
+ },
+ {
+  "id": "f009",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "aggiungi un retry con backoff esponenziale in fetch_orders() dentro ingestion/sources/shopify.py, max 5 tentativi"
+ },
+ {
+  "id": "f010",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Ciao, ho bisogno di tre cose sul job di daily_aggregates: 1) sposta la logica di dedup da transform/aggregate.py in una funzione separata, 2) aggiungi i test in tests/test_aggregate.py per il caso con timestamp duplicati, 3) aggiorna il README nella sezione \"Pipeline giornaliera\". Grazie"
+ },
+ {
+  "id": "f011",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "perché load_to_warehouse() fa due volte il commit della transaction? è voluto o è un bug? guarda loaders/postgres_loader.py e dimmi cosa ne pensi prima di toccare qualcosa"
+ },
+ {
+  "id": "f012",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "NON modificare lo schema in models/events.sql!! serve solo che il dbt model stg_events gestisca i null in user_id, il resto deve restare com'è"
+ },
+ {
+  "id": "f013",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "sistema i type hints in pipeline/utils.py e già che ci sei togli gli import inutilizzati, poi lancia mypy e dimmi se rimane qualcosa"
+ },
+ {
+  "id": "f014",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Il DAG etl_customers su Airflow continua a fallire in staging al task validate_schema. Puoi controllare dags/etl_customers.py e capire da dove arriva il problema? Vincolo importante: non possiamo aggiungere nuove dipendenze al requirements.txt, il cluster è bloccato sulla versione attuale di pandas (1.5.x), quindi qualsiasi fix deve funzionare con quella."
+ },
+ {
+  "id": "f015",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "rinomina la colonna cust_id in customer_id ovunque: nei transform, nei test e nelle query in sql/reports/. ATTENZIONE alle fixture csv in tests/data, vanno aggiornate anche quelle sennò si rompe tutta la CI"
+ },
+ {
+  "id": "f016",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "converti il parsing dei file parquet in read_partitions() per usare pyarrow invece di pandas, è troppo lento sui file grossi"
+ },
+ {
+  "id": "f017",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "kannst du im LoginScreen.tsx den Button disablen solange der request läuft? und dann noch nen ActivityIndicator rein, und bitte auch gleich den doppelten useEffect rausschmeißen der das token zweimal lädt"
+ },
+ {
+  "id": "f018",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "warum wird onAppear in der ProfileView zweimal aufgerufen? hab mir den NavigationStack angeschaut aber seh nicht wo das herkommt"
+ },
+ {
+  "id": "f019",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Bitte KEINE neuen Dependencies hinzufügen! Ich brauch nur eine einfache Debounce-Funktion für die Suche in SearchBar.kt, das kriegen wir auch mit Coroutines selbst hin."
+ },
+ {
+  "id": "f020",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "push notifications gehen auf android 13 nicht mehr, vermutlich fehlt die POST_NOTIFICATIONS permission. check mal AndroidManifest.xml und den permission flow in NotificationService"
+ },
+ {
+  "id": "f021",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Hallo, ich würde gern das Theming in der App aufräumen. Konkret: 1) alle hardcodierten Farben in den Widgets unter lib/screens/ durch Werte aus AppColors ersetzen, 2) einen Dark Mode in ThemeProvider ergänzen, der dem System-Setting folgt, und 3) die Tests in test/theme_test.dart entsprechend anpassen. Die öffentliche API von AppColors bitte nicht verändern, da hängen noch andere Module dran."
+ },
+ {
+  "id": "f022",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "ÄNDER NICHTS AM ios ORDNER!!! nur die js seite fixen, der build auf dem mac ist grad endlich stabil"
+ },
+ {
+  "id": "f023",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "schreib unit tests für CartViewModel, vor allem für applyCoupon und removeItem. mock das repository mit mockk"
+ },
+ {
+  "id": "f024",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "die offline sync logik in SyncManager.swift ist ein chaos. bitte refactor das in kleinere funktionen, ergänz error handling für den fall dass CoreData save fehlschlägt, und mach ein kurzes summary was du geändert hast"
+ },
+ {
+  "id": "f025",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "ajoute un flag --dry-run à la commande sync, qui affiche juste ce qui serait fait sans rien écrire sur le disque"
+ },
+ {
+  "id": "f026",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Pourquoi est-ce que `parseArgs` dans src/cli/args.ts renvoie un objet vide quand on passe `--config` sans valeur ? Je m'attendais à une erreur, j'aimerais comprendre le flow avant de toucher quoi que ce soit."
+ },
+ {
+  "id": "f027",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "NE TOUCHE PAS au format de sortie JSON de la commande `export`, il y a des scripts en prod qui le parsent. Je veux seulement que tu corriges le bug d'encodage sur les noms de fichiers avec des accents."
+ },
+ {
+  "id": "f028",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Plusieurs trucs : 1) renomme `utils/helpers.go` en `utils/fs.go` et mets à jour les imports, 2) supprime la fonction `legacyLoadConfig` qui n'est plus appelée nulle part, 3) relance `go test ./...` et dis-moi si ça passe."
+ },
+ {
+  "id": "f029",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "les tests de cmd/init échouent en CI mais pas en local, regarde ce qui dépend du cwd ou des variables d'env et fixe ça"
+ },
+ {
+  "id": "f030",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Est-ce que tu peux ajouter l'autocomplétion zsh et bash pour toutes les sous-commandes ? Et en profiter pour mettre à jour le README avec une section installation. Pas de nouvelle dépendance stp, on utilise déjà clap donc passe par `clap_complete` seulement si c'est déjà dans le Cargo.lock, sinon fais-le à la main."
+ },
+ {
+  "id": "f031",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "ça fait 3 fois que je te demande : le message d'erreur quand le fichier n'existe pas doit aller sur STDERR, pas sur stdout !!! et le code de sortie doit être 2, pas 1"
+ },
+ {
+  "id": "f032",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "refacto rapide : extrait la logique de retry de `client.py` dans un module à part, ajoute des tests unitaires pour le backoff, et vire les print() de debug qui traînent dans `main.py`"
+ },
+ {
+  "id": "f033",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "adiciona paginação na tabela de usuários em src/pages/admin/Users.tsx, tá carregando tudo de uma vez e travando quando tem mais de 2 mil registros"
+ },
+ {
+  "id": "f034",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Preciso de três coisas no módulo de relatórios: 1) mover a lógica de filtro de datas que tá duplicada em ReportsPage.tsx e ExportModal.tsx pra um hook useDateRangeFilter, 2) escrever testes pra esse hook com vitest, e 3) atualizar o README da pasta src/features/reports explicando como usar. Não mexe na API do backend, só frontend."
+ },
+ {
+  "id": "f035",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "NÃO ALTERA o schema do Prisma de jeito nenhum. o bug do campo lastLoginAt aparecendo null tem que ser resolvido no service, em src/server/services/userService.ts. já perdi uma tarde revertendo migration que alguém gerou sem querer"
+ },
+ {
+  "id": "f036",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "por que o middleware requireRole em src/server/middleware/auth.ts tá deixando passar usuário com role 'viewer' nas rotas de /admin/settings? olhei o código e não entendi onde a checagem falha, me explica antes de mudar qualquer coisa"
+ },
+ {
+  "id": "f037",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "renomeia o componente DataGridOld pra LegacyDataGrid em todo o projeto e corrige os imports"
+ },
+ {
+  "id": "f038",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "O dark mode quebrou de novo!!! Os cards do Dashboard ficam com texto preto em fundo preto. Dá uma olhada no tailwind.config.ts e nos componentes em src/components/dashboard, acho que alguém usou cor hardcoded em vez das classes dark:. Corrige e me fala quais arquivos tinham o problema!"
+ },
+ {
+  "id": "f039",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "faz o botão de exportar CSV da tela de pedidos respeitar os filtros ativos, e aproveita pra adicionar um loading state nele. sem adicionar lib nova, usa o papaparse que já tá no package.json"
+ },
+ {
+  "id": "f040",
+  "category": "heldout-foreign",
+  "expect": "any",
+  "prompt": "Oi, umas tarefas pra hoje: primeiro roda o lint e corrige os warnings de react-hooks/exhaustive-deps em src/pages/admin; depois troca o uso de moment por date-fns no AuditLogTable.tsx; e se der tempo, remove as feature flags antigas do arquivo featureFlags.ts que estão com enabled: true faz mais de um ano (confirma comigo antes de apagar alguma que eu não citei)."
+ },
+ {
+  "id": "f041",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DO NOT TOUCH the auth middleware!!! just fix the pagination bug on the users table, the page count is off by one whenever a filter is applied"
+ },
+ {
+  "id": "f042",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DON'T run any migrations against the dev db!!! it's shared with QA and they're in the middle of a regression run. write the migration for the new audit_log.actor_role column but leave it unapplied, i'll run it tonight"
+ },
+ {
+  "id": "f043",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "ONLY CHANGE FILES IN src/components/reports. NOTHING ELSE. refactor ReportFilters to use the shared DateRangePicker instead of the two separate date inputs"
+ },
+ {
+  "id": "f044",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "STOP REFORMATTING WHOLE FILES!! keep the diff to the lines you actually need. now add a loading state to the Export CSV button on the transactions page so people stop double clicking it"
+ },
+ {
+  "id": "f045",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "dont add any new npm packages. the search box on the orders page fires a request on every keystroke, add a debounce, just write a small helper for it"
+ },
+ {
+  "id": "f046",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "leave the api response shapes exactly as they are, the mobile app hits some of these endpoints too. clean up the duplicated permission checks in adminRoutes controller, there's like 6 copies of the same isSuperAdmin logic"
+ },
+ {
+  "id": "f047",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "no commits or pushes from you today, i'll handle git myself"
+ },
+ {
+  "id": "f048",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Can you add server-side sorting to the invoices table? Please keep the existing query param names (sort and dir) unchanged. The support team has bookmarked a bunch of filtered views and renaming them would break all of those. Also don't modify the InvoiceRow component, design is reworking it on a separate branch and I want to avoid merge conflicts. If you think something in InvoiceRow genuinely needs to change for sorting to work, stop and tell me first."
+ },
+ {
+  "id": "f049",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Update the role dropdown in the Edit User modal to include the new 'auditor' role. Don't change the role enum in the backend and don't touch the seed data."
+ },
+ {
+  "id": "f050",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "fix the failing test in feature-flags.spec.ts. do not edit the test file, only the implementation"
+ },
+ {
+  "id": "f051",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DO NOT TOUCH configs/base.yaml!!! just add a new config for the 7b run that inherits from it and override lr and warmup there"
+ },
+ {
+  "id": "f052",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "fix the nan loss in the mixed precision path but dont change anything in the data loader, thats someone elses pr"
+ },
+ {
+  "id": "f053",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "NEVER push to main. make a branch, refactor the checkpoint saving in trainer.py so it writes atomically (tmp file then rename), open it locally and stop"
+ },
+ {
+  "id": "f054",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "can you add gradient accumulation to train_loop.py? keep the public signature of Trainer.fit exactly the same because the eval harness and two downstream repos call it with positional args. no new dependencies either"
+ },
+ {
+  "id": "f055",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "only edit files under src/augment/. nothing else."
+ },
+ {
+  "id": "f056",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "STOP RENAMING THINGS. I asked for a bug fix in the cosine scheduler, not a style pass. revert the variable renames and keep only the off-by-one fix"
+ },
+ {
+  "id": "f057",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "please don't run any training scripts or anything that hits the gpu — the box is shared and someone has a 3 day job going. you can read code and run the unit tests with CUDA_VISIBLE_DEVICES empty. what i want: figure out why test_distributed_sampler is flaky"
+ },
+ {
+  "id": "f058",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "leave the tokenizer vocab files alone, they have to match the released checkpoints byte for byte or old models break. go ahead and clean up the tokenizer wrapper class though, its a mess"
+ },
+ {
+  "id": "f059",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DO NOT DELETE ANYTHING IN runs/ OR wandb/ !!! I need those for the paper. Just write a small script in tools/ that summarizes final val loss per run into a csv"
+ },
+ {
+  "id": "f060",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DO NOT touch anything under terraform/prod/. I mean it. Just fix the variable typo in terraform/staging/rds.tf and run a plan for staging only"
+ },
+ {
+  "id": "f061",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "bump the nginx ingress chart to the latest patch version in helm/values-dev.yaml but leave the other environments alone"
+ },
+ {
+  "id": "f062",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "NO APPLY. NO DESTROY. only terraform plan!!! the state file is shared with the platform team and if you lock it during their window we're going to have a very bad afternoon. can you figure out why the plan wants to recreate the nat gateway in us-east-1"
+ },
+ {
+  "id": "f063",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "dont modify the github actions workflows, just tell me why the deploy job is skipping the migration step"
+ },
+ {
+  "id": "f064",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Please refactor the ansible roles for the bastion hosts so the ssh hardening tasks live in their own role. Keep the existing variable names exactly as they are, other playbooks outside this repo import them and I can't update those this sprint. Don't change any task behavior, this should be a pure move."
+ },
+ {
+  "id": "f065",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "LEAVE THE DOCKERFILE BASE IMAGES ALONE!! last time they got bumped we broke glibc compat for the payment worker. just add a healthcheck to the api image"
+ },
+ {
+  "id": "f066",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "only edit files in k8s/overlays/canary. add resource limits to the deployment there, 500m cpu and 512Mi memory"
+ },
+ {
+  "id": "f067",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Can you clean up the unused outputs in modules/vpc? Don't rename or remove anything that's referenced from the root modules though, and keep the module interface backwards compatible because three other repos pin to this module by tag."
+ },
+ {
+  "id": "f068",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DON'T COMMIT ANYTHING. DON'T PUSH. just stage the changes and show me the diff when you're done adding the new cloudwatch alarms for queue depth"
+ },
+ {
+  "id": "f069",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "pls don't run kubectl against any cluster, my kubeconfig is pointed at prod right now and the context switching is flaky. just write the manifest for the cronjob that rotates the log bucket and I'll apply it myself"
+ },
+ {
+  "id": "f070",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "DO NOT TOUCH docusaurus.config.js!!! just fix the broken sidebar links in docs/guides, nothing else"
+ },
+ {
+  "id": "f071",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "update the install page for v3.2 but DO NOT RENAME ANY FILES under docs/. our redirects depend on the exact slugs and old blog posts still link to them, so if a filename changes we lose that traffic. edit content in place only"
+ },
+ {
+  "id": "f072",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "STOP REFORMATTING THE MARKDOWN TABLES. I asked you to fix typos in the API reference, ONLY TYPOS. revert the whitespace and alignment changes and redo it properly"
+ },
+ {
+  "id": "f073",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "NO NEW DEPENDENCIES!! figure out why the search index is missing the changelog pages using what's already in package.json"
+ },
+ {
+  "id": "f074",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "don't edit anything in versioned_docs, only the current docs folder. add a section on configuring webhook retries to docs/integrations/webhooks.md, short, with one example payload"
+ },
+ {
+  "id": "f075",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "leave the i18n folders alone. can you tighten up the wording in the getting started tutorial? keep all the headings exactly the same"
+ },
+ {
+  "id": "f076",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "only change css in src/css/custom.css, dont touch the swizzled theme components"
+ },
+ {
+  "id": "f077",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Please don't run the build or start the dev server. On my machine the full build takes around 8 minutes and pegs the CPU, and I'm on battery right now. Just make the changes to the code block line-highlighting config and I'll test it myself later."
+ },
+ {
+  "id": "f078",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "Can you convert the remaining .rst pages in docs/admin to markdown? Keep every anchor ID exactly as it is, because the support team links straight to specific sections from their ticket macros and I can't get them all updated. Don't rewrite or 'improve' the content either, this is a format change only."
+ },
+ {
+  "id": "f079",
+  "category": "heldout-constraint",
+  "expect": "any",
+  "prompt": "frontmatter must stay unchanged on every page. add a 'last reviewed' note at the bottom of each page in docs/security"
+ }
+]

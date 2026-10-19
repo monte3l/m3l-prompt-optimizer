@@ -15,10 +15,10 @@
  *   examples); the numbered list and the plain-prose rules are local design
  *   choices, listed in docs/research-notes.md.
  *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
- * - Language and restrictions (a candidate under test, see docs/research-notes.md "Rules
- *   for the fix cycle"): a release-style eval run found a German prompt rewritten in
+ * - Language and restrictions: a release-style eval run found a German prompt rewritten in
  *   English in 3 of 3 samples, and a shouted restriction given an invented reason. A local
- *   design choice measured by the eval, not an Anthropic rule.
+ *   design choice, adopted after two paired comparisons (UNVERIFIED.md item 22), not an
+ *   Anthropic rule.
  * - Ideas or a plan first on request: prompting-claude-sonnet-5-5.
  * - No reasoning or verification scaffolding: prompting-claude-opus-5 and 5-5.
  * - Verbatim tokens: Claude Code common-workflows (@mentions, [Image #N]).

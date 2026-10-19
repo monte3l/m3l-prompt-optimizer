@@ -159,6 +159,8 @@ The release-style run found most of its worse samples in two kinds: a non-Englis
 | Reporting | The release-style run on the adopted prompt, with every bar reported, met or not |
 | Limits of this cycle | One revision of B at most without asking. A neutral Test 1 is not adopted. The guard is not changed: refused rewrites are about three better for each worse one (`UNVERIFIED.md` item 21), and a guard change is a separate `hooks/` change |
 
+Outcome: Test 1 (p 0.038, and B kept its better rewrites) and Test 2 (p 0.0005, no loss of better rewrites) both held, so B was adopted. The figures are in `UNVERIFIED.md` item 22.
+
 ## Follow-up research: the open items (2026-10-10)
 
 Two read-only research passes and three local experiments. Base URLs:
