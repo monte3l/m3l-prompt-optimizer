@@ -31,5 +31,13 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 - Added tests at the exact gate and guard size limits, and four mutants that
   swap `<` for `<=` and `>` for `>=` on them.
 - Added the evaluation counts to `scripts/doc-parity.mjs`.
+- Changed the multi-sample rate bar to use the 95% upper confidence limit of the
+  share of rewrites judged worse (at most 2%, so at most 3 of 400) instead of the
+  raw count, because the same wording gave 8 and 11 worse samples in two runs.
+  The rewriter calls of `--rewrites` now run one at a time, which removes the
+  timeouts that came from running them alongside other calls.
+- Added disambiguated twins of the two longest eval prompts, so a failure on a
+  long list can be told apart from a failure on one ambiguous phrase. The eval set
+  is now 63 prompts.
 - Corrected the README, `CLAUDE.md`, CONTRIBUTING, SECURITY, UNVERIFIED and the
   research notes where they contradicted the code or each other.

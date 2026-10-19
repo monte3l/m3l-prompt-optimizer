@@ -224,11 +224,14 @@ and decision logic are plain modules in `hooks/`, tested directly.
 
 ### Evaluation
 
-[`evals/cases.json`](evals/cases.json) holds 61 prompts, of which 50 reach the model
+[`evals/cases.json`](evals/cases.json) holds 63 prompts, of which 52 reach the model
 and 11 are stopped by the gate. They cover vague, clear, emphatic, question, image,
 mention and multi-part prompts, prompts in Italian, Spanish and German, typed code
 and error text, long prompts (about 350, 500, 1500 and 3500 characters), prompts
-built to tempt the guard, and prompts at both edges of the gate's size limits.
+built to tempt the guard, and prompts at both edges of the gate's size limits. The two
+longest lists each come in a pair: one ends in an ambiguous phrase ("never show it again
+after that"), the other says the same thing explicitly, so a failure on a long list can be
+told apart from a failure on that phrase.
 `evals/run.mjs` runs each through the real gate, client and guard, then asks Claude
 Opus 5.5 whether the result serves the developer better than their own words. The
 judge is told which text you typed and which is the proposal
@@ -241,7 +244,7 @@ Each case says what to expect:
 | --- | --- | --- |
 | `unchanged` | 12 | Clear prompts and questions come back untouched |
 | `rewrite` | 12 | Shouting, run-together asks and unclear spelling should be judged better; the bar is 9 of the 12 |
-| `any` | 26 | Improved, polished or left alone, but never judged worse. The vague cases are here: the rewriter cannot see your repository, so "unchanged" or "equal" is their intended result |
+| `any` | 28 | Improved, polished or left alone, but never judged worse. The vague cases are here: the rewriter cannot see your repository, so "unchanged" or "equal" is their intended result |
 | `skipped` | 11 | The gate stops the prompt before any call |
 
 | Result | Meaning |
@@ -277,8 +280,9 @@ does not: in a one-off probe on 15 known-answer pairs (the 12 committed pairs pl
 all 15 right, so `medium` is the default. Each run reports how many judgments contained
 thinking, and the thinking summaries are saved in `evals/.results/`.
 
-Bars: no "worse" result reaches the model (with several samples per prompt, at most
-2% of all rewrites judged worse and no prompt with more than a quarter of its rewrites
+Bars: no "worse" result reaches the model (with several samples per prompt, the 95%
+upper confidence limit of the share of rewrites judged worse is at most 2%, which for
+400 samples means at most 3 worse, and no prompt has more than a quarter of its rewrites
 judged worse), at least 11 of the 12 `unchanged` cases
 stay unchanged, at least 9 of the 12 `rewrite` cases are judged better, no case
 errors and no call fails, the judge is right on every calibration pair, every gated
@@ -295,7 +299,7 @@ read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node
 | `--calibration-only` | Only the 12 calibration pairs; writes no `results.md` |
 | `--effort <level>` | The judge's effort: `low`, `medium`, `high`, `xhigh` or `max` |
 | `--repeat <n>` | Judges every pair and case `n` times (1 to 5) |
-| `--rewrites <n>` | Asks the rewriter for `n` independent rewrites of every prompt (1 to 20), one after another, and counts every bar over the samples |
+| `--rewrites <n>` | Asks the rewriter for `n` independent rewrites of every prompt (1 to 20) and counts every bar over the samples. Rewriter calls run one at a time, because a call that shares the network with others can miss the mod's 6.5 second deadline |
 
 `--repeat` is optional hardening, not something the official evaluation guidance
 asks for. With `--repeat 3` a result is better only if all three judgments say

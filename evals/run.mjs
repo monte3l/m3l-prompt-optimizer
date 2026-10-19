@@ -39,6 +39,7 @@ const [{ shouldRewrite }, { acceptRewrite, parseResponse }, { optimize }] = awai
 const { DEFAULT_JUDGE_EFFORT, EFFORTS, JUDGE_MODEL, judgeRequest, readJudgeReply } = await import(
   pathToFileURL(join(root, 'evals/judge.ts')).href
 )
+const { upperBound } = await import(pathToFileURL(join(root, 'evals/stats.ts')).href)
 
 // ---- options ---------------------------------------------------------------------
 const args = process.argv.slice(2)
@@ -91,6 +92,18 @@ const deps = {
   now: async () => Date.now(),
 }
 
+/**
+ * Runs `fn` after every earlier call to `alone` has finished. The rewriter calls go through it so that
+ * only one is in flight: the mod's client has a 6.5 second deadline, and a call that shares the network
+ * with other rewrites and judge calls can miss it, which a user's single prompt would not.
+ */
+let rewriteTurn = Promise.resolve()
+const alone = fn => {
+  const run = rewriteTurn.then(fn, fn)
+  rewriteTurn = run.then(() => {}, () => {})
+  return run
+}
+
 /** Runs `fn` over `items` with `size` in flight at once and returns the results in order. */
 const pool = async (items, fn, size = 4) => {
   const out = new Array(items.length)
@@ -108,11 +121,19 @@ const stats = { calls: 0, thinking: 0, outputTokens: 0 }
 
 const callJudge = async (original, proposal) => {
   for (let attempt = 0; ; attempt += 1) {
-    const res = await deps.fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify(judgeRequest(original, proposal, effort)),
-    })
+    let res
+    try {
+      res = await deps.fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify(judgeRequest(original, proposal, effort)),
+      })
+    } catch (error) {
+      // A dropped connection says nothing about the rewrite, so the judge asks again before giving up.
+      if (attempt === 3) throw new Error(`judge call failed: ${String(error?.cause?.code ?? error?.message ?? error).slice(0, 80)}`)
+      await deps.sleep(1000 * 2 ** attempt)
+      continue
+    }
     if (res.status === 200) {
       const read = readJudgeReply(JSON.parse(res.text))
       stats.calls += 1
@@ -159,7 +180,7 @@ const calibrate = () =>
 /** One rewrite of one prompt that passed the gate, taken through the client, the parser, the guard and the judge. */
 const sample = async c => {
   try {
-    const result = await optimize(deps, { apiKey, model: 'claude-haiku-5-5' }, c.prompt)
+    const result = await alone(() => optimize(deps, { apiKey, model: 'claude-haiku-5-5' }, c.prompt))
     if (result.kind !== 'reply') return { outcome: 'failed', final: c.prompt, detail: `${result.kind}: ${result.reason ?? ''}` }
 
     const parsed = parseResponse(result.text)
@@ -237,15 +258,19 @@ if (!isGateOnly) {
       ['at least 70% of "rewrite" cases judged better', count(rewriteSamples, 'better') >= Math.ceil(rewriteSamples.length * 0.7)],
     )
     // One sample per prompt: any "worse" fails. Several samples: a rate, because a stochastic rewriter
-    // cannot be held to zero over hundreds of samples, plus a cap per prompt so one prompt cannot hide
-    // behind the rest. Both limits were fixed before the confirmatory run that tests them.
+    // cannot be held to zero over hundreds of samples. The rate is held to its limit by the 95% upper
+    // confidence limit, not by the raw count, since the same wording gave 8 and 11 worse samples of 400
+    // in two runs and a count that sits inside that noise would pass or fail by luck. A cap per prompt
+    // stops one prompt hiding behind the rest.
     const modelSamples = allSamples.filter(s => s.outcome !== 'skipped' && s.outcome !== 'sent')
     if (rewrites === 1) {
       bars.push(['no rewrite judged worse reached the model', count(allSamples, 'worse') === 0])
     } else {
       const perPromptCap = Math.floor(rewrites * 0.25)
+      const worse = count(allSamples, 'worse')
+      const bound = upperBound(worse, modelSamples.length)
       bars.push(
-        ['at most 2% of rewrites judged worse', count(allSamples, 'worse') <= Math.floor(modelSamples.length * 0.02)],
+        [`at most 2% of rewrites judged worse, with 95% confidence (${worse} of ${modelSamples.length}, upper limit ${(bound * 100).toFixed(1)}%)`, bound <= 0.02],
         [`no prompt has more than ${perPromptCap} of ${rewrites} rewrites judged worse`, results.every(r => count(r.sampled, 'worse') <= perPromptCap)],
       )
     }
