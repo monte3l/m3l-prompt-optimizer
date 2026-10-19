@@ -39,5 +39,12 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 - Added disambiguated twins of the two longest eval prompts, so a failure on a
   long list can be told apart from a failure on one ambiguous phrase. The eval set
   is now 63 prompts.
+- Changed the system prompt to keep references as open as the developer left
+  them: words like "anywhere" and phrases like "after that" stay as written, and a
+  place named in one request does not narrow them in another. In 8-sample runs
+  the model settled such references in 19 of 400 rewrites before the change and
+  11 of 400 after it. That gain was measured on the prompts it was written
+  against and is not statistically firm, and the release bar is not yet met; see
+  `UNVERIFIED.md` items 12 and 14.
 - Corrected the README, `CLAUDE.md`, CONTRIBUTING, SECURITY, UNVERIFIED and the
   research notes where they contradicted the code or each other.

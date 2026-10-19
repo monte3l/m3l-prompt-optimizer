@@ -33,6 +33,7 @@ These rules in `hooks/system-prompt.ts` have no direct Anthropic source. Each is
 | Plain prose, with no role statements, reasoning instructions, headings or tags | Follows from "do not pad a prompt" and the Opus 5 guidance on reasoning lines, but no source names role statements |
 | Keep the developer's language, voice and person | The output replaces what they typed, so it must still read as theirs |
 | Add no cause or approach, and let the agent ask for details when a prompt is vague | A live probe showed the model inventing an investigation step for a vague bug report. The Fable 5.1, Sonnet 5 and Opus 5.5 rows give the general rule |
+| Keep references as open as the developer left them: words such as anywhere, every, all and phrases such as after that or for both stay as written, and a place named in one request does not narrow them in another | No source names this. A clean 8-sample eval run (50 prompts, 400 samples) found the model settling such references in 19 of 400 rewrites, for example "anywhere" narrowed to the README. The wording was measured against the eval set, so the gain is in-sample (UNVERIFIED.md item 14) |
 | Three worked examples | Examples help per the context-engineering row ("canonical examples"). The best-practices page mentions examples only as content to wrap in tags |
 
 ### Console tools, metaprompt and tutorial

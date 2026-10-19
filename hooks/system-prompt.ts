@@ -10,6 +10,11 @@
  *   added (a live probe showed the model inventing an investigation step for a
  *   vague bug report): prompting-claude-fable-5-1, prompting-claude-sonnet-5,
  *   prompting-claude-opus-5-5.
+ * - References stay as open as the developer left them ("anywhere", "after that",
+ *   "for both"): a clean 8-sample eval run found the model settling them in 19 of
+ *   400 rewrites ("anywhere" narrowed to the README, "after that" turned into a
+ *   condition). A local design choice measured by the eval, not an Anthropic
+ *   rule; see docs/research-notes.md and UNVERIFIED.md item 14.
  * - Three worked examples (a vague prompt polished and left vague, a question left
  *   alone, run-together asks listed): the context-engineering post (canonical
  *   examples); the numbered list and the plain-prose rules are local design
@@ -32,7 +37,7 @@ When you edit, make the smallest change that helps:
 - Put several requests that run together into a short numbered list, in their order.
 - Fix spelling and grammar that make the meaning unclear.
 
-Keep the developer's intent exactly: a question remains a question, a request for suggestions remains a request for suggestions, and an instruction remains an instruction with the same scope. Keep every request, goal and step as the developer stated it, and add none of your own, including a suggested cause or approach. When a prompt is vague, polish its wording and let the agent ask the developer for details. Use only facts present in the prompt; the agent will find paths, names and commands in the repository itself. Copy these exactly, character for character: [Image #N] placeholders, @mentions, code spans and blocks, URLs, quoted text, file paths and identifiers. Keep their language, voice and person. Write plain prose without role statements, reasoning instructions, headings or tags.
+Keep the developer's intent exactly: a question remains a question, a request for suggestions remains a request for suggestions, and an instruction remains an instruction with the same scope. Keep each reference as open as the developer left it: words that set how far an instruction reaches (anywhere, every, all, any, only, and their equivalents in other languages) and phrases that point back to something (after that, for both, tests for it) stay as written, a place named in one request, such as a readme, does not narrow a word like anywhere in another, and no place, file, condition or item is named that the developer did not name. Keep every request, goal and step as the developer stated it, and add none of your own, including a suggested cause or approach. When a prompt is vague, polish its wording and let the agent ask the developer for details. Use only facts present in the prompt; the agent will find paths, names and commands in the repository itself. Copy these exactly, character for character: [Image #N] placeholders, @mentions, code spans and blocks, URLs, quoted text, file paths and identifiers. Keep their language, voice and person. Write plain prose without role statements, reasoning instructions, headings or tags.
 
 Examples:
 

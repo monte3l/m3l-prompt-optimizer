@@ -8,6 +8,12 @@ describe('system prompt', () => {
     expect(SYSTEM_PROMPT.includes('suggested cause or approach')).toBe(true)
   })
 
+  test('keeps references as open as the developer left them', () => {
+    expect(SYSTEM_PROMPT.includes('as open as the developer left it')).toBe(true)
+    expect(SYSTEM_PROMPT.includes('does not narrow a word like anywhere in another')).toBe(true)
+    expect(SYSTEM_PROMPT.includes('that the developer did not name')).toBe(true)
+  })
+
   test('polishes a vague prompt and leaves the vagueness to the agent', () => {
     expect(SYSTEM_PROMPT.includes('polish its wording')).toBe(true)
     expect(SYSTEM_PROMPT.includes('ask the developer for details')).toBe(true)
