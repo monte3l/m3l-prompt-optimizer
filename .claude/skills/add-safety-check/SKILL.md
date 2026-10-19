@@ -55,7 +55,7 @@ If the change touches `hooks/system-prompt.ts`, `tests/system-prompt.test.ts` re
 
 ## Markdown in the README and docs
 
-Follow m3l-design: bold, never italics or underlines; a GitHub alert matched to severity, never more than two in a row, and `[!CAUTION]` only for data loss or anything irreversible; plain direct sentences; tables for tabular data. Run `node scripts/build-docs.mjs --check` after editing any page, since it fails on italics, an h4 or raw HTML.
+Follow m3l-design: bold, never italics or underlines; a GitHub alert matched to severity, never more than two in a row, and `[!CAUTION]` only for data loss or anything irreversible; plain direct sentences; tables for tabular data. Run `node design/source/docs-kit/build.mjs --check` after editing any page, since it fails on italics, an h4 or raw HTML, and runs `scripts/doc-parity.mjs`, which compares the README tables with the guard, client and gate reasons.
 
 ## Finish
 

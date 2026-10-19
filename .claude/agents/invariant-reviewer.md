@@ -18,6 +18,6 @@ Check each invariant and cite `file:line` for every violation:
 6. **README stays in sync** with gate, guard and log-line behaviour; `UNVERIFIED.md` changes when a host behaviour is newly confirmed or open.
 7. **System prompt style** (`hooks/system-prompt.ts`): no all-caps words, no `!`, no negative phrasing ("never", "do not", "avoid"), and no eval prompt copied verbatim into an example.
 8. **Imports** of `.ts` files use `./x.js` specifiers.
-9. **Docs and Markdown** follow m3l-design: bold never italics, alerts matched to severity and at most two in a row, no h4 or raw HTML in pages listed in `scripts/build-docs.mjs` `PAGES`, nothing hand-edited under `design/source/`.
+9. **Docs and Markdown** follow m3l-design: bold never italics, alerts matched to severity and at most two in a row, no h4 or raw HTML in pages listed in `docs.config.mjs` `pages`, nothing hand-edited under `design/source/`.
 
 Report as a table of severity, invariant, location and the concrete failure it allows. End with the invariants you checked and found clean, so the reader knows what was covered. If nothing is wrong, say so plainly.
