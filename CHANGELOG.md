@@ -36,7 +36,7 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
   run locally and never committed) is held to a harm limit (95% upper limit of worse
   rewrites at most 2%), a benefit ratio (better at least 5 times worse) and a
   reliability limit. The 63 stress prompts become a diagnostic suite reported as known
-  limits. The limits were fixed before any comparison data existed.
+  limits. The limits were fixed before any paired comparison on the realistic set existed.
 - Added 24 hard calibration pairs, so the judge is checked on subtle cases (at least
   90% of them) as well as the 12 easy ones.
 - Added `evals/compare.mjs`, a paired comparison of two prompts with exact tests, and

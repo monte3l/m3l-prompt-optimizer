@@ -101,15 +101,15 @@ instructions.
 The aim is that a rewrite never adds, drops or narrows what you asked. The project's
 own evaluation measures how often that fails, and it does fail sometimes. On prompts
 that look like real typing, about 1.5 to 2 rewrites in 100 were judged worse than what
-you typed, 2 to 10 in 100 were judged better, and the rest were left alone or changed
-in ways the judge saw no difference in. About 6 in 100 were refused by the guard, which
-sent your original.
+you typed (the 95% upper limits are 2.8% and 3.2%), 2 to 10 in 100 were judged better,
+and the rest were left alone or changed in ways the judge saw no difference in. About 4
+to 9 in 100 were refused by the guard, which sent your original.
 
 | What can go wrong | Example from the evaluation |
 | --- | --- |
 | A hedge becomes a requirement | "maybe also persist to sessionStorage" came back as a firm requirement |
 | A softener is dropped | "clean up the styles folder a bit" lost "a bit" |
-| A constraint or instruction is added | "only test against the dev tables" gained "do not touch prod" |
+| A reason or constraint is invented | "DO NOT run the full refresh on prod tables!! only test against the dev schema" came back with "since the prod tables must not be touched", which widens the restriction |
 | A non-English prompt is translated | A German prompt came back in English |
 | A reference you left open is settled | "never show it again after that" became "after it is skipped or completed" |
 

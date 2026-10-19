@@ -58,9 +58,17 @@ if (!Number.isInteger(rewrites) || rewrites < 1 || rewrites > 20) usage('--rewri
 if (!['gate', 'diagnostic', 'all'].includes(suite)) usage('--suite must be gate, diagnostic or all.')
 
 const read = file => JSON.parse(readFileSync(file, 'utf8'))
+/** A private file is read with a fixed error message: a JSON parser quotes the text it chokes on. */
+const readPrivate = file => {
+  try {
+    return read(file)
+  } catch {
+    return usage('The --private-cases file could not be read as a JSON array of prompts.')
+  }
+}
 const diagnostic = read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))
 const realistic = read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))
-const privateCases = privatePath === undefined ? [] : read(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))
+const privateCases = privatePath === undefined ? [] : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))
 const cases = [
   ...(suite === 'gate' ? [] : diagnostic),
   ...(suite === 'diagnostic' ? [] : [...realistic, ...privateCases]),
@@ -274,6 +282,7 @@ const lines = [
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 mkdirSync(join(root, 'evals/.results'), { recursive: true })
 writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify({ mode, results, calibrated, stats, bars }, null, 2))
-if (!isGateOnly && !isCalibrationOnly && isCalibrated && privatePath === undefined) writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
+// Only a run of everything replaces the committed file; a partial run would leave a partial "release" result behind.
+if (!isGateOnly && !isCalibrationOnly && isCalibrated && privatePath === undefined && suite === 'all') writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
 console.log(lines.join('\n'))
 process.exit(bars.every(([, met]) => met) ? 0 : 1)

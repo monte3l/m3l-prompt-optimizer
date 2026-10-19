@@ -51,10 +51,18 @@ const arms = { a: await loadHooks(resolve(dirA)), b: await loadHooks(resolve(dir
 if (arms.a.SYSTEM_PROMPT === arms.b.SYSTEM_PROMPT) usage('Both hooks folders have the same system prompt, so there is nothing to compare.')
 
 const read = file => JSON.parse(readFileSync(file, 'utf8'))
+/** A private file is read with a fixed error message: a JSON parser quotes the text it chokes on. */
+const readPrivate = file => {
+  try {
+    return read(file)
+  } catch {
+    return usage('The --private-cases file could not be read as a JSON array of prompts.')
+  }
+}
 const prompts = [
   ...(suite === 'gate' ? [] : read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))),
   ...(suite === 'diagnostic' ? [] : read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))),
-  ...(suite === 'diagnostic' || privatePath === undefined ? [] : read(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
+  ...(suite === 'diagnostic' || privatePath === undefined ? [] : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
 ].filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: c.origin ?? { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo).slice(0, limit)
 
 const { judge, stats } = await createJudge({ apiKey, effort: DEFAULT_JUDGE_EFFORT, repeat: 1 })
