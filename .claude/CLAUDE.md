@@ -58,6 +58,7 @@ path sends the original text unchanged (fail open).
 | `design/` | Vendored m3l-design (`source/`, never hand-edited), the vendored `tokens.css` and the site layout in `local/` |
 | `.github/workflows/docs.yml` | Deploys the site to Cloudflare Workers Static Assets at prompt-optimizer.monte3l.com on every push to `main` |
 | `.github/workflows/verify.yml` | The required `verify` check |
+| `.github/workflows/reuse.yml`, `workflow-lint.yml` | `reuse lint` against `REUSE.toml`, and actionlint plus zizmor on any change to a workflow. Copied from the org's `workflow-templates/` |
 
 Constraints that are not obvious from one file:
 
