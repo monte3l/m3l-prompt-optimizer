@@ -1,3 +1,10 @@
 {
-  "extends": "./.claude-plugin/types/tsconfig.json"
+  "extends": "./.claude-plugin/types/tsconfig.json",
+  "compilerOptions": {
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
+  }
 }

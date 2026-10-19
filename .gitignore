@@ -7,3 +7,11 @@ node_modules/
 _site/
 .github/deploy-tools/node_modules/
 .github/ci-tools/node_modules/
+
+# Claude Code compaction handoff (harness-extras)
+tmp/
+
+# groundwork adoption: track the two reports, ignore the rest
+.groundwork/*
+!.groundwork/adoption-report.md
+!.groundwork/customization-report.md

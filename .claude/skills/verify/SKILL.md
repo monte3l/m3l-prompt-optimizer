@@ -10,7 +10,7 @@ Run every step below from the repository root, in this order, and keep going aft
 
 | # | Step | Command |
 | --- | --- | --- |
-| 1 | Design tokens match their source | `node scripts/build-design-tokens.mjs --check` |
+| 1 | Design tokens match their source | `cd design && shasum -a 256 -c SHA256SUMS` |
 | 2 | Docs build, links, anchors and style | `node scripts/build-docs.mjs --check` |
 | 3 | Eval gate | `node evals/run.mjs --gate-only` |
 | 4 | Manifest, hook shape and `$` calls | `claude plugin validate --strict .` |
