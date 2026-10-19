@@ -45,7 +45,9 @@ types in `.claude-plugin/types/`, so install once from this folder first.
 | `node scripts/build-docs.mjs --check`  | The docs site builds and every link resolves                    |
 | `cd design && shasum -a 256 -c SHA256SUMS` | The vendored `design/source/` and `tokens.css` are unedited |
 
-- **Conventional Commits** for every commit message.
+- **Conventional Commits** for every commit message, each with a
+  `Signed-off-by` trailer (`git commit -s`). The `DCO sign-off` check fails a
+  pull request that has a commit without one.
 - New behaviour has a test. A new safety check also gets a mutant in
   `scripts/guard-break.mjs` and a test that kills it.
 - When behaviour changes, update the README tables (gate, guard, log lines)
