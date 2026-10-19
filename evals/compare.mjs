@@ -13,6 +13,7 @@
 //   --private-cases <f>  also run a private prompt file. Nothing that quotes those prompts is printed or saved
 //   --concurrency <n>    rewriter calls in flight at once (default 3). Failed and timed-out samples are left out
 //                        of the pairs, so some concurrency costs only samples, never a verdict
+//   --limit <n>          use only the first n prompts, for a smoke test
 //   --out <file>         write the aggregates and the per-sample outcomes here as JSON
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -36,6 +37,7 @@ const concurrency = Number(valueOf('--concurrency') ?? 3)
 const suite = valueOf('--suite') ?? 'gate'
 const privatePath = valueOf('--private-cases')
 const outPath = valueOf('--out')
+const limit = valueOf('--limit') === undefined ? Infinity : Number(valueOf('--limit'))
 if (!Number.isInteger(samples) || samples < 1 || samples > 20) usage('--samples must be a whole number from 1 to 20.')
 if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 8) usage('--concurrency must be a whole number from 1 to 8.')
 if (!['gate', 'diagnostic', 'all'].includes(suite)) usage('--suite must be gate, diagnostic or all.')
@@ -53,7 +55,7 @@ const prompts = [
   ...(suite === 'gate' ? [] : read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))),
   ...(suite === 'diagnostic' ? [] : read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))),
   ...(suite === 'diagnostic' || privatePath === undefined ? [] : read(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
-].filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: c.origin ?? { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo)
+].filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: c.origin ?? { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo).slice(0, limit)
 
 const { judge, stats } = await createJudge({ apiKey, effort: DEFAULT_JUDGE_EFFORT, repeat: 1 })
 const alone = createLock(concurrency)

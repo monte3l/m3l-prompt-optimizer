@@ -16,7 +16,7 @@ If anything goes wrong, your original prompt is sent exactly as typed.
 ```
 
 Answer `y` to add the marketplace, then pick the user scope so the mod is active
-in every repository. Requires Claude Code 2.1.296 or newer. The rendered docs are
+in every repository. Requires Claude Code 2.1.296 or newer, and was tested on 2.1.303. Use 2.1.299 or newer if you paste images: earlier versions could silently drop a rewrite for some prompts with an image. The rendered docs are
 at [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
 To install from a local checkout instead, add the folder as a marketplace. Edits
@@ -224,21 +224,32 @@ and decision logic are plain modules in `hooks/`, tested directly.
 
 ### Evaluation
 
-[`evals/cases.json`](evals/cases.json) holds 63 prompts, of which 52 reach the model
-and 11 are stopped by the gate. They cover vague, clear, emphatic, question, image,
-mention and multi-part prompts, prompts in Italian, Spanish and German, typed code
-and error text, long prompts (about 350, 500, 1500 and 3500 characters), prompts
-built to tempt the guard, and prompts at both edges of the gate's size limits. The two
-longest lists each come in a pair: one ends in an ambiguous phrase ("never show it again
-after that"), the other says the same thing explicitly, so a failure on a long list can be
-told apart from a failure on that phrase.
-`evals/run.mjs` runs each through the real gate, client and guard, then asks Claude
-Opus 5.5 whether the result serves the developer better than their own words. The
-judge is told which text you typed and which is the proposal
+Two suites run together, and only one of them decides a release.
+
+**The gate suite** is what a release is judged on: prompts that look like real typing.
+[`evals/realistic.json`](evals/realistic.json) holds 175 of them, written by Claude Opus
+5.5 from a brief that asked for varied, realistic developer prompts across eight kinds
+of project and did not mention any known failure of the rewriter. A private set of the
+maintainer's own prompt history runs beside it with `--private-cases`; nothing that
+quotes those prompts is printed or saved, and that run does not write `results.md`.
+
+**The diagnostic suite** is the stress prompts. [`evals/cases.json`](evals/cases.json)
+holds 63 prompts, of which 52 reach the model and 11 are stopped by the gate. They cover
+vague, clear, emphatic, question, image, mention and multi-part prompts, prompts in
+Italian, Spanish and German, typed code and error text, long prompts (about 350, 500,
+1500 and 3500 characters), prompts built to tempt the guard, and prompts at both edges
+of the gate's size limits. The two longest lists each come in a pair: one ends in an
+ambiguous phrase ("never show it again after that"), the other says the same thing
+explicitly, so a failure on a long list can be told apart from a failure on that
+phrase. Its results are reported as known limits and do not gate a release.
+
+`evals/run.mjs` runs each prompt through the real gate, client and guard, then asks
+Claude Opus 5.5 whether the result serves the developer better than their own words.
+The judge is told which text you typed and which is the proposal
 ([`evals/judge.ts`](evals/judge.ts)); a blind A/B comparison could not tell added
 scope from dropped scope.
 
-Each case says what to expect:
+Each diagnostic case says what to expect:
 
 | Expected | Cases | What it means |
 | --- | --- | --- |
@@ -252,7 +263,7 @@ Each case says what to expect:
 | better | The judge prefers the refined prompt and the guard accepted it |
 | equal | The judge sees no difference between the two |
 | worse | The judge prefers the original; counts against the bars |
-| unchanged | The model returned the unchanged marker, or a rewrite equal to the prompt. This is the outcome the 90% bar counts |
+| unchanged | The model returned the unchanged marker, or a rewrite equal to the prompt |
 | reverted | The guard refused the rewrite or the reply was malformed, so the original was sent (a safe miss, counted separately) |
 | skipped | The gate stopped the prompt before any call |
 | failed | The call failed, timed out or paused the mod, so the original was sent |
@@ -272,34 +283,47 @@ ones that change only capitalization, punctuation or a synonym and must be judge
 "only", an invented condition, a language switched, a voice turned into a report, an
 alternative turned into a requirement, against subtle good and neutral rewrites. Each
 pair covers one clause of the judge's rubric, and every original is new: the run
-refuses a pair whose original is also an eval prompt.
+refuses a pair whose original is also an eval prompt. Where the judge disagrees with a
+label, the disagreement is reported and the label is not changed afterwards.
 
 **The judge runs with thinking enabled.** It uses adaptive thinking at `medium`
 effort and answers in a fixed JSON shape (a one-sentence reason, then the verdict).
 The model decides per request whether to think, and on short comparisons it mostly
-does not: in a one-off probe on 15 known-answer pairs (the 12 committed pairs plus
-3 more; the probe script is not committed) it thought on 1 at `medium` and on 1 at
-`high`, and an added "think carefully" sentence changed nothing. Both levels got
-all 15 right, so `medium` is the default. Each run reports how many judgments contained
-thinking, and the thinking summaries are saved in `evals/.results/`.
+does not: in a one-off probe on 15 known-answer pairs (the 12 easy pairs plus 3 more;
+the probe script is not committed) it thought on 1 at `medium` and on 1 at `high`,
+and an added "think carefully" sentence changed nothing. Both levels got all 15
+right, so `medium` is the default. Each run reports how many judgments contained
+thinking, and the thinking summaries are saved in `evals/.results/`. A second model,
+Claude Fable 5.1, was also asked to judge the stored rewrites of the generated
+prompts as a cross-check; `UNVERIFIED.md` records how far the two agreed.
 
-Bars: no "worse" result reaches the model (with several samples per prompt, the 95%
-upper confidence limit of the share of rewrites judged worse is at most 2%, which for
-400 samples means at most 3 worse, and no prompt has more than a quarter of its rewrites
-judged worse), at least 11 of the 12 `unchanged` cases
-stay unchanged, at least 9 of the 12 `rewrite` cases are judged better, no case
-errors and no call fails, the judge is right on every calibration pair, every gated
-prompt is skipped before any call and every other prompt passes the gate. Run it live
-with the key on that one command:
+**The bars.** A release run must meet all of these. The gate-suite limits were fixed
+before any comparison data existed (see "Decision rules fixed before the comparison" in
+[`docs/research-notes.md`](docs/research-notes.md)).
+
+| Bar | Applies to | Limit |
+| --- | --- | --- |
+| Judge | Calibration | Every easy pair right, and at least 90% of the hard pairs |
+| Gate | Both suites | Every gated prompt is skipped before any call, every other prompt passes the gate, and no case errors |
+| Behaviour | Diagnostic suite | at least 11 of the 12 `unchanged` cases stay unchanged and at least 9 of the 12 `rewrite` cases are judged better |
+| Harm | Gate suite | The 95% upper confidence limit of the share of rewrites judged worse is at most 2%, which for 400 decided samples means at most 3 worse |
+| Benefit | Gate suite | Rewrites judged better are at least 5 times those judged worse |
+| Reliability | Gate suite | The 95% upper limit of the share of failed or errored calls is at most 5%; a failed call sends your prompt unchanged, so the bar catches a broken run or an outage |
+
+Diagnostic prompts with a worse sample are listed as known limits in
+[`evals/results.md`](evals/results.md) and are not gated. Run it live with the key on
+that one command:
 
 ```zsh
-read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node evals/run.mjs; unset ANTHROPIC_API_KEY
+read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node evals/run.mjs --rewrites 3; unset ANTHROPIC_API_KEY
 ```
 
 | Option | What it does |
 | --- | --- |
 | `--gate-only` | Offline: which prompts the gate sends |
-| `--calibration-only` | Only the 12 calibration pairs; writes no `results.md` |
+| `--calibration-only` | Only the 36 calibration pairs; writes no `results.md` |
+| `--suite <name>` | `gate`, `diagnostic` or `all` (the default) |
+| `--private-cases <file>` | Also runs a private prompt file as part of the gate suite, leaving nothing that quotes it |
 | `--effort <level>` | The judge's effort: `low`, `medium`, `high`, `xhigh` or `max` |
 | `--repeat <n>` | Judges every pair and case `n` times (1 to 5) |
 | `--rewrites <n>` | Asks the rewriter for `n` independent rewrites of every prompt (1 to 20) and counts every bar over the samples. Rewriter calls run one at a time, because a call that shares the network with others can miss the mod's 6.5 second deadline |
@@ -312,8 +336,14 @@ three repeats for at least 90% of the judged cases.
 > [!NOTE]
 > By default the rewriter is sampled once per case, so a single run can miss a
 > defect that shows on only some of the samples. `--repeat` measures the judge,
-> not the rewriter; `--rewrites` measures the rewriter. With `--rewrites 8` the
-> strict "no worse" bar needs all 8 samples of every prompt to be clean.
+> not the rewriter; `--rewrites` measures the rewriter.
+
+**Comparing two prompts.** `evals/compare.mjs` rewrites every prompt with two copies of
+the hooks back to back, in alternating order, judges both with the same judge and
+reports an exact one-sided McNemar test on the pairs and a sign test across prompts.
+`evals/crosscheck.mjs` re-judges the stored rewrites with a second model and reports the
+agreement. A prompt change is adopted only if it clears the rule written down before the
+comparison, which a neutral result does not.
 
 Results are written to [`evals/results.md`](evals/results.md).
 

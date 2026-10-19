@@ -147,10 +147,14 @@ const bucket = (expect) => cases.filter((c) => c.expect === expect).length;
 const reaching = cases.length - bucket("skipped");
 const unchangedCount = bucket("unchanged");
 const rewriteCount = bucket("rewrite");
+const realistic = JSON.parse(read("evals/realistic.json"));
+const hardPairs = pairs.filter((pair) => pair.tier === "hard").length;
 const evalExpectations = [
   [`holds ${cases.length} prompts, of which ${reaching} reach the model`, "the prompt count and how many reach the model"],
   [`and ${bucket("skipped")} are stopped by the gate`, "how many prompts the gate stops"],
   [`${pairs.length} pairs with a known answer`, "the calibration pair count"],
+  [`${pairs.length - hardPairs} easy and ${hardPairs} hard`, "the easy and hard calibration split"],
+  [`holds ${realistic.length} of them`, "the realistic suite size"],
   ...["unchanged", "rewrite", "any", "skipped"].map((e) => [`| \`${e}\` | ${bucket(e)} |`, `the \`${e}\` bucket size`]),
   [`at least ${Math.ceil(unchangedCount * 0.9)} of the ${unchangedCount} \`unchanged\` cases`, "the 90% bar as a count"],
   [`at least ${Math.ceil(rewriteCount * 0.7)} of the ${rewriteCount} \`rewrite\` cases`, "the 70% bar as a count"],
