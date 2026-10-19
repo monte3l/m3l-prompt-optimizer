@@ -33,16 +33,16 @@ needs it installed, so set the key after installing.
 ## What it does
 
 1. **Gate.** A prompt is considered only when all of these hold. Anything else is
-   sent untouched and never leaves your machine.
+   sent untouched and never leaves your machine. The checks run in this order:
 
    | Skipped when | Why |
    | --- | --- |
+   | The mod is switched off, has no key, or paused itself | See "When it pauses" |
    | It did not come from your own Enter (`/loop`, scheduled tasks, `claude -p`, other plugins, peers, notifications) | Only prompts you type are yours to refine |
+   | It starts with `\raw ` | Your per-prompt opt-out; the prefix is removed and the rest sent as typed. Checked before the next rows, on the text as typed |
    | It starts with `/`, `!` or `#` | Slash commands, bash mode and memory notes |
    | It contains pasted content | Pasted text must stay byte for byte |
-   | It is under 25 characters or 5 words, or over 4,000 characters | Too short to improve, or too costly |
-   | It starts with `\raw ` | Your per-prompt opt-out; the prefix is removed and the rest sent as typed |
-   | The mod is switched off, has no key, or paused itself | See "When it pauses" |
+   | It is under 25 characters or 5 words, or over 4,000 characters | Too short to improve, or too costly. Counted on the trimmed text |
 
 2. **Rewrite.** Claude Haiku 5.5 (thinking off, low effort) returns either
    `<unchanged/>` or one refined prompt. The system prompt is in
@@ -54,13 +54,16 @@ needs it installed, so set the key after installing.
 
    | Check | Keeps you safe from |
    | --- | --- |
-   | The reply is exactly the unchanged marker or one rewrite block | Chatty or malformed replies |
+   | The reply is exactly the unchanged marker or one rewrite block | Chatty or malformed replies (logged as `rewrite refused (malformed reply; …)`) |
    | `[Image #N]` placeholders and `@mentions` are identical | Lost or invented attachments and files |
    | Code spans, paths, file names, symbols and URLs are identical | Invented or altered technical details |
    | A question keeps its question mark, and a request does not become a question | Changed intent |
    | The rewrite is at most one and a half times the original plus 40 characters | Runaway padding |
    | The rewrite does not start with `/`, `!` or `#` | A prompt turning into a command |
-   | The API stopped normally (no refusal, no cut-off) | Partial answers |
+
+   Before the guard sees a reply, the client also requires that the API stopped
+   normally (no refusal, no cut-off) and returned text. Otherwise the prompt is
+   skipped as `unfinished reply` or `no text in reply`.
 
 The rewrite changes only what the guidance supports: calming shouting, saying
 what to do next to what to avoid, placing a stated reason beside its
@@ -101,7 +104,7 @@ end every key in it at once.
 
 ## First run
 
-These probes settle the open items in [`UNVERIFIED.md`](UNVERIFIED.md). Start a
+These probes confirm the results recorded in [`UNVERIFIED.md`](UNVERIFIED.md). Start a
 session with `claude --debug-file /tmp/optimizer.log`, then:
 
 1. Run `/status` and `/plugin` and confirm the mod is loaded and no managed
@@ -115,16 +118,17 @@ session with `claude --debug-file /tmp/optimizer.log`, then:
    mod's name, so match the outcomes):
 
    ```zsh
-   grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|skipped|rewrite refused|paused)' /tmp/optimizer.log
+   grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer.log
    ```
 
-   Each line gives an outcome and a request id, never prompt text. A prompt the
-   gate skips writes no line at all.
+   See "Reading the debug log" for what each line gives. A prompt the gate skips
+   writes a `gate skipped` line and never reaches the API.
 
 ## Reading the debug log
 
-The mod writes one debug line per prompt it considers: reasons and counts, never prompt
-text. Start a session with `claude --debug-file /tmp/optimizer.log`, then:
+The mod writes one debug line per prompt it considers. Each line gives an
+outcome, a reason or counts and, once a call was made, the request id. It never
+carries prompt text, rewrite text or the key. Start a session with `claude --debug-file /tmp/optimizer.log`, then:
 
 ```zsh
 grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate skipped|skipped|paused)' /tmp/optimizer.log
@@ -134,24 +138,43 @@ grep -E 'm3l-prompt-optimizer: (rewritten|left unchanged|rewrite refused|gate sk
 | --- | --- |
 | `rewritten (req_…; images N, mentions M)` | The refined prompt was sent. The counts are the placeholders and mentions it carried |
 | `left unchanged (…)` | The model judged the prompt fine, or the rewrite equalled it |
-| `rewrite refused (<reason>; …)` | The guard rejected the rewrite, so your original was sent |
-| `gate skipped (<reason>)` | The gate stopped the prompt before any call: an origin other than your Enter, a paste, too short or long, `\raw`, switched off, no key, or paused |
+| `rewrite refused (<reason>; req_…; …)` | The guard rejected the reply, or it was not exactly the unchanged marker or one rewrite block (`malformed reply`), so your original was sent |
+| `gate skipped (<reason>)` | The gate stopped the prompt before any call, and no request id exists. Reasons: `switched off`, `no key`, `paused`, `origin <kind>`, `raw escape`, `slash command`, `bash mode`, `memory note`, `paste`, `too short`, `too long` |
 | `skipped (<reason>; req_…; …)` | The call failed or timed out; your original was sent |
-| `paused for this session (<reason>; …)` | A spend limit, empty balance or rejected key stopped the mod |
+| `paused for this session (<reason>; req_…; …)` | A spend limit, empty balance or rejected key stopped the mod. A `key rejected` line adds the stored key's shape: whether it starts with `sk-ant-`, its length, and whether it contains whitespace |
 
-Typed slash commands and `!` shell lines never reach the mod, so they leave no line. A
-pasted screenshot with an `@mention` arrives as typed, so the counts match what you see.
+Typed slash commands and `!` shell lines never reach the mod, so they leave no line
+(confirmed in [`UNVERIFIED.md`](UNVERIFIED.md)). A `#` memory line has not been probed, so
+it may log `gate skipped (memory note)`. A pasted screenshot with an `@mention` arrives
+as typed, so the counts match what you see.
+
+## Settings
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `apiKey` | none | The Anthropic key, kept in secure storage. See "Set up the key" |
+| **Rewrite prompts** (`enabled`) | on | Turns the optimizer on or off without uninstalling it |
+| **Model** (`model`) | `claude-haiku-5-5` | The Claude model that refines prompts |
 
 ## When it pauses
 
-A spend limit, an empty credit balance or a rejected key stops the mod for the
-rest of the session. It shows one notice, and your prompts go out as typed.
-Other errors (rate limits, overload, a network problem, a call slower than 6.5
-seconds) are tried once more at most and then skipped for that prompt only. The
-host cannot cancel a request already in flight, so one that outlasts the 6.5-second
+A spend limit, an empty credit balance or a rejected key (HTTP 401, 402 or 403)
+stops the mod for the rest of the session. It shows one notice, and your prompts
+go out as typed.
+
+Other failures skip only that prompt. The whole call has a 6.5-second deadline:
+
+| Failure | What happens |
+| --- | --- |
+| Server trouble (500, 504, 529) or a network error | One retry, only if at least 2.5 seconds remain |
+| Rate limit (429) | One retry if `retry-after` is 2 seconds or less, otherwise skipped as `rate limited` |
+| A call slower than the deadline | Skipped as `timeout`, with no retry |
+| Any other status, or a reply that is cut off or has no text | Skipped |
+
+The host cannot cancel a request already in flight, so one that outlasts the 6.5-second
 deadline is simply abandoned and ends at the host's own 30-second timeout. To
 turn the mod off, set **Rewrite prompts** off in `/config`, or run
-`claude plugin disable m3l-prompt-optimizer`.
+`claude plugin disable m3l-prompt-optimizer@monte3l-prompt-optimizer`.
 
 ### If the log says `key rejected (401)`
 
@@ -174,7 +197,7 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 - The key is read from secure storage by the mod and sent only to
   `api.anthropic.com`. It is never logged, never put in the environment, and
   never visible to Claude's Bash tool.
-- Log lines name the outcome and the request id only.
+- Log lines carry outcomes, reasons, counts and request ids, never prompt text or the key.
 - Anything that disables mods on your machine (managed settings, `--safe-mode`,
   `--bare`) also disables this one, and prompts then go through as typed.
 
@@ -184,8 +207,11 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 claude plugin validate --strict .   # manifest, hook shape, the `$` calls the mod makes
 claude plugin test .                # unit tests
 tsc -p .                            # type-check, using the types the engine writes
-node scripts/guard-break.mjs        # breaks each guard in turn; every break must fail a test
+node scripts/guard-break.mjs        # breaks each gate, guard and client check in turn; every break must fail a test
+node scripts/doc-parity.mjs         # checks that the README log, gate and guard tables match the code
+node scripts/build-docs.mjs --check # builds the docs site to a temp folder; fails on a broken link or anchor
 node evals/run.mjs --gate-only      # offline check of which eval prompts are sent
+(cd design && shasum -a 256 -c SHA256SUMS)  # fails if vendored design files were edited
 ```
 
 `tsc -p .` reads [`tsconfig.json`](tsconfig.json), which extends the declarations Claude
@@ -209,14 +235,19 @@ Each case says what to expect. `rewrite` cases (shouting, run-together asks) mus
 be judged better, `unchanged` cases must come back untouched, and `any` cases may
 be improved, polished or left alone but never judged worse. The vague cases are
 `any`: the rewriter cannot see your repository, so it may only polish the wording
-and never fill the gaps in, which makes "equal" their intended result.
+and never fill the gaps in, which makes "unchanged" or "equal" their intended results.
 
 | Result | Meaning |
 | --- | --- |
 | better | The judge prefers the refined prompt and the guard accepted it |
-| equal | The prompt came back unchanged, or the judge sees no difference |
+| equal | The judge sees no difference between the two |
 | worse | The judge prefers the original; counts against the bars |
-| reverted | The guard refused the rewrite, so the original was sent (a safe miss, counted separately) |
+| unchanged | The model returned the unchanged marker, or a rewrite equal to the prompt. This is the outcome the 90% bar counts |
+| reverted | The guard refused the rewrite or the reply was malformed, so the original was sent (a safe miss, counted separately) |
+| skipped | The gate stopped the prompt before any call |
+| failed | The call failed, timed out or paused the mod, so the original was sent |
+| sent | In a gate-only run, the prompt passed the gate and no call was made |
+| error | The case itself could not be run |
 
 Before it trusts the judge, the run checks it against 5 pairs with a known
 answer in [`evals/calibration.json`](evals/calibration.json): three bad rewrites

@@ -97,7 +97,7 @@ function nonPageHeadings(root, targetSrc, cache) {
  * `#anchor`; a relative path to another page's output file (rewritten
  * `.md` -> `.html`) when it points at one of `PAGES`; a `blob/main/<path>`
  * GitHub URL for any other repo file (`CLAUDE.md`, `LICENSE`,
- * `templates/packs/README.md`, a `.github/**` file, ...). Under `check`,
+ * `.claude/CLAUDE.md`, a `.github/**` file, ...). Under `check`,
  * every case that can be wrong -- a same-page anchor with no matching
  * heading, a cross-page anchor, an anchor into a non-page `.md` file that
  * doesn't exist there, a disallowed link scheme, or a repo path that

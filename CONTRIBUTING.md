@@ -14,7 +14,7 @@ agents, so expect more detail than you need for a first change.
 ## Prerequisites
 
 - **Claude Code 2.1.296 or later.** The engine loads the TypeScript in
-  `hooks/` directly. There is no `package.json`, no npm and no build.
+  `hooks/` directly. The mod has no `package.json`, no npm install and no build. Only CI has npm packages, under `.github/ci-tools` and `.github/deploy-tools`.
 - **Node 24 or later**, for the docs and eval scripts under `scripts/` and
   `evals/`.
 
@@ -39,6 +39,7 @@ types in `.claude-plugin/types/`, so install once from this folder first.
 | `claude plugin test .`                 | Every `*.test.ts` under the folder                              |
 | `tsc -p .`                             | Types                                                           |
 | `node scripts/guard-break.mjs`         | Removing each gate, guard or client check makes the suite fail  |
+| `node scripts/doc-parity.mjs`          | The README log, gate and guard tables match the code            |
 | `node evals/run.mjs --gate-only`       | Which eval prompts the gate would send, offline                 |
 | `node scripts/build-docs.mjs --check`  | The docs site builds and every link resolves                    |
 | `cd design && shasum -a 256 -c SHA256SUMS` | The vendored `design/source/` and `tokens.css` are unedited |
@@ -78,8 +79,10 @@ underlines. Use a GitHub alert matched to the severity of the point, never
 more than two in a row, and `[!CAUTION]` only for data loss or anything
 irreversible. Write plain, direct sentences and put tabular data in a table.
 The docs site renders a limited Markdown subset: headings up to h3, tables,
-fenced code, lists, blockquotes, alerts and footnotes. `node scripts/build-docs.mjs --check`
-fails on anything else.
+fenced code, lists, blockquotes, alerts, footnotes, links, images and rules.
+Raw HTML is escaped and shown as literal text. `node scripts/build-docs.mjs --check`
+fails on an h4 or deeper heading, italics, a broken link or anchor, and the
+other constructs the renderer rejects.
 
 ## Reporting a vulnerability
 
