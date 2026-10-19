@@ -8,6 +8,12 @@ describe('system prompt', () => {
     expect(SYSTEM_PROMPT.includes('suggested cause or approach')).toBe(true)
   })
 
+  test('keeps the language of the prompt and the reach of a restriction', () => {
+    expect(SYSTEM_PROMPT.includes('each item of a numbered list included, in the language the prompt is written in')).toBe(true)
+    expect(SYSTEM_PROMPT.includes('keep the reach the developer gave it')).toBe(true)
+    expect(SYSTEM_PROMPT.includes('add no reason, constraint or fix step of your own')).toBe(true)
+  })
+
   test('polishes a vague prompt and leaves the vagueness to the agent', () => {
     expect(SYSTEM_PROMPT.includes('polish its wording')).toBe(true)
     expect(SYSTEM_PROMPT.includes('ask the developer for details')).toBe(true)
