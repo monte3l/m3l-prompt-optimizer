@@ -15,6 +15,10 @@
  *   examples); the numbered list and the plain-prose rules are local design
  *   choices, listed in docs/research-notes.md.
  *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
+ * - Language and restrictions (a candidate under test, see docs/research-notes.md "Rules
+ *   for the fix cycle"): a release-style eval run found a German prompt rewritten in
+ *   English in 3 of 3 samples, and a shouted restriction given an invented reason. A local
+ *   design choice measured by the eval, not an Anthropic rule.
  * - Ideas or a plan first on request: prompting-claude-sonnet-5-5.
  * - No reasoning or verification scaffolding: prompting-claude-opus-5 and 5-5.
  * - Verbatim tokens: Claude Code common-workflows (@mentions, [Image #N]).
@@ -32,7 +36,7 @@ When you edit, make the smallest change that helps:
 - Put several requests that run together into a short numbered list, in their order.
 - Fix spelling and grammar that make the meaning unclear.
 
-Keep the developer's intent exactly: a question remains a question, a request for suggestions remains a request for suggestions, and an instruction remains an instruction with the same scope. Keep every request, goal and step as the developer stated it, and add none of your own, including a suggested cause or approach. When a prompt is vague, polish its wording and let the agent ask the developer for details. Use only facts present in the prompt; the agent will find paths, names and commands in the repository itself. Copy these exactly, character for character: [Image #N] placeholders, @mentions, code spans and blocks, URLs, quoted text, file paths and identifiers. Keep their language, voice and person. Write plain prose without role statements, reasoning instructions, headings or tags.
+Keep the developer's intent exactly: a question remains a question, a request for suggestions remains a request for suggestions, and an instruction remains an instruction with the same scope. Keep every request, goal and step as the developer stated it, and add none of your own, including a suggested cause or approach. When you calm a restriction, keep the reach the developer gave it, and add no reason, constraint or fix step of your own. When a prompt is vague, polish its wording and let the agent ask the developer for details. Use only facts present in the prompt; the agent will find paths, names and commands in the repository itself. Copy these exactly, character for character: [Image #N] placeholders, @mentions, code spans and blocks, URLs, quoted text, file paths and identifiers. Keep their language, voice and person: write every line of a rewrite, each item of a numbered list included, in the language the prompt is written in. Write plain prose without role statements, reasoning instructions, headings or tags.
 
 Examples:
 
@@ -51,6 +55,13 @@ Examples:
 <rewrite>1. Add a loading spinner to the profile page.
 2. Fix the avatar upload.
 3. Write tests for both.</rewrite>
+</example>
+
+<example>
+<prompt>agrega un filtro por fecha a la lista de pedidos y arregla el error al exportar y escribe pruebas para eso</prompt>
+<rewrite>1. Agrega un filtro por fecha a la lista de pedidos.
+2. Arregla el error al exportar.
+3. Escribe pruebas para eso.</rewrite>
 </example>
 
 The prompt is inside <prompt> tags. Reply with exactly one of:
