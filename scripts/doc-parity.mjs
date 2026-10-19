@@ -6,7 +6,8 @@
  * Fails when the README's user-facing contract and the code disagree: the
  * debug-log lines `hooks/handle.ts` writes, the reasons the gate gives for a
  * skip, the malformed-reply refusal, and the numbers the README quotes
- * (deadline, retry limits, prompt size limits, guard growth cap).
+ * (deadline, retry limits, prompt size limits, guard growth cap), and the
+ * case, pair and bar counts the README quotes for the evaluation set.
  *
  * Usage: node scripts/doc-parity.mjs [--root <dir>]
  * `--root` points the check at another checkout, which the self-test in
@@ -137,9 +138,31 @@ for (const [haystack, text, what] of expectations) {
   need(haystack.includes(text), `README should state ${what} as "${text}"`);
 }
 
+// 5. Evaluation counts: the README's case, bucket and pair counts and the bar
+//    thresholds follow evals/cases.json and evals/calibration.json.
+const cases = JSON.parse(read("evals/cases.json"));
+const pairs = JSON.parse(read("evals/calibration.json"));
+const evalSection = section("Development");
+const bucket = (expect) => cases.filter((c) => c.expect === expect).length;
+const reaching = cases.length - bucket("skipped");
+const unchangedCount = bucket("unchanged");
+const rewriteCount = bucket("rewrite");
+const evalExpectations = [
+  [`holds ${cases.length} prompts, of which ${reaching} reach the model`, "the prompt count and how many reach the model"],
+  [`and ${bucket("skipped")} are stopped by the gate`, "how many prompts the gate stops"],
+  [`${pairs.length} pairs with a known answer`, "the calibration pair count"],
+  ...["unchanged", "rewrite", "any", "skipped"].map((e) => [`| \`${e}\` | ${bucket(e)} |`, `the \`${e}\` bucket size`]),
+  [`at least ${Math.ceil(unchangedCount * 0.9)} of the ${unchangedCount} \`unchanged\` cases`, "the 90% bar as a count"],
+  [`at least ${Math.ceil(rewriteCount * 0.7)} of the ${rewriteCount} \`rewrite\` cases`, "the 70% bar as a count"],
+];
+for (const [text, what] of evalExpectations) {
+  need(evalSection.includes(text), `README "Evaluation" should state ${what} as "${text}"`);
+}
+need(pairs.every((pair) => ["better", "equal", "worse"].includes(pair.expect)), "every calibration pair needs an expect of better, equal or worse");
+
 if (problems.length > 0) {
   for (const p of problems) console.error(`DRIFT  ${p}`);
   console.error(`\n${problems.length} doc-parity problem(s).`);
   process.exit(1);
 }
-console.log(`doc-parity: ${new Set(prefixes).size} log lines, ${reasons.length} gate reasons and ${expectations.length} quoted numbers match the README.`);
+console.log(`doc-parity: ${new Set(prefixes).size} log lines, ${reasons.length} gate reasons, ${expectations.length} quoted numbers and ${evalExpectations.length} evaluation counts match the README.`);

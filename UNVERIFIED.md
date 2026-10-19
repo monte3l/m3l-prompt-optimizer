@@ -1,13 +1,17 @@
 # Open items
 
-Last reviewed 2026-10-10 (Claude Code 2.1.296). Sources for items 1, 2, 5, 7, 8, 9
+Last reviewed 2026-10-10 (Claude Code 2.1.296); items 12 and 14 to 17 on 2026-10-19. Sources for items 1, 2, 5, 7, 8, 9
 and 11 are in the "Follow-up research" section of
 [`docs/research-notes.md`](docs/research-notes.md). The other items are local
 observations on this machine.
 
 ## Still open
 
-Nothing that blocks use. Two limits remain by design, listed at the end.
+| # | Item | Result |
+| --- | --- | --- |
+| 14 | How often the rewriter changes a prompt in a way the judge calls worse | **Open.** The committed run takes one rewriter sample per prompt. A clean `--rewrites 8` run on 2026-10-19 (50 prompts, 400 samples, the 1.0.0 system prompt) had 19 samples judged worse (4.75%), in four prompts: `non-english-de` 6 of 8 ("Tests dafür" became "Tests für beides"), `long-3500` 6 of 8 and `edge-max` 3 of 8 (in a long list, "never show it again after that" became "after it is skipped or completed"), and `emphatic-3` 4 of 8 ("anywhere" narrowed to "anywhere in the README"). In each, the rewriter settled something the developer left open, and the guard does not catch it. Earlier samples agree (`emphatic-3` was worse in 3 of 18), and a one-sample run passes the "no worse" bar by luck. `clear-5` was split at ", so" in 6 of 8 samples (called equal) and `reason-1` and `every-1` never improved. Two candidate wordings for `hooks/system-prompt.ts` were run the same way in scratch copies and not applied. One that keeps words like "anywhere" as broad as written cut the worse samples to 14 but made `image-1` revert 8 of 8. A broader one that also covers phrases pointing back ("after that", "for both") cut them to 9 (one-sided p about 0.04, but written after seeing these failures, so in-sample), with `emphatic-3` still 2 of 8, `edge-max` 3 of 8 and one `image-1` revert. Eight fresh holdout prompts had no worse samples under any of the three wordings, so they could not tell them apart. |
+
+Nothing else blocks use. Two limits remain by design, listed at the end.
 
 ## Closed
 
@@ -24,8 +28,11 @@ Nothing that blocks use. Two limits remain by design, listed at the end.
 | 9 | The Console prompt improver and generator docs | Retired: the docs URLs redirect to the best-practices page, the release notes announce the experimental improve, generate and templatize endpoints retiring with the Workbench on 2026-08-17, and the current docs have no section on automated rewriting. The 2024 improver's chain-of-thought and prefill steps are no longer endorsed, which agrees with this design. |
 | 10 | Managed settings blocking mods | None on this machine: the mod was admitted at the user tier. |
 | 11 | Type-checking | `tsc -p .` works: the engine writes `.claude-plugin/types/` (including a `tsconfig.json`) for an installed copy, and the committed root `tsconfig.json` extends it and adds the project's own flags. The types are gitignored, so a fresh clone needs them laid by the engine first. |
-| 12 | Rewrite quality across the eval set (one live run, rewriter Haiku 5.5, judge Opus 5.5) | All bars met: 6 better, 4 equal, 0 worse, 11 unchanged, 0 reverted, 5 skipped; the judge was right on all 5 calibration pairs. One judgment per case, so it is a sample, not a variance measurement. |
+| 12 | Rewrite quality across the eval set (one live run, rewriter Haiku 5.5, judge Opus 5.5 at `medium` effort, 3 judgments per item) | Run on 2026-10-19 against the 1.0.0 system prompt: 61 prompts and 12 calibration pairs. Against one rewriter sample per case, all bars met: 17 better, 11 equal, 0 worse, 22 unchanged, 0 reverted, 11 skipped, 0 failed. The `unchanged` bucket held 12 of 12 and the `rewrite` bucket was judged better 10 of 12 (`reason-1` and `every-1` came back equal). The judge was right on all 12 calibration pairs on all 3 judgments. One rewriter sample per case, so this is a sample (item 14). |
 | 13 | A stored key rejected with 401 while the same key typed fresh returned 200 on `/v1/models` (10:01 and 10:05 UTC; it had worked at 08:58 UTC) | Re-entering the key with `claude plugin configure … --values-stdin` fixed it: the next three prompts logged `rewritten`, `left unchanged` and `rewritten`. The stored copy had gone stale or wrong; why is unknown. The plugin had been disabled and re-enabled in between, which is the only change recorded. If it recurs, the 401 log line now gives the stored key's length and prefix check. |
+| 15 | Latency of a long prompt against the 6.5-second deadline | Three timed rewrites on 2026-10-19: 2.7 s for 3500 characters of repetitive asks (274 output tokens), and 3.0 s and 3.2 s for 3474 characters of distinct asks (762 and 798 output tokens). In the full run the 3500 and 4000-character prompts and the 1500-character one all finished with no timeout. Three samples from one network, so not a latency distribution. Rewrites of long prompts came back shorter than the original, so the guard's growth cap is only exercised by the unit tests at its exact edge. |
+| 16 | Whether the eval judge thinks before it scores | **Rarely.** Thinking is enabled (adaptive, `medium` effort), but the model chooses per request. In a probe on 15 known-answer pairs (the 12 committed pairs plus 3 extra; the probe script is not committed) it thought on 1 at `medium` and on 1 at `high`, and an added "think carefully" sentence also gave 1 of 15. All 15 verdicts were right at both levels. In the full run it thought on 10 of 120 judgments, with a mean of 83 output tokens per call. The README says "thinking enabled" for that reason. |
+| 17 | Whether the judge gives the same verdict when asked again | Three judgments per item on 2026-10-19: all 12 calibration pairs 3 of 3, and 27 of the 28 judged cases unanimous. The one split was `long-1500` (equal, better, equal), which the run counted as equal. |
 | (headless) | `claude -p` prompts | Skipped by origin; the hook ran in 48 ms with no API call. |
 | (logs) | Key in the debug logs | No `sk-ant` string in either log. |
 
@@ -36,3 +43,4 @@ Nothing that blocks use. Two limits remain by design, listed at the end.
 - Whether CI can run `tsc -p .`. On 2026-10-19 `claude plugin validate --strict .` and `claude plugin test .` were run on a copy without `.claude-plugin/types/` and neither wrote it, so `verify` leaves type errors and `evals/*.ts` unchecked. Run `tsc -p .` locally before a PR (item 11).
 - Whether `claude plugin marketplace add monte3l/m3l-prompt-optimizer#<tag>` pins the plugin files of a `"./"` source. The Claude Code docs describe the `#ref` form for the catalog but do not state it for plugin content.
 - Whether an installed plugin and a `--plugin-dir` copy of the same name can load together is undocumented. Do not run both.
+- The rewriter's three examples have no outer `<examples>` tag, which the best-practices page recommends for several examples. Changing it is a system-prompt edit that needs a before and after eval, so it is a candidate for after 1.0.0.

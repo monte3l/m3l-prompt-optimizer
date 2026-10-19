@@ -41,6 +41,7 @@ types in `.claude-plugin/types/`, so install once from this folder first.
 | `node scripts/guard-break.mjs`         | Removing each gate, guard or client check makes the suite fail  |
 | `node scripts/doc-parity.mjs`          | The README log, gate and guard tables match the code            |
 | `node evals/run.mjs --gate-only`       | Which eval prompts the gate would send, offline                 |
+| `node evals/run.mjs --calibration-only` | Live, needs a key: the judge gives the known answer on all 12 pairs |
 | `node scripts/build-docs.mjs --check`  | The docs site builds and every link resolves                    |
 | `cd design && shasum -a 256 -c SHA256SUMS` | The vendored `design/source/` and `tokens.css` are unedited |
 

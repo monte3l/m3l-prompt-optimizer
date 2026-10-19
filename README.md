@@ -224,18 +224,25 @@ and decision logic are plain modules in `hooks/`, tested directly.
 
 ### Evaluation
 
-[`evals/cases.json`](evals/cases.json) holds 26 prompts: vague, clear, emphatic,
-question, image, mention, multi-part and gated. `evals/run.mjs` runs each through
-the real gate, client and guard, then asks Claude Opus 5.5 whether the result
-serves the developer better than their own words. The judge is told which text
-you typed and which is the proposal ([`evals/judge.ts`](evals/judge.ts)); a blind
-A/B comparison could not tell added scope from dropped scope.
+[`evals/cases.json`](evals/cases.json) holds 61 prompts, of which 50 reach the model
+and 11 are stopped by the gate. They cover vague, clear, emphatic, question, image,
+mention and multi-part prompts, prompts in Italian, Spanish and German, typed code
+and error text, long prompts (about 350, 500, 1500 and 3500 characters), prompts
+built to tempt the guard, and prompts at both edges of the gate's size limits.
+`evals/run.mjs` runs each through the real gate, client and guard, then asks Claude
+Opus 5.5 whether the result serves the developer better than their own words. The
+judge is told which text you typed and which is the proposal
+([`evals/judge.ts`](evals/judge.ts)); a blind A/B comparison could not tell added
+scope from dropped scope.
 
-Each case says what to expect. `rewrite` cases (shouting, run-together asks) must
-be judged better, `unchanged` cases must come back untouched, and `any` cases may
-be improved, polished or left alone but never judged worse. The vague cases are
-`any`: the rewriter cannot see your repository, so it may only polish the wording
-and never fill the gaps in, which makes "unchanged" or "equal" their intended results.
+Each case says what to expect:
+
+| Expected | Cases | What it means |
+| --- | --- | --- |
+| `unchanged` | 12 | Clear prompts and questions come back untouched |
+| `rewrite` | 12 | Shouting, run-together asks and unclear spelling should be judged better; the bar is 9 of the 12 |
+| `any` | 26 | Improved, polished or left alone, but never judged worse. The vague cases are here: the rewriter cannot see your repository, so "unchanged" or "equal" is their intended result |
+| `skipped` | 11 | The gate stops the prompt before any call |
 
 | Result | Meaning |
 | --- | --- |
@@ -249,20 +256,57 @@ and never fill the gaps in, which makes "unchanged" or "equal" their intended re
 | sent | In a gate-only run, the prompt passed the gate and no call was made |
 | error | The case itself could not be run |
 
-Before it trusts the judge, the run checks it against 5 pairs with a known
-answer in [`evals/calibration.json`](evals/calibration.json): three bad rewrites
-(an invented investigation step, a question turned into an order, added scope)
-that must be judged `worse`, and two good ones that must not be.
+**The judge is checked first.** Before any case is sent, the run gives the judge
+12 pairs with a known answer from [`evals/calibration.json`](evals/calibration.json)
+and requires the exact label on every one. If one is wrong, no case is sent and
+`evals/results.md` is left as it was. Five pairs are bad rewrites that must be judged
+`worse` (an invented investigation step, a question turned into an order, added
+scope, dropped scope, added reasoning instructions), four are good rewrites that must
+be judged `better` (calmed shouting, a numbered list, a reason beside its
+instruction, ideas before changes), and three change only capitalization,
+punctuation or a synonym and must be judged `equal`. Each pair covers one clause of
+the judge's rubric, and every original is new: the run refuses a pair whose original
+is also an eval prompt.
 
-Bars: no "worse" result reaches the model, at least 90% of the clear and
-question prompts stay unchanged, at least 70% of the rewrite-expected prompts are
-judged better, the judge is right on every calibration pair, and every gated
-prompt is skipped before any call. Run it live
+**The judge runs with thinking enabled.** It uses adaptive thinking at `medium`
+effort and answers in a fixed JSON shape (a one-sentence reason, then the verdict).
+The model decides per request whether to think, and on short comparisons it mostly
+does not: in a one-off probe on 15 known-answer pairs (the 12 committed pairs plus
+3 more; the probe script is not committed) it thought on 1 at `medium` and on 1 at
+`high`, and an added "think carefully" sentence changed nothing. Both levels got
+all 15 right, so `medium` is the default. Each run reports how many judgments contained
+thinking, and the thinking summaries are saved in `evals/.results/`.
+
+Bars: no "worse" result reaches the model (with several samples per prompt, at most
+2% of all rewrites judged worse and no prompt with more than a quarter of its rewrites
+judged worse), at least 11 of the 12 `unchanged` cases
+stay unchanged, at least 9 of the 12 `rewrite` cases are judged better, no case
+errors and no call fails, the judge is right on every calibration pair, every gated
+prompt is skipped before any call and every other prompt passes the gate. Run it live
 with the key on that one command:
 
 ```zsh
 read -s "?Anthropic key: " ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY && node evals/run.mjs; unset ANTHROPIC_API_KEY
 ```
+
+| Option | What it does |
+| --- | --- |
+| `--gate-only` | Offline: which prompts the gate sends |
+| `--calibration-only` | Only the 12 calibration pairs; writes no `results.md` |
+| `--effort <level>` | The judge's effort: `low`, `medium`, `high`, `xhigh` or `max` |
+| `--repeat <n>` | Judges every pair and case `n` times (1 to 5) |
+| `--rewrites <n>` | Asks the rewriter for `n` independent rewrites of every prompt (1 to 20), one after another, and counts every bar over the samples |
+
+`--repeat` is optional hardening, not something the official evaluation guidance
+asks for. With `--repeat 3` a result is better only if all three judgments say
+better and any "worse" wins, and a bar requires the judge to give one verdict on all
+three repeats for at least 90% of the judged cases.
+
+> [!NOTE]
+> By default the rewriter is sampled once per case, so a single run can miss a
+> defect that shows on only some of the samples. `--repeat` measures the judge,
+> not the rewriter; `--rewrites` measures the rewriter. With `--rewrites 8` the
+> strict "no worse" bar needs all 8 samples of every prompt to be clean.
 
 Results are written to [`evals/results.md`](evals/results.md).
 

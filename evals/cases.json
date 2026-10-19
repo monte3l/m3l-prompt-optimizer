@@ -160,5 +160,258 @@
       "kind": "scheduled-trigger"
     },
     "prompt": "check the deploy status of the web app and report anything unusual"
+  },
+  {
+    "id": "clear-4",
+    "category": "clear",
+    "expect": "unchanged",
+    "prompt": "Run `pnpm build` in the web package and tell me which warnings come from our own code rather than from dependencies.",
+    "note": "Clear request with an inline code span; the span must survive and nothing needs editing."
+  },
+  {
+    "id": "clear-5",
+    "category": "clear",
+    "expect": "unchanged",
+    "prompt": "The deploy job fails with \"Error: ENOSPC: no space left on device\" on the runner, so clear the build cache before the install step in .github/workflows/deploy.yml.",
+    "note": "Quoted error text inside an otherwise clear request, typed rather than pasted."
+  },
+  {
+    "id": "clear-6",
+    "category": "clear",
+    "expect": "unchanged",
+    "prompt": "Add a unit test for parseDuration in src/utils/time.ts that covers an empty string, a negative value and a value with no unit.",
+    "note": "Clear request with a path, an identifier and a list of cases."
+  },
+  {
+    "id": "question-4",
+    "category": "question",
+    "expect": "unchanged",
+    "prompt": "perché il job notturno di esportazione impiega così tanto tempo a finire?",
+    "note": "A question in Italian: it stays a question, in Italian, untouched."
+  },
+  {
+    "id": "question-5",
+    "category": "question",
+    "expect": "unchanged",
+    "prompt": "what does the retry middleware do when the upstream returns a 503 twice in a row?",
+    "note": "A question about behaviour."
+  },
+  {
+    "id": "question-6",
+    "category": "question",
+    "expect": "unchanged",
+    "prompt": "which of the packages in this monorepo depend on the shared config package?",
+    "note": "A question that asks for a lookup, not a change."
+  },
+  {
+    "id": "shouting-restriction-1",
+    "category": "restriction",
+    "expect": "rewrite",
+    "prompt": "do NOT change the public API!!! we have external users who depend on every export, so ONLY touch the internals of the parser",
+    "note": "A shouted restriction with its reason: calm wording, the action to take instead, and the reason beside it."
+  },
+  {
+    "id": "reason-1",
+    "category": "reason",
+    "expect": "rewrite",
+    "prompt": "add a dependency cache to the build workflow and bump the node version in the same file. the install step is the slowest part of CI and we pay per minute",
+    "note": "The reason explains the first ask but sits after the second; it should end up beside the instruction it explains."
+  },
+  {
+    "id": "every-1",
+    "category": "every-item",
+    "expect": "rewrite",
+    "prompt": "update the copyright year in the license, the readme and the footer component, all of them please",
+    "note": "A clearly meant \"every item\" is spelled out using the developer's own items."
+  },
+  {
+    "id": "shouting-list-1",
+    "category": "emphatic",
+    "expect": "rewrite",
+    "prompt": "FIRST rename the helper THEN update the tests AND bump the version, do it in THAT order",
+    "note": "Shouting and run-together asks together: calm wording and a short numbered list in order."
+  },
+  {
+    "id": "spelling-1",
+    "category": "spelling",
+    "expect": "rewrite",
+    "prompt": "the paginaton compnent skps the secnd page wen the lst page has fewr then ten itms",
+    "note": "Spelling that obscures the meaning is fixed and nothing else changes."
+  },
+  {
+    "id": "italian-emphatic-1",
+    "category": "non-english",
+    "expect": "rewrite",
+    "prompt": "NON toccare la cartella delle migrazioni!!! IMPORTANTE: modifica SOLO il livello API e NON aggiungere nuove dipendenze",
+    "note": "Shouting in Italian: calmed, and the reply stays in Italian."
+  },
+  {
+    "id": "long-list-1",
+    "category": "long",
+    "expect": "rewrite",
+    "long": true,
+    "prompt": "rename the user service to account service, and update every import of it, and move its tests next to the code, and delete the old mocks, and update the architecture notes, and rename the database table prefix, and update the seed script, and fix the logging names, and bump the minor version, and add a changelog line, and tell me what you changed",
+    "note": "Eleven run-together asks (about 350 characters): a long numbered list in the original order."
+  },
+  {
+    "id": "vague-4",
+    "category": "vague",
+    "expect": "any",
+    "prompt": "make the onboarding feel nicer, people say it's confusing",
+    "note": "The rewriter cannot see the repository, so \"equal\" or \"unchanged\" is the intended result and only \"worse\" fails."
+  },
+  {
+    "id": "vague-5",
+    "category": "vague",
+    "expect": "any",
+    "prompt": "can you improve the error handling in the worker, it swallows stuff",
+    "note": "The rewriter cannot see the repository, so \"equal\" or \"unchanged\" is the intended result and only \"worse\" fails."
+  },
+  {
+    "id": "non-english-es",
+    "category": "non-english",
+    "expect": "any",
+    "prompt": "agrega un botón para exportar la tabla de pedidos a CSV y arregla el filtro de fechas",
+    "note": "Two run-together asks in Spanish: any edit stays in Spanish."
+  },
+  {
+    "id": "non-english-de",
+    "category": "non-english",
+    "expect": "any",
+    "prompt": "füge dem Profil eine Avatar-Vorschau hinzu und behebe den Fehler beim Speichern und schreibe Tests dafür",
+    "note": "Three run-together asks in German: any edit stays in German."
+  },
+  {
+    "id": "restriction-1",
+    "category": "restriction",
+    "expect": "any",
+    "prompt": "refactor the invoice module and don't touch the database schema, we can't run migrations this week",
+    "note": "A calm restriction with its reason: stating the action instead is fine, and so is leaving it alone; \"equal\" is the expected judgment and only \"worse\" fails."
+  },
+  {
+    "id": "ideas-1",
+    "category": "ideas",
+    "expect": "any",
+    "prompt": "figure out how we could cut the nightly export time in half",
+    "note": "An open exploration, which the system prompt returns unchanged, that may also read as a request for ideas first; either result is fine, worse fails."
+  },
+  {
+    "id": "inline-code-1",
+    "category": "inline-code",
+    "expect": "any",
+    "prompt": "why does `useEffect` run twice in `Dashboard.tsx` when I open it in dev mode?",
+    "note": "Code spans and a file name inside a question."
+  },
+  {
+    "id": "inline-error-1",
+    "category": "inline-error",
+    "expect": "any",
+    "prompt": "the job dies with Error: connect ECONNREFUSED 127.0.0.1:5432 right after startup so fix the database connection setup",
+    "note": "Error text typed into a sentence, not pasted."
+  },
+  {
+    "id": "guard-url-1",
+    "category": "guard-tempting",
+    "expect": "any",
+    "prompt": "after you read https://example.com/docs/retries.html rename the helper `withRetry` to `retryable` and update every caller and add a test",
+    "note": "A URL and a code span inside run-together asks: a list rewrite must keep both, or the guard reverts it."
+  },
+  {
+    "id": "guard-path-1",
+    "category": "guard-tempting",
+    "expect": "any",
+    "prompt": "@src/api/client.ts open this and fix the timeout in lib/http/timeout.js and then also check config/defaults.json",
+    "note": "A mention and two paths inside run-together asks: a list rewrite must keep all three, or the guard reverts it."
+  },
+  {
+    "id": "near-cap-1",
+    "category": "near-cap",
+    "expect": "any",
+    "prompt": "fix lint, types, docs, tests, deps, ci, readme, changelog and license",
+    "note": "Nine tiny items: a numbered list adds a verb and a numeral to each, which lands close to the guard's growth cap."
+  },
+  {
+    "id": "long-500",
+    "category": "long",
+    "expect": "any",
+    "long": true,
+    "prompt": "The checkout page has started showing the order total without the discount code applied whenever a customer edits their cart after entering the code. It worked fine last month. We changed how the cart state is stored around the same time, so I suspect the two are related, but I have not confirmed that. The support team has three open tickets about it. Please look into it and fix it so the discount stays applied after a cart edit, and tell me what was going wrong once you have it working.",
+    "note": "About 500 characters of context around one request."
+  },
+  {
+    "id": "long-1500",
+    "category": "long",
+    "expect": "any",
+    "long": true,
+    "prompt": "I am working on the invoice reminders in src/billing/invoice.ts and I need a few changes there before the release on Thursday. Right now a reminder goes out every day once an invoice is overdue, and customers have started complaining that it feels like spam. I would like the reminders to go out on day 3, day 7 and day 14 after the due date and then stop.\n\nThe retry handling is the second problem. When the email provider is down we increment `retryCount` and try again on the next run, but there is no upper limit, so a bad address can be retried forever and it clogs the queue. Please cap it at five attempts and mark the reminder as failed after that, so that someone can see it in the admin list instead of the job quietly looping.\n\nPlease also add tests for the three reminder days and for the retry cap, and make sure the existing invoice tests still pass without being edited to fit the new behaviour. If one of them has to change, tell me which one and why before you change it, because those tests were written by someone who has left the team.\n\nLast, the reminder text itself reads as quite harsh. It starts with a demand for payment and only mentions the invoice number at the end. Please soften the wording, put the invoice number and the amount at the top, keep the payment link, and keep the German and Italian versions in step with the English one. The finance team will review the new wording, so keep the old text available somewhere in case they prefer it. Thanks, and let me know if anything here conflicts with how the scheduler works.",
+    "note": "About 1500 characters over three paragraphs, with a path, a code span and three separate requests."
+  },
+  {
+    "id": "long-3500",
+    "category": "long",
+    "expect": "any",
+    "long": true,
+    "prompt": "add pagination to the orders table and make the page size configurable, and fix the date filter that drops the last day of the range. write tests for the new pagination and the filter fix, then make the export button export only the filtered rows. also rename the status column to state everywhere in the table code and make the empty state say something helpful instead of a blank grid, and debounce the loading skeleton because it flickers on slow connections. bump the table library to the latest minor and fix whatever breaks, then add a short section to the docs about the new page size setting. also clean up the unused styles left over from the old table and make the header row sticky when the table scrolls vertically, and let users hide columns and remember their choice between visits. show a relative time such as 3 hours ago next to each created date, then make the customer name cell link to the customer detail page. also sort numeric columns numerically instead of as text and keep the selected rows when the user changes page, and add a bulk archive action for the selected rows with a confirmation dialog. stop the table from re-rendering every row when one row changes, then make keyboard navigation work with arrow keys between cells. also translate the column headers into Italian and German and show totals for the amount column in a footer row, and make the table usable on narrow phone screens without horizontal scrolling. add a search box that filters by order number and customer name, then highlight overdue orders in a calm red tint. also fix the tooltip on the refund icon that stays open after the pointer leaves and log a warning when the server returns more rows than the page size, and move the table settings into one small hook instead of three copies. make the retry button appear when loading fails, then add a column for the sales channel and fill it from the order data. also make print layout hide the toolbar and the action buttons and add a toggle in the settings page for weekly email summaries, and make the notification bell show a count capped at 99. let admins invite several teammates at once by pasting a list of emails, then show the last login time on the account page. also stop the avatar upload from accepting files over five megabytes and explain in the upload error which file types are allowed, and add a dark mode option that follows the system setting by default. make the password reset email link expire after one hour, then show a clear message when the reset link has expired. also move the billing address form into its own component and validate postal codes by country instead of one global pattern, and add an invoices tab that lists past invoices with download links. make the plan comparison table readable on a phone, then let users cancel their subscription without contacting support. also send a confirmation email after a plan change and add rate limiting to the login endpoint, and lock the account for fifteen minutes after ten failed attempts. record failed login attempts in the audit log, then make the audit log filterable by user and by date. also add an export of the audit log as a spreadsheet and rename the team workspace label to just workspace across the app, and make the sidebar remember whether it was collapsed. add keyboard shortcuts for the three most used actions, then show a short tour the first time someone opens the dashboard. also make the tour skippable and never show it again after that thank you",
+    "note": "Exactly 3500 characters of distinct run-together asks; the rewrite is long and must clear the 6.5 second deadline and the guard."
+  },
+  {
+    "id": "edge-min",
+    "category": "gate-edge",
+    "expect": "any",
+    "prompt": "rename the old test files",
+    "note": "Exactly 25 characters and 5 words: the smallest prompt the gate sends."
+  },
+  {
+    "id": "edge-max",
+    "category": "gate-edge",
+    "expect": "any",
+    "long": true,
+    "prompt": "add pagination to the orders table and make the page size configurable, and fix the date filter that drops the last day of the range. write tests for the new pagination and the filter fix, then make the export button export only the filtered rows. also rename the status column to state everywhere in the table code and make the empty state say something helpful instead of a blank grid, and debounce the loading skeleton because it flickers on slow connections. bump the table library to the latest minor and fix whatever breaks, then add a short section to the docs about the new page size setting. also clean up the unused styles left over from the old table and make the header row sticky when the table scrolls vertically, and let users hide columns and remember their choice between visits. show a relative time such as 3 hours ago next to each created date, then make the customer name cell link to the customer detail page. also sort numeric columns numerically instead of as text and keep the selected rows when the user changes page, and add a bulk archive action for the selected rows with a confirmation dialog. stop the table from re-rendering every row when one row changes, then make keyboard navigation work with arrow keys between cells. also translate the column headers into Italian and German and show totals for the amount column in a footer row, and make the table usable on narrow phone screens without horizontal scrolling. add a search box that filters by order number and customer name, then highlight overdue orders in a calm red tint. also fix the tooltip on the refund icon that stays open after the pointer leaves and log a warning when the server returns more rows than the page size, and move the table settings into one small hook instead of three copies. make the retry button appear when loading fails, then add a column for the sales channel and fill it from the order data. also make print layout hide the toolbar and the action buttons and add a toggle in the settings page for weekly email summaries, and make the notification bell show a count capped at 99. let admins invite several teammates at once by pasting a list of emails, then show the last login time on the account page. also stop the avatar upload from accepting files over five megabytes and explain in the upload error which file types are allowed, and add a dark mode option that follows the system setting by default. make the password reset email link expire after one hour, then show a clear message when the reset link has expired. also move the billing address form into its own component and validate postal codes by country instead of one global pattern, and add an invoices tab that lists past invoices with download links. make the plan comparison table readable on a phone, then let users cancel their subscription without contacting support. also send a confirmation email after a plan change and add rate limiting to the login endpoint, and lock the account for fifteen minutes after ten failed attempts. record failed login attempts in the audit log, then make the audit log filterable by user and by date. also add an export of the audit log as a spreadsheet and rename the team workspace label to just workspace across the app, and make the sidebar remember whether it was collapsed. add keyboard shortcuts for the three most used actions, then show a short tour the first time someone opens the dashboard. also make the tour skippable and never show it again after that and cache the plan list so the pricing page loads faster, and retry failed webhook deliveries with growing delays. show webhook delivery history in the developer settings, then add a test that fails when a translation key is missing. also remove the old feature flag for the legacy dashboard and show the current plan name in the page title of the billing area, and let owners transfer a workspace to another member. ask for confirmation before deleting a workspace and name what will be lost (ticket 4821048)",
+    "note": "Exactly 4000 characters: the largest prompt the gate sends."
+  },
+  {
+    "id": "gated-min-chars",
+    "category": "gated",
+    "expect": "skipped",
+    "prompt": "rename the old test file",
+    "note": "One character under the minimum length (24, with 5 words)."
+  },
+  {
+    "id": "gated-four-words",
+    "category": "gated",
+    "expect": "skipped",
+    "prompt": "refactor the authentication middleware",
+    "note": "Long enough, but only four words."
+  },
+  {
+    "id": "gated-over-max",
+    "category": "gated",
+    "expect": "skipped",
+    "prompt": "add pagination to the orders table and make the page size configurable, and fix the date filter that drops the last day of the range. write tests for the new pagination and the filter fix, then make the export button export only the filtered rows. also rename the status column to state everywhere in the table code and make the empty state say something helpful instead of a blank grid, and debounce the loading skeleton because it flickers on slow connections. bump the table library to the latest minor and fix whatever breaks, then add a short section to the docs about the new page size setting. also clean up the unused styles left over from the old table and make the header row sticky when the table scrolls vertically, and let users hide columns and remember their choice between visits. show a relative time such as 3 hours ago next to each created date, then make the customer name cell link to the customer detail page. also sort numeric columns numerically instead of as text and keep the selected rows when the user changes page, and add a bulk archive action for the selected rows with a confirmation dialog. stop the table from re-rendering every row when one row changes, then make keyboard navigation work with arrow keys between cells. also translate the column headers into Italian and German and show totals for the amount column in a footer row, and make the table usable on narrow phone screens without horizontal scrolling. add a search box that filters by order number and customer name, then highlight overdue orders in a calm red tint. also fix the tooltip on the refund icon that stays open after the pointer leaves and log a warning when the server returns more rows than the page size, and move the table settings into one small hook instead of three copies. make the retry button appear when loading fails, then add a column for the sales channel and fill it from the order data. also make print layout hide the toolbar and the action buttons and add a toggle in the settings page for weekly email summaries, and make the notification bell show a count capped at 99. let admins invite several teammates at once by pasting a list of emails, then show the last login time on the account page. also stop the avatar upload from accepting files over five megabytes and explain in the upload error which file types are allowed, and add a dark mode option that follows the system setting by default. make the password reset email link expire after one hour, then show a clear message when the reset link has expired. also move the billing address form into its own component and validate postal codes by country instead of one global pattern, and add an invoices tab that lists past invoices with download links. make the plan comparison table readable on a phone, then let users cancel their subscription without contacting support. also send a confirmation email after a plan change and add rate limiting to the login endpoint, and lock the account for fifteen minutes after ten failed attempts. record failed login attempts in the audit log, then make the audit log filterable by user and by date. also add an export of the audit log as a spreadsheet and rename the team workspace label to just workspace across the app, and make the sidebar remember whether it was collapsed. add keyboard shortcuts for the three most used actions, then show a short tour the first time someone opens the dashboard. also make the tour skippable and never show it again after that and cache the plan list so the pricing page loads faster, and retry failed webhook deliveries with growing delays. show webhook delivery history in the developer settings, then add a test that fails when a translation key is missing. also remove the old feature flag for the legacy dashboard and show the current plan name in the page title of the billing area, and let owners transfer a workspace to another member. ask for confirmation before deleting a workspace and name what will be lost (ticket 4) cheers",
+    "note": "One character over the maximum length (4001)."
+  },
+  {
+    "id": "gated-raw",
+    "category": "gated",
+    "expect": "skipped",
+    "prompt": "\\raw please send this exactly as I typed it, shouting and all",
+    "note": "The `\\raw ` escape is honoured before any call."
+  },
+  {
+    "id": "gated-memory",
+    "category": "gated",
+    "expect": "skipped",
+    "prompt": "# remember that we use pnpm in every package here",
+    "note": "A memory note."
+  },
+  {
+    "id": "gated-sdk",
+    "category": "gated",
+    "expect": "skipped",
+    "origin": {
+      "kind": "sdk"
+    },
+    "prompt": "summarize the open pull requests and list the oldest three",
+    "note": "Not typed in the composer: an SDK origin."
   }
 ]

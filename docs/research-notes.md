@@ -107,6 +107,26 @@ build's own `claude-code.d.ts` (2.1.296).
 | Admin | `admin` | `allowManagedModsOnly`, `allowManagedHooksOnly`, `disableAllHooks`, `disableSideloadFlags`, network policy for `$.http.fetch`, `--safe-mode`, `--bare`. Mods are not sandboxed. | Any of these silently disables the mod, and prompts then go through as typed. |
 | Versions | CHANGELOG 2.1.295, 2.1.296 | 2.1.295 fixed prompt history keeping the typed text after a rewrite; 2.1.296 fixed interrupts during a slow `prompt.submit` hook. | Require 2.1.296 or newer. |
 
+## Facet D: the evaluation harness (2026-10-19)
+
+Read on 2026-10-19 from the raw Markdown of each official page (the page URL plus `.md`), not through a summarizer. Base URL: `https://platform.claude.com/docs/en/`. In the table, DT is `test-and-evaluate/develop-tests`, ST is `build-with-claude/thinking-steering-and-cost`, EF is `build-with-claude/effort`, O55 is `build-with-claude/prompt-engineering/prompting-claude-opus-5-5`, SO is `build-with-claude/structured-outputs` and BP is `build-with-claude/prompt-engineering/claude-prompting-best-practices`.
+
+| Rule in `evals/` | Source | What it says | Decision |
+| --- | --- | --- | --- |
+| Many cases, edge cases included, long input among them | DT | "Prioritize volume over quality: More questions with slightly lower signal automated grading is better than fewer questions with high-quality human hand-graded evals." Edge cases include "Overly long input data or user input". | 61 cases, with prompts at about 350, 500, 1500 and 3500 characters and at both gate limits |
+| Exact boundaries are unit tests, not judged cases | DT | "Code-based grading: Fastest and most reliable". | `tests/gate.test.ts` and `tests/guard.test.ts` test each limit one character either side, and four mutants swap `<` for `<=` |
+| Detailed rubric, constrained answer | DT | "Have detailed, clear rubrics". "Empirical or specific: … instruct the LLM to output only 'correct' or 'incorrect'". | The judge keeps its rubric, and the API holds its reply to a reason and one of three labels (SO lists `claude-opus-5-5`) |
+| A grader model with thinking on | DT | "Use a grader model with thinking on, so that it reasons before it produces an evaluation score". | Thinking is enabled. See the next row for what that does and does not mean |
+| Thinking is the model's choice | ST, EF | "Thinking is optional for the model … A simple factual question may get a direct response with no thinking block at all". "No level guarantees a thinking block on every request." On Opus 5.5 "Adaptive thinking is always on and can't be turned off". | Measured: on 15 known-answer pairs the judge thought on 1 at `medium` and on 1 at `high`. The docs call it "thinking enabled", never "always reasons first", and every run reports the thinking rate |
+| Steering the judge to think more | ST | "To encourage thinking instead, use a phrase like: 'This task involves multistep reasoning. Think carefully before responding.'" and "Verify steering on your workload". | Tried one sentence on the 15 pairs: 1 of 15 thought, the same pair as before. Not adopted |
+| Effort set explicitly and swept | O55, EF | "Start at `medium` … set it explicitly, and test several levels against your own evals". | `--effort`; `medium` and `high` both got 15 of 15, so `medium` is the default |
+| Room for thinking | O55 | `max_tokens` is "a hard limit on total output (thinking plus response text)". | `max_tokens` 16000, and a reply whose `stop_reason` is not `end_turn` is an error, never a verdict |
+| A short `reason` | O55 | A prompt that pushes the model to write out its reasoning "may be declined with the `reasoning_extraction` refusal category". | `reason` stays one sentence, and the reasoning is the model's own thinking |
+| A different grader from the rewriter | DT | A code comment in the grading example: "Generally best practice to use a different model to evaluate than the model used to generate the evaluated output". | Haiku 5.5 rewrites, Opus 5.5 judges |
+| Test the grader before trusting it | DT | "LLM-based grading: … Test to ensure reliability first then scale." | The judge gets 12 known-answer pairs first, and no case is sent unless every one is right |
+| Repeated judging | DT | Lists "Consistency" as a success criterion for the system under test, and asks nothing of the grader. | `--repeat` is local hardening, labelled optional |
+| Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's three examples have no outer `<examples>` tag. Not changed for 1.0.0: it is a system-prompt edit that needs a before and after eval |
+
 ## Follow-up research: the open items (2026-10-10)
 
 Two read-only research passes and three local experiments. Base URLs:
