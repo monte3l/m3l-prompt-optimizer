@@ -13,6 +13,7 @@
 //   --private-cases <f>  also run a private prompt file. Nothing that quotes those prompts is printed or saved
 //   --concurrency <n>    rewriter calls in flight at once (default 3). Failed and timed-out samples are left out
 //                        of the pairs, so some concurrency costs only samples, never a verdict
+//   --cases <file>       compare on this public prompt file (a JSON array of prompts) instead of the default suites
 //   --limit <n>          use only the first n prompts, for a smoke test
 //   --out <file>         write the aggregates and the per-sample outcomes here as JSON
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -37,6 +38,7 @@ const concurrency = Number(valueOf('--concurrency') ?? 3)
 const suite = valueOf('--suite') ?? 'gate'
 const privatePath = valueOf('--private-cases')
 const outPath = valueOf('--out')
+const casesPath = valueOf('--cases')
 const limit = valueOf('--limit') === undefined ? Infinity : Number(valueOf('--limit'))
 if (!Number.isInteger(samples) || samples < 1 || samples > 20) usage('--samples must be a whole number from 1 to 20.')
 if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 8) usage('--concurrency must be a whole number from 1 to 8.')
@@ -59,7 +61,7 @@ const readPrivate = file => {
     return usage('The --private-cases file could not be read as a JSON array of prompts.')
   }
 }
-const prompts = [
+const prompts = casesPath !== undefined ? read(casesPath).map(c => ({ ...c, suite: 'gate' })).filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo).slice(0, limit) : [
   ...(suite === 'gate' ? [] : read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))),
   ...(suite === 'diagnostic' ? [] : read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))),
   ...(suite === 'diagnostic' || privatePath === undefined ? [] : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
