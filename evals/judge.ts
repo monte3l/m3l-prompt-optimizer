@@ -39,8 +39,8 @@ export const judgeMessage = (original: string, proposal: string): string =>
   `<developer_prompt>\n${original}\n</developer_prompt>\n\n<proposed_refinement>\n${proposal}\n</proposed_refinement>`
 
 /** The Messages API body for one judgment: thinking on and summarized, effort set, output held to the schema. */
-export const judgeRequest = (original: string, proposal: string, effort: Effort) => ({
-  model: JUDGE_MODEL,
+export const judgeRequest = (original: string, proposal: string, effort: Effort, model: string = JUDGE_MODEL) => ({
+  model,
   max_tokens: JUDGE_MAX_TOKENS,
   thinking: { type: 'adaptive', display: 'summarized' },
   output_config: { effort, format: { type: 'json_schema', schema: JUDGE_SCHEMA } },

@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "g001",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the date picker in the signup form, it's off by one day"
+  },
+  {
+    "id": "g002",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename UserTable to MembersTable everywhere pls"
+  },
+  {
+    "id": "g003",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a loading spinner to the submit button on the checkout page"
+  },
+  {
+    "id": "g004",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "write a test for the useDebounce hook"
+  },
+  {
+    "id": "g005",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update the README with the new env setup steps for local dev"
+  },
+  {
+    "id": "g006",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "pagination resets to page 1 when i sort the orders table, shoudnt happen"
+  },
+  {
+    "id": "g007",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you add a tooltip to the disabled export button explaining why it's disabled?"
+  },
+  {
+    "id": "g008",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where do we handle the 401 redirect to login? cant find it"
+  },
+  {
+    "id": "g009",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "How is form validation set up in this project? Are we using zod schemas everywhere or is some of it still hand-rolled?"
+  },
+  {
+    "id": "g010",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "why does the sidebar re-render every time i type in the search box"
+  },
+  {
+    "id": "g011",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "¿Qué hace exactamente el store de Pinia `useCartStore` y dónde se persiste el estado?"
+  },
+  {
+    "id": "g012",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "the dashboard feels kinda sluggish, can you take a look"
+  },
+  {
+    "id": "g013",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the styles folder a bit, it's a mess"
+  },
+  {
+    "id": "g014",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "make the settings page look less janky on mobile"
+  },
+  {
+    "id": "g015",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a 'clear filters' button to the products table, also make the filter state persist in the url query params, and write a couple tests for that"
+  },
+  {
+    "id": "g016",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Please: 1) bump the router to the latest minor, 2) fix whatever breaks, 3) add a 404 page for unknown routes. thanks!"
+  },
+  {
+    "id": "g017",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi convertire il componente ProfileForm in composition API e già che ci sei togliere le prop inutilizzate? poi controlla che i test passino"
+  },
+  {
+    "id": "g018",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're migrating the invoices list from our old hand-built table to TanStack Table. The old one lives in src/components/legacy/InvoiceGrid.jsx and has custom column resizing, row selection with shift-click, and a sticky header that product really cares about. I'd like you to create a new InvoicesTable component using TanStack Table that keeps all three behaviors, reuses the existing column definitions from invoiceColumns.js where possible, and keeps the same props interface so the parent page doesn't need changes. Don't delete the legacy component yet, just swap the import in InvoicesPage behind the `useNewInvoiceTable` feature flag. Add tests for selection and sorting."
+  },
+  {
+    "id": "g019",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "ok so context: users are complaining that when they fill out the multi-step onboarding form and hit back in the browser, they lose everything they typed in previous steps. right now each step is its own route (/onboarding/step-1 etc) and the form state lives in local component state, which is obviously why it gets wiped. i think we should lift the state into a context or the existing zustand store and maybe also persist to sessionStorage so a refresh doesnt nuke it either. can you implement that, keep the per-step validation working, and make sure the final submit clears the saved draft. dont touch the styling"
+  },
+  {
+    "id": "g020",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT touch the auth module!!! just fix the navbar overflow on small screens, that's ALL"
+  },
+  {
+    "id": "g021",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "the `formatCurrency` util in src/utils/format.ts ignores the locale arg, fix it and update usages in `PriceTag.vue`"
+  },
+  {
+    "id": "g022",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Kannst du bitte die Tabelle auf der Benutzerseite so anpassen, dass man nach Spalten sortieren kann?"
+  },
+  {
+    "id": "g023",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the 500 on POST /users when email is missing, should be a 400"
+  },
+  {
+    "id": "g024",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add rate limiting to the login endpoint pls"
+  },
+  {
+    "id": "g025",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename `getUsr` to `getUserById` everywhere"
+  },
+  {
+    "id": "g026",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "write a unit test for the token refresh logic"
+  },
+  {
+    "id": "g027",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update the README with the new env vars for the queue worker"
+  },
+  {
+    "id": "g028",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "pagination is off by one on /orders, can you take a look"
+  },
+  {
+    "id": "g029",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a createdAt field to the Invoice graphql type"
+  },
+  {
+    "id": "g030",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "how does the auth middleware decide which routes are public?"
+  },
+  {
+    "id": "g031",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where do we retry failed jobs? is there a max retry count somewhere"
+  },
+  {
+    "id": "g032",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Why are we using both zod and joi for validation? Is one of them legacy?"
+  },
+  {
+    "id": "g033",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "what happens to a webhook event if redis is down when it comes in"
+  },
+  {
+    "id": "g034",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the error handling its kind of a mess"
+  },
+  {
+    "id": "g035",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you make the tests faster somehow"
+  },
+  {
+    "id": "g036",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "something feels off with how we handle sessions, take a look and tell me what you think"
+  },
+  {
+    "id": "g037",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add an endpoint to delete a user's api keys, write tests for it, and also update the openapi spec so the frontend folks see it"
+  },
+  {
+    "id": "g038",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "bump the jsonwebtoken dependency, fix whatever breaks, and then run the full test suite and tell me if anything is flaky"
+  },
+  {
+    "id": "g039",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "1) move the email sending into the queue instead of doing it inline in the signup handler 2) add a dead letter queue for it 3) log when a message ends up there"
+  },
+  {
+    "id": "g040",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're getting duplicate charges reported by a few customers. My suspicion is that the payment confirmation job in src/jobs/confirmPayment.ts is being picked up twice when the worker restarts mid-processing, because we ack the message only after the Stripe call returns. I'd like you to make the job idempotent: probably store a processed flag or idempotency key on the Payment row and check it before calling the provider. Please don't change the queue library or the public API shape. Add a test that simulates the job running twice for the same payment and asserts only one charge happens. If you think my diagnosis is wrong, tell me before changing anything."
+  },
+  {
+    "id": "g041",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Context: we're splitting the monolith and the notifications module is the first to go. Before we extract it I want to know every place outside src/notifications that imports from it directly, plus any shared db tables it touches. Could you put together a short list (file + what it uses) and flag the ones that would break if notifications became a separate service talking over the queue? No code changes yet, just the analysis. Thanks!"
+  },
+  {
+    "id": "g042",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT touch the migrations folder!!! just fix the validation in the user update handler, the migration files are already deployed to prod"
+  },
+  {
+    "id": "g043",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi aggiungere la validazione del numero di telefono nel resolver `updateProfile`? deve accettare solo il formato internazionale"
+  },
+  {
+    "id": "g044",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "oye, por qué el worker de colas se queda colgado cuando el payload es muy grande? revisa porfa"
+  },
+  {
+    "id": "g045",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the null handling in dim_customers, it's dropping rows where region is missing"
+  },
+  {
+    "id": "g046",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a test for the dedupe step in orders_daily"
+  },
+  {
+    "id": "g047",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename `stg_events_raw` to `stg_events` everywhere incl the dag and the dbt refs"
+  },
+  {
+    "id": "g048",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update the README with how to run the backfill script locally"
+  },
+  {
+    "id": "g049",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you make the revenue dashboard query use the new fx_rates table"
+  },
+  {
+    "id": "g050",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "airflow task load_s3_to_snowflake retries forever, cap it at 3"
+  },
+  {
+    "id": "g051",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a --dry-run flag to scripts/backfill.py pls"
+  },
+  {
+    "id": "g052",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where do we actually compute churn? is it in dbt or in the looker layer"
+  },
+  {
+    "id": "g053",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Why does the sessions model use a 30 minute window instead of the 45 we agreed on? Is that hardcoded somewhere or configurable?"
+  },
+  {
+    "id": "g054",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "whats the difference between fct_payments and fct_transactions, they look almost identical"
+  },
+  {
+    "id": "g055",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "¿Qué jobs programados dependen de la tabla raw.marketing_spend? Necesito saberlo antes de cambiar el esquema."
+  },
+  {
+    "id": "g056",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the pipelines folder a bit, it's getting messy"
+  },
+  {
+    "id": "g057",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "something is off with the weekly active users numbers, can you take a look"
+  },
+  {
+    "id": "g058",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "make the dag stuff more robust i guess"
+  },
+  {
+    "id": "g059",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a freshness check on src_stripe, wire it into the alerting, and also bump the slack channel name in config since we renamed it to data-alerts"
+  },
+  {
+    "id": "g060",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "1) fix the timezone bug in the hourly rollup 2) add tests for it 3) update the changelog"
+  },
+  {
+    "id": "g061",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Bitte die Spalte `user_id` in allen Staging-Modellen auf VARCHAR vereinheitlichen, die Tests anpassen und kurz dokumentieren, welche Modelle betroffen waren."
+  },
+  {
+    "id": "g062",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're migrating the nightly ETL from cron on the old VM to Airflow. The cron entries live in deploy/crontab and call shell scripts under jobs/. I'd like you to create equivalent DAGs under dags/nightly/, one per script, preserving the schedule (they're in UTC already) and the ordering where one script depends on another's output — jobs/build_aggregates.sh must run after jobs/load_events.sh and jobs/load_users.sh. Use the BashOperator for now, don't rewrite the scripts themselves. Please also add retries with a 10 min delay and keep the existing env var names. Don't touch the crontab file yet, we'll remove it once the DAGs have run in parallel for a week."
+  },
+  {
+    "id": "g063",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Context: finance noticed that monthly recurring revenue in the exec dashboard is about 2% higher than what billing reports. I suspect it's the way we handle mid-month plan upgrades in models/marts/fct_mrr.sql — we might be counting both the old and new subscription for the overlapping days. Could you trace how a single subscription flows from the staging models into fct_mrr, check whether upgrades get double counted, and propose a fix? If you change the logic please add a dbt test that would have caught it, and tell me which downstream dashboards will shift so I can warn people."
+  },
+  {
+    "id": "g064",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT run the full refresh on prod tables!! only test against the dev schema. fix the incremental logic in fct_orders so late arriving rows get picked up"
+  },
+  {
+    "id": "g065",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi spiegarmi come funziona lo scheduler dei report settimanali? non capisco da dove prende la lista dei destinatari"
+  },
+  {
+    "id": "g066",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "teh sql linter keeps failing on the marts folder, can u fix the violations"
+  },
+  {
+    "id": "g067",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the flaky e2e job in ci.yml, it times out waiting for postgres half the time"
+  },
+  {
+    "id": "g068",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename DEPLOY_ENV to TARGET_ENV everywhere in the workflows"
+  },
+  {
+    "id": "g069",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a healthcheck to the api Dockerfile"
+  },
+  {
+    "id": "g070",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you write a test for the version bump script pls"
+  },
+  {
+    "id": "g071",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update README with the new staging deploy steps"
+  },
+  {
+    "id": "g072",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "pin actions/checkout to a sha instead of v4 in all workflows"
+  },
+  {
+    "id": "g073",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "the docker build cache isnt working on main, fix it"
+  },
+  {
+    "id": "g074",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "why does the release workflow run twice when I push a tag?"
+  },
+  {
+    "id": "g075",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where are the prometheus alert rules defined and who loads them"
+  },
+  {
+    "id": "g076",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "what's the difference between deploy.sh and scripts/deploy-k8s.sh, do we still need both?"
+  },
+  {
+    "id": "g077",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "How is the matrix for the integration tests generated? I can't find where node versions come from."
+  },
+  {
+    "id": "g078",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "ci feels slow, take a look"
+  },
+  {
+    "id": "g079",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the monitoring stuff a bit"
+  },
+  {
+    "id": "g080",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you make the deploys less scary"
+  },
+  {
+    "id": "g081",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "bump the base image to node 20 alpine, fix whatever breaks in the build, and update the CHANGELOG too"
+  },
+  {
+    "id": "g082",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you add a concurrency group to the deploy workflow so two deploys can't overlap, then add a manual approval step for prod, and finally document both in docs/deploy.md? Thanks!"
+  },
+  {
+    "id": "g083",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "1) remove the unused grafana dashboards 2) add slack notif on failed nightly 3) make lint job fail on warnings"
+  },
+  {
+    "id": "g084",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "So we've had this recurring issue where the `integration-tests` job fails maybe 1 in 8 runs on GitHub Actions, always in the redis-backed queue tests. Locally it never reproduces. My theory is that the redis service container isn't ready when the tests start, since we only wait on the port and not on an actual PING. There's also a chance it's the test ordering since some tests share a queue name. Can you dig through .github/workflows/integration.yml and tests/queue/, figure out which it is, and propose a fix? I'd prefer not to just add retries, I want the root cause."
+  },
+  {
+    "id": "g085",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're moving the staging environment from the old docker-compose setup on the VM to the k8s cluster the platform team set up. The production deploy already uses helm charts in charts/app, but staging still goes through deploy/staging/docker-compose.yml and a bash script that ssh's in. I'd like staging to use the same helm chart with a values-staging.yaml, and the GitHub workflow to deploy to the staging namespace on every merge to main. Keep the old compose files around for now but mark them deprecated in the README. Don't touch the prod workflow."
+  },
+  {
+    "id": "g086",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT push anything to the prod registry while testing this!!! just make the image tag logic in `scripts/build_and_tag.sh` use the git short sha instead of `latest`"
+  },
+  {
+    "id": "g087",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi aggiungere un job che fa lo scan delle immagini docker con trivy prima del push?"
+  },
+  {
+    "id": "g088",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "oye, por qué falla el workflow de nightly desde ayer? revisa los cambios recientes en el dockerfile"
+  },
+  {
+    "id": "g089",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the crash when tapping a push notification while the app is killed"
+  },
+  {
+    "id": "g090",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename OnboardingStepView to OnboardingPageView everywhere pls"
+  },
+  {
+    "id": "g091",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a unit test for SyncQueue retry backoff"
+  },
+  {
+    "id": "g092",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Can you update the README with the steps to run the Android build locally?"
+  },
+  {
+    "id": "g093",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "the skip button on onbaording doesnt do anything on android"
+  },
+  {
+    "id": "g094",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add pull to refresh on the inbox screen"
+  },
+  {
+    "id": "g095",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "bump the offline cache TTL to 24h and make it configurable"
+  },
+  {
+    "id": "g096",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "how does the app decide when to flush the offline mutation queue?"
+  },
+  {
+    "id": "g097",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where do we register the FCM token with the backend? cant find it"
+  },
+  {
+    "id": "g098",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Is there a reason we're using both AsyncStorage and MMKV, or is one of them legacy?"
+  },
+  {
+    "id": "g099",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "what happens if a user finishes onboarding offline, does the profile ever get synced"
+  },
+  {
+    "id": "g100",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the notifications code a bit, its kind of a mess"
+  },
+  {
+    "id": "g101",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "something's off with dark mode on the settings screen, take a look?"
+  },
+  {
+    "id": "g102",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the lint errors in src/features/feed, then add tests for the feed reducer, and update the changelog when youre done"
+  },
+  {
+    "id": "g103",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you (1) add a 'notifications permission denied' state to the onboarding flow, (2) wire it to the analytics event we already have, and (3) write a quick snapshot test for it? Thanks!"
+  },
+  {
+    "id": "g104",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puedes revisar por qué las notificaciones push no llegan en iOS cuando la app está en segundo plano? y de paso añade logs en el handler"
+  },
+  {
+    "id": "g105",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "So we've been getting reports that offline edits are getting lost. The flow is: user edits a note in airplane mode, kills the app, reopens it later with network, and the edit is gone. I suspect the pending writes are kept only in memory in `PendingWritesStore` and never persisted before the app is terminated. Can you confirm whether that's the case, and if so, persist the queue to disk (we already use SQLite via `db/client.ts`), restore it on launch before the sync worker starts, and add a test that simulates a cold start with pending writes? Please don't change the public API of the sync module, other teams depend on it."
+  },
+  {
+    "id": "g106",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're migrating push from our homegrown APNs setup to Firebase Messaging on both platforms. The Android side is mostly done in a branch but iOS still uses the old AppDelegate code in ios/App/AppDelegate.swift and the NotificationService extension. I'd like you to go through the iOS project, list everything that touches the old push path (token registration, silent push handling, badge updates, deep links from notification payloads), and propose a migration plan before writing any code. Keep in mind we still need to support iOS 15 and the rich notification images must keep working."
+  },
+  {
+    "id": "g107",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT touch the Podfile.lock or the gradle wrapper!! just fix the deep link routing for /invite links, nothing else"
+  },
+  {
+    "id": "g108",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "in `useOnboardingProgress` the `currentStep` resets to 0 after backgrounding, fix it"
+  },
+  {
+    "id": "g109",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "kannst du die Strings im Onboarding auf Deutsch übersetzen und in die Lokalisierungsdateien eintragen"
+  },
+  {
+    "id": "g110",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the --verbose flag, it's being ignored when passed after the subcommand"
+  },
+  {
+    "id": "g111",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a --version flag that prints the version from pyproject"
+  },
+  {
+    "id": "g112",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename `parse_opts` to `parse_options` everywhere"
+  },
+  {
+    "id": "g113",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "write a test for the config loader when the file is empty"
+  },
+  {
+    "id": "g114",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update the README install section, we dont support python 3.7 anymore"
+  },
+  {
+    "id": "g115",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you make --output default to stdout instead of erroring"
+  },
+  {
+    "id": "g116",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "typo in the help text for --dry-run, says 'wihtout'"
+  },
+  {
+    "id": "g117",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "how does the plugin discovery work? like where do entry points get loaded"
+  },
+  {
+    "id": "g118",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "why do we have two different logging setups, one in cli.py and one in core/log.py?"
+  },
+  {
+    "id": "g119",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "what happens if someone passes both --quiet and --verbose? is that handled anywhere"
+  },
+  {
+    "id": "g120",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Is the changelog generated automatically or is someone writing it by hand before each release?"
+  },
+  {
+    "id": "g121",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the cli code a bit, its getting messy"
+  },
+  {
+    "id": "g122",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "make the error messages nicer"
+  },
+  {
+    "id": "g123",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "something feels off with packaging, can you take a look"
+  },
+  {
+    "id": "g124",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "bump version to 2.4.0, update CHANGELOG.md with the commits since last tag, and make sure the tests still pass"
+  },
+  {
+    "id": "g125",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you please add shell completion for zsh and fish, document it in docs/usage.md, and add a small test that the completion script generates without errors? Thanks!"
+  },
+  {
+    "id": "g126",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "remove the deprecated --legacy-format flag, delete its tests, and add a note to the migration guide"
+  },
+  {
+    "id": "g127",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're getting reports that the tool hangs when it's piped into `head`. I think it's because we don't handle SIGPIPE / BrokenPipeError when writing output in `src/mytool/output.py`, specifically in `write_rows()`. Can you look at how we write to stdout, handle the broken pipe gracefully (exit quietly with the right status code like other unix tools do), and add a test that simulates a closed stdout? Please don't change the output formatting itself, a couple of downstream scripts depend on the exact format."
+  },
+  {
+    "id": "g128",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "ok so context: we're splitting the plugin API out into its own package so third parties can depend on it without pulling the whole CLI. the hooks currently live in core/hooks.py and plugins/base.py, and some of them import from cli.py which is the problem. I'd like you to figure out what a minimal public API would look like, list which modules need to move, and flag anything that would break existing plugins. don't move files yet, just give me a plan I can review. bonus if you can spot circular imports along the way"
+  },
+  {
+    "id": "g129",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT touch the public API in __init__.py!! just fix the internal bug in the arg parser where negative numbers get treated as flags"
+  },
+  {
+    "id": "g130",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi aggiungere un'opzione --config per specificare un file di configurazione alternativo?"
+  },
+  {
+    "id": "g131",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "kannst du bitte die Docstrings in commands/ vervollständigen, bei einigen fehlen die Parameter"
+  },
+  {
+    "id": "g132",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the off by one in the val loop, last batch is getting dropped"
+  },
+  {
+    "id": "g133",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a --seed flag to train.py and pass it through to torch, numpy and random"
+  },
+  {
+    "id": "g134",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename `get_dl` to `build_dataloader` everywhere pls"
+  },
+  {
+    "id": "g135",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "write a unit test for the collate fn in data/collate.py, esp the padding case"
+  },
+  {
+    "id": "g136",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update the README with the new eval command"
+  },
+  {
+    "id": "g137",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "lr scheduler isnt stepping after warmup, can u check"
+  },
+  {
+    "id": "g138",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you add type hints to the metrics module? Thanks!"
+  },
+  {
+    "id": "g139",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "where do we actually compute the F1 for the NER eval? cant find it"
+  },
+  {
+    "id": "g140",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "why does the tokenizer get loaded twice when I run the finetune script?"
+  },
+  {
+    "id": "g141",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Is there a reason we use bf16 for training but fp32 for eval, or is that just leftover from someone's experiment?"
+  },
+  {
+    "id": "g142",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "come funziona il caching del dataset? i file .arrow vengono rigenerati ogni volta o solo quando cambia la config?"
+  },
+  {
+    "id": "g143",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the notebooks folder a bit"
+  },
+  {
+    "id": "g144",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "training feels slower than it should be, take a look?"
+  },
+  {
+    "id": "g145",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "make the eval stuff less messy"
+  },
+  {
+    "id": "g146",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "move the hardcoded paths in configs/base.yaml into env vars, then update the dataloader to read them, and also add a quick sanity check that the dirs exist before training starts"
+  },
+  {
+    "id": "g147",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "1) bump batch size default to 64 2) log grad norm to wandb every step 3) fix the warning about deprecated autocast"
+  },
+  {
+    "id": "g148",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Bitte füge Early Stopping zum Trainer hinzu, schreib einen Test dafür und dokumentier die neuen Parameter in der Docstring."
+  },
+  {
+    "id": "g149",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "I'm trying to reproduce the numbers from our last paper draft and I'm off by about 2 points on the held-out set. The checkpoint is the one in checkpoints/run_0412, and I'm using scripts/evaluate.py with the default config. I suspect something changed in the preprocessing, maybe the lowercasing or the max_length truncation, since someone refactored data/preprocess.py a couple weeks ago. Can you diff the current preprocessing against what the config from that run implies and tell me what's different? Don't change anything yet, I just want to understand the discrepancy first."
+  },
+  {
+    "id": "g150",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're moving from single GPU to multi-node training next week and I'd like the training script to be ready. Right now train.py assumes one device everywhere: the model is moved with .cuda(), the sampler is a plain RandomSampler, and checkpoint saving happens on every process. Can you refactor it to use torch.distributed with DDP, use a DistributedSampler, only log and save on rank 0, and make sure it still works when launched normally without torchrun? Keep the CLI args backwards compatible if you can."
+  },
+  {
+    "id": "g151",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT touch the frozen encoder weights!!! only the head should be trainable. right now requires_grad is True for everything and its wrecking the runs"
+  },
+  {
+    "id": "g152",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "in `models/vit.py` the `PatchEmbed.forward` breaks when img_size isnt divisible by patch_size, add a proper error msg"
+  },
+  {
+    "id": "g153",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "el script de augmentacion esta rompiendo las mascaras de segmentacion, puedes revisarlo"
+  },
+  {
+    "id": "g154",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add an index on orders.customer_id, the dashboard query is crawling"
+  },
+  {
+    "id": "g155",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "fix the down migration for 0042 it doesnt drop the enum type"
+  },
+  {
+    "id": "g156",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "rename `backup_retention_days` to `retention_days` everywhere pls"
+  },
+  {
+    "id": "g157",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Could you write a test that checks the readonly role can't INSERT into audit_log?"
+  },
+  {
+    "id": "g158",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "update README with how to restore from the nightly snapshot"
+  },
+  {
+    "id": "g159",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "make the migration runner fail if checksums dont match"
+  },
+  {
+    "id": "g160",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "revoke public schema create from the app user in the bootstrap sql"
+  },
+  {
+    "id": "g161",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "why do we have two different connection pool configs? which one actually gets used in prod"
+  },
+  {
+    "id": "g162",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "how does the backup script decide which WAL segments to keep?"
+  },
+  {
+    "id": "g163",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "is there anywhere we're still granting SUPERUSER to service accounts?"
+  },
+  {
+    "id": "g164",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "what happens if two deploys run migrations at the same time, is there a lock?"
+  },
+  {
+    "id": "g165",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "clean up the permissions stuff, it's a mess"
+  },
+  {
+    "id": "g166",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "something feels off with the indexes on the events table, take a look"
+  },
+  {
+    "id": "g167",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "can you make backups more robust"
+  },
+  {
+    "id": "g168",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "add a migration for the new invoices table, add indexes for status and created_at, and also update the seed data so local dev has some invoices"
+  },
+  {
+    "id": "g169",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "1) bump the pg version in docker-compose to 16 2) check if any migrations use deprecated syntax 3) update the CI matrix accordingly"
+  },
+  {
+    "id": "g170",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "write a script that lists unused indexes, then add it to the weekly maintenance job and document it in docs/ops.md"
+  },
+  {
+    "id": "g171",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "We're about to add row-level security to the multi-tenant tables (accounts, projects, documents, comments). Right now tenant isolation is enforced only in the app layer via a tenant_id filter in the repository classes. I'd like a migration that enables RLS on those four tables, creates policies based on a session variable app.current_tenant, and a small change in db/session.py so the variable is set on each connection checkout. Admin jobs use a separate role and must bypass RLS. Please also add tests proving a query without the tenant set returns zero rows. Don't touch the reporting views yet, those come later."
+  },
+  {
+    "id": "g172",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "Context: our restore drill last month took almost 4 hours because the pg_restore step runs single-threaded and we rebuild every index afterwards. I want to rework scripts/restore.sh so it uses parallel jobs (configurable, default 4), restores schema first, data second, and indexes/constraints last. It should also verify row counts against the manifest the backup job writes and exit nonzero on mismatch. Keep it POSIX sh if possible, we run it on minimal images. Explain any tradeoffs before you change too much."
+  },
+  {
+    "id": "g173",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "DO NOT run any migrations against the staging database!!! just generate the SQL and show me, I'll apply it myself"
+  },
+  {
+    "id": "g174",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "puoi controllare se le migrazioni in `migrations/2024_*` sono tutte reversibili? mi serve una lista di quelle che non lo sono"
+  },
+  {
+    "id": "g175",
+    "category": "realistic",
+    "expect": "any",
+    "prompt": "oye, agrega un índice compuesto en sessions(user_id, expires_at) y un test que lo valide porfa"
+  }
+]

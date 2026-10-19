@@ -3,43 +3,36 @@
 //   node evals/run.mjs --gate-only             offline: checks which prompts the gate sends
 //   ANTHROPIC_API_KEY=... node evals/run.mjs   live: judge calibration, then rewrite, guard and an Opus judge
 //
+// Two suites run by default. The gate suite (evals/realistic.json) is what a release is judged on: prompts
+// that look like real typing. The diagnostic suite (evals/cases.json) holds the stress prompts built to find
+// weaknesses; its results are reported as known limits and do not decide a release.
+//
 // Options (live runs):
+//   --suite <name>       gate, diagnostic or all (default all)
 //   --calibration-only   run only the judge calibration pairs; writes no results.md
 //   --effort <level>     the judge's effort: low, medium, high, xhigh or max (default in judge.ts)
 //   --repeat <n>         judge every pair and case n times (1 to 5) and report how stable the verdicts are
 //   --rewrites <n>       ask the rewriter for n independent rewrites of every prompt (1 to 20); the bars
 //                        then count samples, so a defect that shows on some of them is measured, not missed
+//   --private-cases <f>  also run a private prompt file as part of the gate suite. Nothing that quotes
+//                        those prompts is printed or saved, and results.md is not written
 //
 // Put the key on the command line of that one run (or export it for the run);
 // it is read from the environment and never written anywhere.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { registerHooks } from 'node:module'
-import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { join } from 'node:path'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+import { createJudge, createLock, loadHooks, loadJudge, loadStats, pool, root, stripText, takeSample } from './harness.mjs'
 
-// The mod imports its own files as `./x.js`; map those to the `.ts` sources.
-registerHooks({
-  resolve(specifier, context, next) {
-    if (specifier.startsWith('.') && specifier.endsWith('.js') && context.parentURL) {
-      const ts = new URL(specifier.replace(/\.js$/, '.ts'), context.parentURL)
-      if (existsSync(fileURLToPath(ts))) return next(ts.href, context)
-    }
-    return next(specifier, context)
-  },
-})
+const hooks = await loadHooks(join(root, 'hooks'))
+const { DEFAULT_JUDGE_EFFORT, EFFORTS, JUDGE_MODEL } = await loadJudge()
+const { upperBound } = await loadStats()
 
-const load = file => import(pathToFileURL(join(root, 'hooks', file)).href)
-const [{ shouldRewrite }, { acceptRewrite, parseResponse }, { optimize }] = await Promise.all([
-  load('gate.ts'),
-  load('guard.ts'),
-  load('client.ts'),
-])
-const { DEFAULT_JUDGE_EFFORT, EFFORTS, JUDGE_MODEL, judgeRequest, readJudgeReply } = await import(
-  pathToFileURL(join(root, 'evals/judge.ts')).href
-)
-const { upperBound } = await import(pathToFileURL(join(root, 'evals/stats.ts')).href)
+/** Limits a release is held to, each on the gate suite. */
+const HARM_LIMIT = 0.02 // 95% upper limit of the share of rewrites judged worse
+const BENEFIT_RATIO = 5 // rewrites judged better must be at least this many times those judged worse
+const RELIABILITY_LIMIT = 0.05 // 95% upper limit of the share of calls that failed or errored
+const HARD_CALIBRATION_SHARE = 0.9 // share of the hard calibration pairs the judge must get right
 
 // ---- options ---------------------------------------------------------------------
 const args = process.argv.slice(2)
@@ -56,116 +49,44 @@ const isCalibrationOnly = args.includes('--calibration-only')
 const effort = valueOf('--effort') ?? DEFAULT_JUDGE_EFFORT
 const repeat = Number(valueOf('--repeat') ?? 1)
 const rewrites = Number(valueOf('--rewrites') ?? 1)
+const suite = valueOf('--suite') ?? 'all'
+const privatePath = valueOf('--private-cases')
 if (isGateOnly && isCalibrationOnly) usage('--gate-only and --calibration-only cannot be combined.')
 if (!EFFORTS.includes(effort)) usage(`--effort must be one of: ${EFFORTS.join(', ')}.`)
 if (!Number.isInteger(repeat) || repeat < 1 || repeat > 5) usage('--repeat must be a whole number from 1 to 5.')
 if (!Number.isInteger(rewrites) || rewrites < 1 || rewrites > 20) usage('--rewrites must be a whole number from 1 to 20.')
+if (!['gate', 'diagnostic', 'all'].includes(suite)) usage('--suite must be gate, diagnostic or all.')
 
-const cases = JSON.parse(readFileSync(join(root, 'evals/cases.json'), 'utf8'))
-const calibration = JSON.parse(readFileSync(join(root, 'evals/calibration.json'), 'utf8'))
+const read = file => JSON.parse(readFileSync(file, 'utf8'))
+const diagnostic = read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))
+const realistic = read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))
+const privateCases = privatePath === undefined ? [] : read(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))
+const cases = [
+  ...(suite === 'gate' ? [] : diagnostic),
+  ...(suite === 'diagnostic' ? [] : [...realistic, ...privateCases]),
+]
+const calibration = read(join(root, 'evals/calibration.json'))
 
 // The system prompt's worked examples must not be eval prompts, or the eval only
 // measures whether the model can copy an example.
-const { SYSTEM_PROMPT } = await load('system-prompt.ts')
-const leaked = cases.filter(c => SYSTEM_PROMPT.includes(`<prompt>${c.prompt}</prompt>`))
+const everyCase = [...diagnostic, ...realistic, ...privateCases]
+const leaked = everyCase.filter(c => hooks.SYSTEM_PROMPT.includes(`<prompt>${c.prompt}</prompt>`))
 if (leaked.length > 0) usage(`These eval prompts appear as examples in the system prompt: ${leaked.map(c => c.id).join(', ')}`)
 
 // Calibration pairs must start from prompts the cases do not use, so the judge is not
 // checked on the same wording it is later asked to grade.
-const overlap = calibration.filter(pair => cases.some(c => c.prompt === pair.original))
+const overlap = calibration.filter(pair => everyCase.some(c => c.prompt === pair.original))
 if (overlap.length > 0) usage(`These calibration pairs reuse an eval prompt: ${overlap.map(pair => pair.id).join(', ')}`)
 
 const apiKey = process.env.ANTHROPIC_API_KEY ?? ''
 if (!isGateOnly && apiKey === '') usage('Set ANTHROPIC_API_KEY for this run, or pass --gate-only.')
 
-const deps = {
-  fetch: async (url, init) => {
-    const res = await fetch(url, init)
-    return { status: res.status, headers: Object.fromEntries(res.headers), text: await res.text() }
-  },
-  sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
-  timeout: (ms, signal) =>
-    new Promise(resolve => {
-      const id = setTimeout(resolve, ms)
-      signal.addEventListener('abort', () => clearTimeout(id))
-    }),
-  now: async () => Date.now(),
-}
-
-/**
- * Runs `fn` after every earlier call to `alone` has finished. The rewriter calls go through it so that
- * only one is in flight: the mod's client has a 6.5 second deadline, and a call that shares the network
- * with other rewrites and judge calls can miss it, which a user's single prompt would not.
- */
-let rewriteTurn = Promise.resolve()
-const alone = fn => {
-  const run = rewriteTurn.then(fn, fn)
-  rewriteTurn = run.then(() => {}, () => {})
-  return run
-}
-
-/** Runs `fn` over `items` with `size` in flight at once and returns the results in order. */
-const pool = async (items, fn, size = 4) => {
-  const out = new Array(items.length)
-  let next = 0
-  await Promise.all(
-    Array.from({ length: Math.min(size, items.length) }, async () => {
-      for (let i = next++; i < items.length; i = next++) out[i] = await fn(items[i], i)
-    }),
-  )
-  return out
-}
-
-// ---- the judge -------------------------------------------------------------------
-const stats = { calls: 0, thinking: 0, outputTokens: 0 }
-
-const callJudge = async (original, proposal) => {
-  for (let attempt = 0; ; attempt += 1) {
-    let res
-    try {
-      res = await deps.fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify(judgeRequest(original, proposal, effort)),
-      })
-    } catch (error) {
-      // A dropped connection says nothing about the rewrite, so the judge asks again before giving up.
-      if (attempt === 3) throw new Error(`judge call failed: ${String(error?.cause?.code ?? error?.message ?? error).slice(0, 80)}`)
-      await deps.sleep(1000 * 2 ** attempt)
-      continue
-    }
-    if (res.status === 200) {
-      const read = readJudgeReply(JSON.parse(res.text))
-      stats.calls += 1
-      stats.outputTokens += read.outputTokens
-      if (read.thinking !== '') stats.thinking += 1
-      return read
-    }
-    if (![429, 500, 529].includes(res.status) || attempt === 3) throw new Error(`judge call failed: status ${res.status}`)
-    await deps.sleep(1000 * 2 ** attempt)
-  }
-}
-
-/**
- * One judgment, or `repeat` of them. "better" needs every repeat to say better and any "worse"
- * wins, so a split verdict can only make a result less favourable.
- */
-const judge = async (original, proposal) => {
-  const runs = await Promise.all(Array.from({ length: repeat }, () => callJudge(original, proposal)))
-  const verdicts = runs.map(run => run.verdict)
-  const verdict = verdicts.includes('worse') ? 'worse' : verdicts.every(v => v === 'better') ? 'better' : 'equal'
-  return {
-    verdict,
-    verdicts,
-    isStable: new Set(verdicts).size === 1,
-    reason: (runs.find(run => run.verdict === verdict) ?? runs[0]).reason,
-    thinking: runs.map(run => run.thinking),
-  }
-}
+const { judge, stats } = await createJudge({ apiKey, effort, repeat })
+const alone = createLock(1)
 
 // ---- judge calibration: pairs with a known answer ------------------------------
-// The judge runs first. If it cannot give the known answer on every pair, every
-// verdict below would mean little, so the cases are not sent at all.
+// The judge runs first. If it cannot give the known answer on every easy pair and on nearly every hard
+// one, every verdict below would mean little, so the cases are not sent at all.
 const calibrate = () =>
   pool(calibration, async pair => {
     try {
@@ -177,101 +98,95 @@ const calibrate = () =>
   })
 
 // ---- the cases ---------------------------------------------------------------------
-/** One rewrite of one prompt that passed the gate, taken through the client, the parser, the guard and the judge. */
-const sample = async c => {
-  try {
-    const result = await alone(() => optimize(deps, { apiKey, model: 'claude-haiku-5-5' }, c.prompt))
-    if (result.kind !== 'reply') return { outcome: 'failed', final: c.prompt, detail: `${result.kind}: ${result.reason ?? ''}` }
-
-    const parsed = parseResponse(result.text)
-    if (parsed.kind === 'invalid') return { outcome: 'reverted', final: c.prompt, detail: 'malformed reply' }
-    if (parsed.kind === 'unchanged' || parsed.text === c.prompt.trim()) return { outcome: 'unchanged', final: c.prompt }
-
-    const verdict = acceptRewrite(c.prompt, parsed.text)
-    if (!verdict.isOk) return { outcome: 'reverted', final: c.prompt, detail: verdict.reason, rejected: parsed.text }
-
-    const judged = await judge(c.prompt, parsed.text)
-    return { outcome: judged.verdict, final: parsed.text, detail: judged.reason, verdicts: judged.verdicts, isStable: judged.isStable, thinking: judged.thinking }
-  } catch (error) {
-    return { outcome: 'error', final: c.prompt, detail: String(error?.message ?? error).slice(0, 200) }
-  }
-}
-
 /** The outcome a case shows when its samples differ: the least favourable one. */
 const SEVERITY = ['error', 'failed', 'worse', 'reverted', 'equal', 'unchanged', 'better']
 
 const evaluate = async c => {
   const origin = c.origin ?? { kind: 'composer' }
-  const gate = shouldRewrite({ text: c.prompt, origin }, { enabled: true, hasKey: true, isLatched: false })
+  const gate = hooks.shouldRewrite({ text: c.prompt, origin }, { enabled: true, hasKey: true, isLatched: false })
   if (!gate.isGo) return { ...c, outcome: 'skipped', final: c.prompt, sampled: [{ outcome: 'skipped' }] }
   if (isGateOnly) return { ...c, outcome: 'sent', final: c.prompt, sampled: [{ outcome: 'sent' }] }
 
   // One after another: the mod's client has a 6.5 second deadline, and many calls at once would turn
   // a rate limit into a false "failed".
   const sampled = []
-  for (let i = 0; i < rewrites; i += 1) sampled.push(await sample(c))
+  for (let i = 0; i < rewrites; i += 1) sampled.push(await takeSample({ hooks, apiKey, judge, alone }, c.prompt))
   const shown = sampled.find(s => s.outcome === SEVERITY.find(o => sampled.some(x => x.outcome === o)))
   return { ...c, ...shown, sampled }
 }
 
+/** A private prompt leaves only its outcomes behind: no text, no rewrite, no judge reason. */
+const hidePrivate = r => (r.private ? { id: r.id, category: r.category, expect: r.expect, suite: r.suite, private: true, outcome: r.outcome, sampled: r.sampled.map(stripText) } : r)
+
 const runCases = () =>
   pool(cases, async c => {
     try {
-      return await evaluate(c)
+      return hidePrivate(await evaluate(c))
     } catch (error) {
-      const detail = String(error?.message ?? error).slice(0, 200)
-      return { ...c, outcome: 'error', final: c.prompt, detail, sampled: [{ outcome: 'error', detail }] }
+      const detail = c.private ? 'error' : String(error?.message ?? error).slice(0, 200)
+      return hidePrivate({ ...c, outcome: 'error', final: c.prompt, detail, sampled: [{ outcome: 'error', detail }] })
     }
   })
 
 const calibrated = isGateOnly ? [] : await calibrate()
-const isCalibrated = calibrated.every(c => c.isRight)
+const easy = calibrated.filter(c => c.tier !== 'hard')
+const hard = calibrated.filter(c => c.tier === 'hard')
+const isEasyRight = easy.every(c => c.isRight)
+const hardRight = hard.filter(c => c.isRight).length
+const isHardRight = hardRight >= Math.ceil(hard.length * HARD_CALIBRATION_SHARE)
+const isCalibrated = isEasyRight && isHardRight
 const results = isCalibrationOnly || !isCalibrated ? [] : await runCases()
 
 // ---- summary and bars -------------------------------------------------------------
 // Every bar counts samples: with --rewrites 1 that is one per case, so it is the case count.
 const samplesOf = list => list.flatMap(r => r.sampled)
 const count = (samples, outcome) => samples.filter(s => s.outcome === outcome).length
+const reachedModel = samples => samples.filter(s => s.outcome !== 'skipped' && s.outcome !== 'sent')
 const gated = results.filter(r => r.expect === 'skipped')
 const reachable = results.filter(r => r.expect !== 'skipped')
+const gateSuite = results.filter(r => r.suite === 'gate')
+const diagnosticSuite = results.filter(r => r.suite === 'diagnostic')
 const unchangedSamples = samplesOf(results.filter(r => r.expect === 'unchanged'))
 const rewriteSamples = samplesOf(results.filter(r => r.expect === 'rewrite'))
 const allSamples = samplesOf(results)
+const gateSamples = reachedModel(samplesOf(gateSuite))
 const judgedSamples = allSamples.filter(s => s.isStable !== undefined)
+const pct = x => `${(x * 100).toFixed(1)}%`
 
 const bars = []
-if (!isCalibrationOnly) {
-  if (isGateOnly || isCalibrated) {
-    bars.push(
-      ['every gated case skipped before any call', gated.every(r => r.outcome === 'skipped')],
-      ['every other case passed the gate', reachable.every(r => r.outcome !== 'skipped')],
-    )
-  }
+if (!isCalibrationOnly && (isGateOnly || isCalibrated)) {
+  bars.push(
+    ['every gated case skipped before any call', gated.every(r => r.outcome === 'skipped')],
+    ['every other case passed the gate', reachable.every(r => r.outcome !== 'skipped')],
+  )
 }
 if (!isGateOnly) {
-  bars.push(['the judge is right on every calibration pair', isCalibrated])
+  bars.push(['the judge is right on every easy calibration pair', isEasyRight])
+  if (hard.length > 0) {
+    bars.push([`the judge is right on at least ${pct(HARD_CALIBRATION_SHARE)} of the hard calibration pairs (${hardRight} of ${hard.length})`, isHardRight])
+  }
   if (!isCalibrationOnly && isCalibrated) {
     bars.push(
       ['no case errored', count(allSamples, 'error') === 0],
-      ['no call failed', count(allSamples, 'failed') === 0],
       ['at least 90% of "unchanged" cases left untouched', count(unchangedSamples, 'unchanged') >= Math.ceil(unchangedSamples.length * 0.9)],
       ['at least 70% of "rewrite" cases judged better', count(rewriteSamples, 'better') >= Math.ceil(rewriteSamples.length * 0.7)],
     )
-    // One sample per prompt: any "worse" fails. Several samples: a rate, because a stochastic rewriter
-    // cannot be held to zero over hundreds of samples. The rate is held to its limit by the 95% upper
-    // confidence limit, not by the raw count, since the same wording gave 8 and 11 worse samples of 400
-    // in two runs and a count that sits inside that noise would pass or fail by luck. A cap per prompt
-    // stops one prompt hiding behind the rest.
-    const modelSamples = allSamples.filter(s => s.outcome !== 'skipped' && s.outcome !== 'sent')
-    if (rewrites === 1) {
-      bars.push(['no rewrite judged worse reached the model', count(allSamples, 'worse') === 0])
-    } else {
-      const perPromptCap = Math.floor(rewrites * 0.25)
-      const worse = count(allSamples, 'worse')
-      const bound = upperBound(worse, modelSamples.length)
+    // The release bars are on the gate suite, the prompts that look like real typing. The harm limit is held
+    // by the 95% upper confidence limit and not by the raw count, because identical wording gave 7 and 15
+    // worse samples in two runs and a count inside that noise would pass or fail by luck.
+    if (gateSuite.length > 0) {
+      // Harm and benefit are shares of the rewrites that were decided; reliability is the share of calls
+      // that were not.
+      const failed = count(gateSamples, 'failed') + count(gateSamples, 'error')
+      const n = gateSamples.length - failed
+      const worse = count(gateSamples, 'worse')
+      const better = count(gateSamples, 'better')
+      const harm = upperBound(worse, n)
+      const unreliable = upperBound(failed, gateSamples.length)
       bars.push(
-        [`at most 2% of rewrites judged worse, with 95% confidence (${worse} of ${modelSamples.length}, upper limit ${(bound * 100).toFixed(1)}%)`, bound <= 0.02],
-        [`no prompt has more than ${perPromptCap} of ${rewrites} rewrites judged worse`, results.every(r => count(r.sampled, 'worse') <= perPromptCap)],
+        [`harm: at most ${pct(HARM_LIMIT)} of realistic rewrites judged worse, with 95% confidence (${worse} of ${n}, upper limit ${pct(harm)})`, harm <= HARM_LIMIT],
+        [`benefit: realistic rewrites judged better are at least ${BENEFIT_RATIO} times those judged worse (${better} better, ${worse} worse)`, better > 0 && better >= BENEFIT_RATIO * worse],
+        [`reliability: at most ${pct(RELIABILITY_LIMIT)} of realistic calls failed, with 95% confidence (${failed} of ${gateSamples.length}, upper limit ${pct(unreliable)})`, unreliable <= RELIABILITY_LIMIT],
       )
     }
     if (repeat > 1) {
@@ -285,23 +200,31 @@ if (!isGateOnly) {
 
 const mode = isGateOnly
   ? 'gate only (no API calls)'
-  : `live, rewriter claude-haiku-5-5${rewrites > 1 ? ` (${rewrites} samples per prompt)` : ''}, judge ${JUDGE_MODEL} at ${effort} effort, ${repeat} judgment${repeat === 1 ? '' : 's'} per item${isCalibrationOnly ? ', calibration only' : ''}`
+  : `live, rewriter claude-haiku-5-5${rewrites > 1 ? ` (${rewrites} samples per prompt)` : ''}, judge ${JUDGE_MODEL} at ${effort} effort, ${repeat} judgment${repeat === 1 ? '' : 's'} per item, suite ${suite}${isCalibrationOnly ? ', calibration only' : ''}`
 const cell = text => String(text ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ')
 const stableColumn = repeat > 1
 const sampleColumn = rewrites > 1 && !isGateOnly
-const tally = r => ['better', 'equal', 'worse', 'unchanged', 'reverted', 'failed', 'error'].filter(o => r.sampled.some(x => x.outcome === o)).map(o => `${o} ${count(r.sampled, o)}`).join(', ')
+const OUTCOMES = ['better', 'equal', 'worse', 'unchanged', 'reverted', 'failed', 'error']
+const tally = r => OUTCOMES.filter(o => r.sampled.some(x => x.outcome === o)).map(o => `${o} ${count(r.sampled, o)}`).join(', ')
+const countsLine = (label, samples) => `${label}: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(samples, o)}`).join(', ')}`
+
+// Listed rows: every diagnostic prompt, and the gate prompts that did not simply go well. Private prompts never.
+const hasTrouble = r => r.sampled.some(s => ['worse', 'reverted', 'failed', 'error'].includes(s.outcome))
+const listed = results.filter(r => !r.private && (r.suite === 'diagnostic' || (!isGateOnly && hasTrouble(r))))
+const knownLimits = diagnosticSuite.filter(r => count(r.sampled, 'worse') > 0)
+const privateRows = results.filter(r => r.private)
 
 const lines = [
   `# Evaluation results`,
   ``,
   `Run: ${new Date().toISOString()} | mode: ${mode}`,
   ``,
-  ...(results.length === 0
+  ...(listed.length === 0
     ? []
     : [
         `| id | expected | outcome |${sampleColumn ? ' samples |' : ''}${stableColumn ? ' judgments |' : ''} detail |`,
         `| --- | --- | --- |${sampleColumn ? ' --- |' : ''}${stableColumn ? ' --- |' : ''} --- |`,
-        ...results.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} |${sampleColumn ? ` ${tally(r)} |` : ''}${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`),
+        ...listed.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} |${sampleColumn ? ` ${tally(r)} |` : ''}${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`),
         ``,
       ]),
   ...(calibrated.length === 0
@@ -309,14 +232,30 @@ const lines = [
     : [
         `Judge calibration (known answers):`,
         ``,
-        `| pair | known answer | judge said | right |`,
-        `| --- | --- | --- | --- |`,
-        ...calibrated.map(c => `| ${c.id} | ${c.expect} | ${c.verdicts.length > 1 ? c.verdicts.join(', ') : c.verdict} | ${c.isRight ? 'yes' : '**no**'} |`),
+        `| pair | tier | known answer | judge said | right |`,
+        `| --- | --- | --- | --- | --- |`,
+        ...calibrated.map(c => `| ${c.id} | ${c.tier ?? 'easy'} | ${c.expect} | ${c.verdicts.length > 1 ? c.verdicts.join(', ') : c.verdict} | ${c.isRight ? 'yes' : '**no**'} |`),
         ``,
       ]),
   ...(results.length === 0
     ? []
-    : [`Counts${sampleColumn ? ` (samples, ${rewrites} per prompt)` : ''}: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(allSamples, o)}`).join(', ')}`, ``]),
+    : [
+        countsLine(`Counts${sampleColumn ? ` (samples, ${rewrites} per prompt)` : ''}, all`, allSamples),
+        ...(gateSuite.length > 0 ? [countsLine('Counts, gate suite', samplesOf(gateSuite))] : []),
+        ...(diagnosticSuite.length > 0 ? [countsLine('Counts, diagnostic suite', samplesOf(diagnosticSuite))] : []),
+        ...(privateRows.length > 0 ? [`Private prompts (not listed, part of the gate suite): ${privateRows.length} prompts, ${samplesOf(privateRows).length} samples`] : []),
+        ``,
+      ]),
+  ...(knownLimits.length === 0
+    ? []
+    : [
+        `Known limits (diagnostic prompts with a worse sample; reported, not gated):`,
+        ``,
+        `| id | worse samples | what the judge said |`,
+        `| --- | --- | --- |`,
+        ...knownLimits.map(r => `| ${r.id} | ${count(r.sampled, 'worse')} of ${r.sampled.length} | ${cell(r.detail)} |`),
+        ``,
+      ]),
   ...(isGateOnly || stats.calls === 0
     ? []
     : [
@@ -334,7 +273,7 @@ const lines = [
 
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 mkdirSync(join(root, 'evals/.results'), { recursive: true })
-writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify({ mode, results, calibrated, stats }, null, 2))
-if (!isGateOnly && !isCalibrationOnly && isCalibrated) writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
+writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify({ mode, results, calibrated, stats, bars }, null, 2))
+if (!isGateOnly && !isCalibrationOnly && isCalibrated && privatePath === undefined) writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
 console.log(lines.join('\n'))
 process.exit(bars.every(([, met]) => met) ? 0 : 1)

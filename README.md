@@ -260,16 +260,19 @@ Each case says what to expect:
 | error | The case itself could not be run |
 
 **The judge is checked first.** Before any case is sent, the run gives the judge
-12 pairs with a known answer from [`evals/calibration.json`](evals/calibration.json)
-and requires the exact label on every one. If one is wrong, no case is sent and
-`evals/results.md` is left as it was. Five pairs are bad rewrites that must be judged
-`worse` (an invented investigation step, a question turned into an order, added
-scope, dropped scope, added reasoning instructions), four are good rewrites that must
-be judged `better` (calmed shouting, a numbered list, a reason beside its
-instruction, ideas before changes), and three change only capitalization,
-punctuation or a synonym and must be judged `equal`. Each pair covers one clause of
-the judge's rubric, and every original is new: the run refuses a pair whose original
-is also an eval prompt.
+36 pairs with a known answer from [`evals/calibration.json`](evals/calibration.json),
+12 easy and 24 hard. It requires the exact label on every easy pair and on at least
+90% of the hard ones. If it falls short, no case is sent and `evals/results.md` is left
+as it was. The easy pairs are plain: bad rewrites that must be judged `worse` (an
+invented investigation step, a question turned into an order, added scope, dropped
+scope, added reasoning instructions), good ones that must be judged `better` (calmed
+shouting, a numbered list, a reason beside its instruction, ideas before changes), and
+ones that change only capitalization, punctuation or a synonym and must be judged
+`equal`. The hard pairs are subtle: a quantifier narrowed to a named place, a dropped
+"only", an invented condition, a language switched, a voice turned into a report, an
+alternative turned into a requirement, against subtle good and neutral rewrites. Each
+pair covers one clause of the judge's rubric, and every original is new: the run
+refuses a pair whose original is also an eval prompt.
 
 **The judge runs with thinking enabled.** It uses adaptive thinking at `medium`
 effort and answers in a fixed JSON shape (a one-sentence reason, then the verdict).

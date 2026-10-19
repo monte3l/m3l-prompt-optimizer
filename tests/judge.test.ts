@@ -46,6 +46,11 @@ describe('judgeRequest', () => {
     expect(judgeRequest('a', 'b', 'medium').output_config.effort).toBe('medium')
   })
 
+  test('judges with another model when asked to, for a cross-check', () => {
+    expect(judgeRequest('a', 'b', 'medium', 'claude-fable-5-1').model).toBe('claude-fable-5-1')
+    expect(judgeRequest('a', 'b', 'medium').model).toBe(JUDGE_MODEL)
+  })
+
   test('leaves room for thinking and the reply', () => {
     expect(request.max_tokens).toBeGreaterThanOrEqual(16000)
   })

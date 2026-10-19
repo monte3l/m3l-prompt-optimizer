@@ -128,6 +128,21 @@ Read on 2026-10-19 from the raw Markdown of each official page (the page URL plu
 | Repeated judging | DT | Lists "Consistency" as a success criterion for the system under test, and asks nothing of the grader. | `--repeat` is local hardening, labelled optional |
 | Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's three examples have no outer `<examples>` tag. Not changed for 1.0.0: it is a system-prompt edit that needs a before and after eval |
 
+### Decision rules fixed before the comparison (2026-10-19)
+
+These were written, committed and pushed before any paired data on the realistic set existed, so the data cannot have shaped them.
+
+| Question | Rule |
+| --- | --- |
+| What gates a release | The gate suite, `evals/realistic.json` plus a private set of the maintainer's own prompt history, which is run locally and never committed. The 63 stress prompts in `evals/cases.json` are a diagnostic suite: their per-prompt results are published as known limits and do not gate |
+| Harm | The 95% upper confidence limit of the share of gate-suite rewrites judged worse is at most 2%, which for 400 decided samples means at most 3 worse |
+| Benefit | Gate-suite rewrites judged better are at least 5 times those judged worse |
+| Reliability | The 95% upper limit of the share of gate-suite calls that failed or errored is at most 5%. A failed call sends the original prompt, so it costs the user nothing: the bar catches a broken run or an outage. A direct timing study of 145 calls with no deadline found 3 over 6.5 s (2.1%, none of 55 on prompts under 700 characters), each with a normal output size, so slow responses and one hung connection, not output length |
+| Judge | All easy calibration pairs right, and at least 90% of the hard pairs |
+| Adopting a prompt change | Paired comparison of the current prompt (A) and the changed one (B) on the gate suite, generated and private prompts together, rewrites interleaved and judged by the same judge. Adopt B only if the one-sided exact McNemar p that B has fewer worse rewrites is at most 0.10, the p that B has fewer better rewrites is above 0.10, and B meets the gate bars. A neutral result is not adopted, because the sentence adds length to the prompt |
+| Judge cross-check | A second model judges stored public pairs. If Cohen's kappa on the three labels is below 0.6, or the second model calls fewer than 70% of the first judge's worse verdicts worse, the harm figure is published as contested beside the figure for pairs on which both judges say worse. The bar stays on the first judge, the stricter of the two |
+| Release | Nothing is tagged until the release run meets every bar, or the maintainer states which bar they accept missing and why |
+
 ## Follow-up research: the open items (2026-10-10)
 
 Two read-only research passes and three local experiments. Base URLs:
