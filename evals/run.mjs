@@ -233,10 +233,22 @@ if (!isGateOnly) {
     bars.push(
       ['no case errored', count(allSamples, 'error') === 0],
       ['no call failed', count(allSamples, 'failed') === 0],
-      ['no rewrite judged worse reached the model', count(allSamples, 'worse') === 0],
       ['at least 90% of "unchanged" cases left untouched', count(unchangedSamples, 'unchanged') >= Math.ceil(unchangedSamples.length * 0.9)],
       ['at least 70% of "rewrite" cases judged better', count(rewriteSamples, 'better') >= Math.ceil(rewriteSamples.length * 0.7)],
     )
+    // One sample per prompt: any "worse" fails. Several samples: a rate, because a stochastic rewriter
+    // cannot be held to zero over hundreds of samples, plus a cap per prompt so one prompt cannot hide
+    // behind the rest. Both limits were fixed before the confirmatory run that tests them.
+    const modelSamples = allSamples.filter(s => s.outcome !== 'skipped' && s.outcome !== 'sent')
+    if (rewrites === 1) {
+      bars.push(['no rewrite judged worse reached the model', count(allSamples, 'worse') === 0])
+    } else {
+      const perPromptCap = Math.floor(rewrites * 0.25)
+      bars.push(
+        ['at most 2% of rewrites judged worse', count(allSamples, 'worse') <= Math.floor(modelSamples.length * 0.02)],
+        [`no prompt has more than ${perPromptCap} of ${rewrites} rewrites judged worse`, results.every(r => count(r.sampled, 'worse') <= perPromptCap)],
+      )
+    }
     if (repeat > 1) {
       bars.push([
         `the judge gave one verdict on all ${repeat} repeats for at least 90% of judged cases`,

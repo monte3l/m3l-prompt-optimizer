@@ -277,7 +277,9 @@ does not: in a one-off probe on 15 known-answer pairs (the 12 committed pairs pl
 all 15 right, so `medium` is the default. Each run reports how many judgments contained
 thinking, and the thinking summaries are saved in `evals/.results/`.
 
-Bars: no "worse" result reaches the model, at least 11 of the 12 `unchanged` cases
+Bars: no "worse" result reaches the model (with several samples per prompt, at most
+2% of all rewrites judged worse and no prompt with more than a quarter of its rewrites
+judged worse), at least 11 of the 12 `unchanged` cases
 stay unchanged, at least 9 of the 12 `rewrite` cases are judged better, no case
 errors and no call fails, the judge is right on every calibration pair, every gated
 prompt is skipped before any call and every other prompt passes the gate. Run it live
