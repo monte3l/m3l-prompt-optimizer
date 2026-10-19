@@ -124,6 +124,7 @@ Read on 2026-10-19 from the raw Markdown of each official page (the page URL plu
 | A short `reason` | O55 | A prompt that pushes the model to write out its reasoning "may be declined with the `reasoning_extraction` refusal category". | `reason` stays one sentence, and the reasoning is the model's own thinking |
 | A different grader from the rewriter | DT | A code comment in the grading example: "Generally best practice to use a different model to evaluate than the model used to generate the evaluated output". | Haiku 5.5 rewrites, Opus 5.5 judges |
 | Test the grader before trusting it | DT | "LLM-based grading: … Test to ensure reliability first then scale." | The judge gets 12 known-answer pairs first, and no case is sent unless every one is right |
+| Bar on a rate, not a count | none (local choice) | No official passage sets a pass rate for a stochastic system. Identical wording gave 8 and 11 worse samples of 400 in two runs. | The rate bar tests the exact binomial (Clopper-Pearson) 95% upper limit against 2%, so a lucky run cannot pass on a count that sits inside the noise |
 | Repeated judging | DT | Lists "Consistency" as a success criterion for the system under test, and asks nothing of the grader. | `--repeat` is local hardening, labelled optional |
 | Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's three examples have no outer `<examples>` tag. Not changed for 1.0.0: it is a system-prompt edit that needs a before and after eval |
 
