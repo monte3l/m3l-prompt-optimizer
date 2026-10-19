@@ -1,72 +1,72 @@
 # Evaluation results
 
-Run: 2026-10-19T19:09:05.409Z | mode: live, rewriter claude-haiku-5-5 (8 samples per prompt), judge claude-opus-5-5 at medium effort, 1 judgment per item
+Run: 2026-10-19T19:32:37.886Z | mode: live, rewriter claude-haiku-5-5 (8 samples per prompt), judge claude-opus-5-5 at medium effort, 1 judgment per item
 
 | id | expected | outcome | samples | detail |
 | --- | --- | --- | --- | --- |
-| vague-1 | any | equal | equal 8 | The refinement only cleans up capitalization, punctuation, and wording without adding clarity, so an agent would do the same work with either text. |
-| vague-2 | any | equal | equal 8 | The refinement only changes capitalization, punctuation, and slight phrasing, so an agent would do the same work either way. |
-| vague-3 | any | equal | equal 8 | The refinement only fixes capitalization and punctuation, so an agent would do the same work with either text. |
+| vague-1 | any | equal | equal 8 | The refinement only cleans up capitalization and punctuation and turns "login thing" into "login", so a capable agent would do the same work with either text. |
+| vague-2 | any | equal | equal 8 | The refinement only adjusts capitalization, punctuation, and minor wording, so an agent would do the same work either way. |
+| vague-3 | any | worse | equal 6, worse 2 | The refinement only fixes capitalization and punctuation, but it also drops "a bit", which slightly widens the developer's modest scope, so at best a capable agent would do the same work and the loss of scope and voice tips it toward worse. |
 | clear-1 | unchanged | unchanged | unchanged 8 |  |
 | clear-2 | unchanged | unchanged | unchanged 8 |  |
 | clear-3 | unchanged | unchanged | unchanged 8 |  |
-| emphatic-1 | rewrite | better | better 8 | The refinement keeps all three constraints and just calms the shouting, which makes it clearer without changing what the developer asked. |
-| emphatic-2 | rewrite | better | better 8 | The refinement drops the shouting and keeps the instruction, its scope (the invoice export feature) and the firm 'do not skip' requirement, so it reads more clearly with nothing added or lost. |
-| emphatic-3 | rewrite | worse | better 6, worse 2 | The refinement calms the shouting, but it narrows "anywhere" to "anywhere in the file", a scope restriction the developer did not state, which changes what was asked. |
+| emphatic-1 | rewrite | better | better 8 | The refinement keeps all three constraints and the developer's wording, and only calms the shouting (caps, triple exclamation marks, "IMPORTANT:"), which the rubric counts as an improvement. |
+| emphatic-2 | rewrite | better | better 8 | The refinement calms the shouting into plain wording and keeps the instruction, the scope and the firmness intact, which makes it clearer for the agent. |
+| emphatic-3 | rewrite | worse | better 7, worse 1 | The refinement calms the shouting, but it adds an instruction the developer never gave ("use the new name instead"), which expands their chosen scope. |
 | question-1 | unchanged | unchanged | unchanged 8 |  |
 | question-2 | unchanged | unchanged | unchanged 8 |  |
-| question-3 | unchanged | unchanged | unchanged 8 |  |
+| question-3 | unchanged | failed | unchanged 7, failed 1 | skip: timeout |
 | image-1 | any | reverted | unchanged 7, reverted 1 | request became a question |
-| image-2 | any | equal | equal 5, unchanged 3 | The refinement only adds capitalization and punctuation while keeping both image placeholders and the request intact, so an agent would do the same work with either text. |
+| image-2 | any | equal | equal 2, unchanged 6 | The refinement changes only capitalization and punctuation, leaving the image placeholders and the request intact, so an agent would do identical work. |
 | image-3 | any | unchanged | unchanged 8 |  |
-| mention-1 | any | equal | equal 4, unchanged 4 | The refinement keeps both @mentions intact and only rephrases slightly, so a capable agent would do the same work with either text. |
+| mention-1 | any | unchanged | unchanged 8 |  |
 | mention-2 | any | unchanged | unchanged 8 |  |
 | mention-3 | any | unchanged | unchanged 8 |  |
-| multi-1 | rewrite | better | better 8 | The refinement turns the run-together asks into a short numbered list in the original order, adding nothing and dropping nothing. |
-| multi-2 | rewrite | better | better 8 | The refinement turns the run-together asks into a short numbered list that keeps the original order, and it adds and drops nothing. |
-| multi-3 | any | better | better 8 | The refinement splits the three run-together requests into a short numbered list in their original order, and nothing is added or dropped, which makes the asks clearer for a coding agent. |
+| multi-1 | rewrite | better | better 8 | The refinement turns the run-together asks into a short numbered list in the original order and keeps every task without adding or dropping anything. |
+| multi-2 | rewrite | worse | better 7, worse 1 | The numbered list keeps the original order, but it narrows the developer's open-ended "write tests" to only the toggle and persistence, which changes the scope they asked for. |
+| multi-3 | any | better | better 8 | The refinement splits the three run-together asks into a short numbered list in the original order, adding and dropping nothing. |
 | gated-short | skipped | skipped |  |  |
 | gated-slash | skipped | skipped |  |  |
 | gated-bash | skipped | skipped |  |  |
 | gated-paste | skipped | skipped |  |  |
 | gated-scheduled | skipped | skipped |  |  |
 | clear-4 | unchanged | unchanged | unchanged 8 |  |
-| clear-5 | unchanged | equal | equal 5, unchanged 3 | The refinement only splits one sentence into two, keeping the error, the instruction and the file path, so the agent would do the same work with either text. |
+| clear-5 | unchanged | unchanged | unchanged 8 |  |
 | clear-6 | unchanged | unchanged | unchanged 8 |  |
 | question-4 | unchanged | unchanged | unchanged 8 |  |
 | question-5 | unchanged | unchanged | unchanged 8 |  |
 | question-6 | unchanged | unchanged | unchanged 8 |  |
-| shouting-restriction-1 | rewrite | better | better 8 | The refinement calms the shouting and keeps the reason next to the instruction, while preserving the full constraint and scope. |
-| reason-1 | rewrite | equal | equal 8 | The refinement changes only capitalization and punctuation, so an agent would do the same work with either text. |
-| every-1 | rewrite | equal | better 1, equal 7 | The refinement keeps the same three files and the same scope, and it only rewords "all of them please" as "All three need the change," so an agent would do the same work with either text. |
-| shouting-list-1 | rewrite | better | better 8 | The refinement calms the shouting and keeps all three steps in the developer's stated order without adding or dropping anything, which makes the sequence clearer. |
-| spelling-1 | rewrite | better | better 8 | The refinement fixes the many misspellings and keeps the developer's statement intact, with nothing added or dropped, so the bug report reads more clearly. |
-| italian-emphatic-1 | rewrite | better | better 8 | The refinement drops the shouting and exclamation marks and keeps all three constraints (don't touch migrations, change only the API layer, no new dependencies) with nothing added or dropped. |
-| long-list-1 | rewrite | better | better 8 | The refinement turns a long run-together chain of asks into a numbered list in the original order, keeping every item and the developer's wording without adding or dropping anything. |
-| vague-4 | any | equal | equal 8 | The refinement only capitalizes the first letter and swaps the comma for a semicolon, so a capable agent would do the same work with either text. |
-| vague-5 | any | equal | equal 8 | The refinement only changes capitalization and punctuation and swaps "stuff" for "errors," so a capable agent would do the same work with either text. |
-| non-english-es | any | better | better 8 | The refinement splits the two run-together asks into a short numbered list in the original order without adding, dropping, or changing anything. |
-| non-english-de | any | worse | better 2, worse 6 | The numbered list keeps the original order, but changing the ambiguous "dafür" to "für beides" commits to tests for the avatar preview too, which may widen the scope the developer asked for. |
-| restriction-1 | any | equal | equal 7, unchanged 1 | The refinement only fixes capitalization and punctuation and adds an explicit "because" linking the reason to an instruction that already stood beside it, so a capable agent would do the same work with either text. |
+| shouting-restriction-1 | rewrite | equal | better 7, equal 1 | The refinement calms the shouting and keeps the reason next to the instruction without changing scope, but a capable agent would do the same work with either text, so the change is only tonal. |
+| reason-1 | rewrite | equal | better 2, equal 6 | The refinement only changes capitalization and punctuation, so an agent would do the same work with either text. |
+| every-1 | rewrite | equal | better 1, equal 7 | The refinement only recasts "all of them please" as "Apply it to all three" and fixes capitalization, so the agent would do the same work with either text. |
+| shouting-list-1 | rewrite | better | better 8 | The refinement calms the shouting and turns the run-together asks into a short numbered list in the original order, keeping the developer's ordering requirement without adding or dropping anything. |
+| spelling-1 | rewrite | better | better 8 | The refinement corrects the heavy misspellings while leaving the bug report's meaning and scope as the developer wrote it, so it is clearer to read. |
+| italian-emphatic-1 | rewrite | better | better 8 | The refinement keeps all three constraints (leave migrations alone, change only the API layer, add no new dependencies) and simply calms the shouting, which makes it clearer without changing the intent. |
+| long-list-1 | rewrite | better | better 8 | The refinement turns a long run-on chain of asks into a numbered list in the original order, keeping every item and adding nothing, which is clearer for the agent. |
+| vague-4 | any | equal | equal 8 | The refinement only changes capitalization, punctuation, and a contraction, so an agent would do the same work with either text. |
+| vague-5 | any | equal | equal 8 | The refinement only fixes capitalization and punctuation and changes "stuff" to "errors," so an agent would do the same work with either text. |
+| non-english-es | any | better | better 8 | The refinement splits two run-together asks into a short numbered list in the original order without adding, dropping, or changing anything. |
+| non-english-de | any | worse | better 4, worse 4 | The numbered list keeps the original order, but changing the ambiguous "Tests dafür" (most naturally the save fix) to "Tests für beides" may add avatar-preview tests the developer did not ask for. |
+| restriction-1 | any | equal | better 1, equal 7 | The refinement keeps both the instruction and its stated reason, adds nothing, and only cleans up capitalization and punctuation, so an agent would do the same work with either text. |
 | ideas-1 | any | unchanged | unchanged 8 |  |
 | inline-code-1 | any | unchanged | unchanged 8 |  |
-| inline-error-1 | any | equal | equal 8 | The refinement only adds capitalization, punctuation, and quotes around the error message, so an agent would do the same work with either text. |
-| guard-url-1 | any | equal | better 7, equal 1 | The refinement only adds capitalization and commas, so an agent would do the same work with either text. |
-| guard-path-1 | any | equal | better 7, equal 1 | The only change is an added comma, so an agent would do exactly the same work with either text. |
-| near-cap-1 | any | equal | equal 8 | The refinement only capitalizes, adds articles and punctuation, so an agent would do the same work with either text. |
-| long-500 | any | unchanged | unchanged 8 |  |
-| long-1500 | any | equal | better 3, equal 5 | The refinement keeps every request, reason, and constraint, and only splits the developer's four paragraphs into a numbered list in the same order with minor trimming of politeness words, so a capable agent would do the same work with either text. |
-| long-3500 | any | worse | better 3, worse 5 | The numbered list keeps the original order and wording well, but the last item turns "never show it again after that" (after the first showing) into "after it is skipped or completed," which invents a narrower condition the developer did not state. |
+| inline-error-1 | any | equal | equal 8 | The refinement only adds capitalization, quotes around the error, and a sentence split, so the agent would do the same work with either text. |
+| guard-url-1 | any | equal | better 4, equal 4 | The refinement only adds capitalization and commas, so an agent would do exactly the same work with either text. |
+| guard-path-1 | any | equal | equal 8 | The refinement only swaps "and then" for a comma and "then," keeping the @mention, the paths and the order of steps the same, so an agent would do identical work. |
+| near-cap-1 | any | equal | better 1, equal 7 | The refinement only changes capitalization and adds articles and punctuation, so an agent would do exactly the same work with either text. |
+| long-500 | any | worse | worse 2, unchanged 6 | The refinement keeps the same content but rewrites the developer's first-person voice into the third person ("the developer suspects"), and it adds no clarity, so it loses the developer's voice. |
+| long-1500 | any | equal | better 6, equal 2 | The refinement only numbers the four paragraphs the developer had already separated and trims "please" and "thanks", so every requirement, reason and question is preserved and a capable agent would do the same work with either text. |
+| long-3500 | any | worse | better 5, worse 3 | The numbered list keeps every ask in the original order, but item 53 turns the developer's vague "never show it again after that" into a new condition, "after it is skipped or finished", which narrows what the developer said. |
 | edge-min | any | unchanged | unchanged 8 |  |
-| edge-max | any | worse | better 3, worse 5 | The numbered list keeps every ask in order, but item 55 changes "never show it again after that" into "after it has been skipped or completed," an invented condition that alters when the tour stops showing. |
+| edge-max | any | worse | better 6, worse 2 | The numbered split is otherwise faithful and in order, but item 55 turns "never show it again after that" into "after it is skipped or completed", inventing a condition the developer did not state. |
 | gated-min-chars | skipped | skipped |  |  |
 | gated-four-words | skipped | skipped |  |  |
 | gated-over-max | skipped | skipped |  |  |
 | gated-raw | skipped | skipped |  |  |
 | gated-memory | skipped | skipped |  |  |
 | gated-sdk | skipped | skipped |  |  |
-| long-3500-clear | any | better | better 8 | The refinement turns a very long run-on prompt into a numbered list that keeps the original order, preserves every request without inventing facts, and only lightly clarifies wording such as noting the empty state belongs to the orders table. |
-| edge-max-clear | any | better | better 8 | The refinement splits the long run-together prompt into a numbered list in the original order, keeps every request, the stated reason and the ticket reference intact, and adds nothing beyond trivial wording such as "version" and "login" that the context already implies. |
+| long-3500-clear | any | better | better 8 | The refinement splits the long run-on prompt into a numbered list that keeps all 55 asks in their original order, without adding or dropping any scope; the only loss is the sign-off "cheers". |
+| edge-max-clear | any | failed | better 7, failed 1 | skip: timeout |
 
 Judge calibration (known answers):
 
@@ -85,9 +85,9 @@ Judge calibration (known answers):
 | cal-equal-punctuation | equal | equal | yes |
 | cal-equal-synonym | equal | equal | yes |
 
-Counts (samples, 8 per prompt): better 136, equal 99, worse 18, unchanged 162, reverted 1, skipped 11, failed 0, error 0, sent 0
+Counts (samples, 8 per prompt): better 138, equal 90, worse 15, unchanged 170, reverted 1, skipped 11, failed 2, error 0, sent 0
 
-Judge: 265 calls, thinking in 42, mean 106 output tokens per call
+Judge: 255 calls, thinking in 43, mean 108 output tokens per call
 
 | bar | met |
 | --- | --- |
@@ -95,10 +95,10 @@ Judge: 265 calls, thinking in 42, mean 106 output tokens per call
 | every other case passed the gate | yes |
 | the judge is right on every calibration pair | yes |
 | no case errored | yes |
-| no call failed | yes |
+| no call failed | **no** |
 | at least 90% of "unchanged" cases left untouched | yes |
 | at least 70% of "rewrite" cases judged better | yes |
-| at most 2% of rewrites judged worse, with 95% confidence (18 of 416, upper limit 6.3%) | **no** |
+| at most 2% of rewrites judged worse, with 95% confidence (15 of 416, upper limit 5.5%) | **no** |
 | no prompt has more than 2 of 8 rewrites judged worse | **no** |
 
 Rewrites, side by side, and the judge's thinking summaries are in evals/.results/ (not committed).
