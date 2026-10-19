@@ -33,4 +33,6 @@ Nothing that blocks use. Two limits remain by design, listed at the end.
 
 - The exact status the API returns when a balance is empty (item 7) stays unobserved by design; the classifier does not depend on it.
 - The 2025-11-10 `claude.com` blog post on prompt engineering and the Console prompt tools' own docs were read only through a summarizer, so their quotes in `docs/research-notes.md` are unconfirmed. Neither changes a rule: the platform docs win where they differ.
+- Whether CI can run `tsc -p .`. On 2026-10-19 `claude plugin validate --strict .` and `claude plugin test .` were run on a copy without `.claude-plugin/types/` and neither wrote it, so `verify` leaves type errors and `evals/*.ts` unchecked. Run `tsc -p .` locally before a PR (item 11).
+- Whether `claude plugin marketplace add monte3l/m3l-prompt-optimizer#<tag>` pins the plugin files of a `"./"` source. The Claude Code docs describe the `#ref` form for the catalog but do not state it for plugin content.
 - Whether an installed plugin and a `--plugin-dir` copy of the same name can load together is undocumented. Do not run both.

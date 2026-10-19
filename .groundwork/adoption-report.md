@@ -13,7 +13,7 @@ Generated 2026-10-19T11:34:33.818Z by m3l-groundwork 1.0.4 (inventory schema 6).
 
 ## Toolchain enforcement in effect
 
-- **Required checks on `main`:** `verify` and `Gitleaks`. `verify.yml` runs, in order: the design `SHA256SUMS` check, `build-docs.mjs --check`, `evals/run.mjs --gate-only`, `claude plugin validate --strict .`, `claude plugin test .` and `guard-break.mjs`. Tests hard-gate.
+- **Required checks on `main`:** `verify`, `Dependency Review`, `CodeQL` and `Gitleaks` (the org blueprint's `main` ruleset). `verify.yml` runs, in order: the design `SHA256SUMS` check, `build-docs.mjs --check`, `evals/run.mjs --gate-only`, `claude plugin validate --strict .`, `claude plugin test .` and `guard-break.mjs`. Tests hard-gate.
 - Also on PRs: dependency review. On `main`: docs deploy to Cloudflare. Added by this run: `scorecard.yml`.
 - No local git hooks, no formatter and no linter. `tsc -p .` is not in CI because the types are written by the engine on install.
 - Every GitHub Action is pinned by SHA. Claude Code is pinned in `.github/ci-tools` by lockfile (now 2.1.303).

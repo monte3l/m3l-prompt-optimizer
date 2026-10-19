@@ -51,6 +51,27 @@ types in `.claude-plugin/types/`, so install once from this folder first.
   and, if a host behaviour is newly confirmed or open, `UNVERIFIED.md`.
 - Log lines never contain prompt text or the key.
 
+## Releasing
+
+The version lives in one place: `version` in `.claude-plugin/plugin.json`.
+Do not add it to `marketplace.json`; `claude plugin validate` warns when the
+two disagree. Claude Code treats a set `version` as the update signal, so users
+receive nothing new until it is bumped.
+
+1. Bump `version` in `plugin.json` and move the `CHANGELOG.md` entries from
+   **Unreleased** under the new version and date.
+2. Merge that change to `main` through a pull request.
+3. On the merged commit, run `claude plugin tag --dry-run` (it checks the
+   version and the working tree), then create a **signed** tag in the form
+   `claude plugin tag` uses: `git tag -s m3l-prompt-optimizer--vX.Y.Z -m "m3l-prompt-optimizer X.Y.Z"`.
+4. Push the tag. The org tags ruleset lets a tag be created but never moved
+   or deleted.
+
+Users who want a fixed release add the marketplace at its tag instead of at
+`main`: `claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--vX.Y.Z`.
+The Claude Code docs describe the `#ref` form but do not say that it pins the
+plugin files of a `"./"` source; check `claude plugin list` after adding it.
+
 ## Docs style
 
 The repository follows **m3l-design**. Use **bold**, never italics or
