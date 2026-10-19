@@ -10,10 +10,10 @@
  *   added (a live probe showed the model inventing an investigation step for a
  *   vague bug report): prompting-claude-fable-5-1, prompting-claude-sonnet-5,
  *   prompting-claude-opus-5-5.
- * - Three worked examples (a vague prompt polished and left vague, a question left
- *   alone, run-together asks listed): the context-engineering post (canonical
- *   examples); the numbered list and the plain-prose rules are local design
- *   choices, listed in docs/research-notes.md.
+ * - Four worked examples (a vague prompt polished and left vague, a question left
+ *   alone, run-together asks listed, and the same list in Spanish): the
+ *   context-engineering post (canonical examples); the numbered list and the
+ *   plain-prose rules are local design choices, listed in docs/research-notes.md.
  *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
  * - Language and restrictions: a release-style eval run found a German prompt rewritten in
  *   English in 3 of 3 samples, and a shouted restriction given an invented reason. A local
