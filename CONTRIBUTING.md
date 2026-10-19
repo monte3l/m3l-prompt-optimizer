@@ -52,6 +52,16 @@ types in `.claude-plugin/types/`, so install once from this folder first.
   and, if a host behaviour is newly confirmed or open, `UNVERIFIED.md`.
 - Log lines never contain prompt text or the key.
 
+## Versioning
+
+The version follows semver against the contract in the README.
+
+| Bump | When |
+| --- | --- |
+| Major | A setting, log-line prefix, gate reason or guard reason is removed or renamed |
+| Minor | A new check, setting or log line |
+| Patch | A fix, or system-prompt wording that passes the live eval |
+
 ## Releasing
 
 The version lives in one place: `version` in `.claude-plugin/plugin.json`.
@@ -59,19 +69,25 @@ Do not add it to `marketplace.json`; `claude plugin validate` warns when the
 two disagree. Claude Code treats a set `version` as the update signal, so users
 receive nothing new until it is bumped.
 
+0. Run `node evals/run.mjs --rewrites 3` and commit `evals/results.md`. Every
+   bar in the README's "Evaluation" section must be met, or the pull request
+   says which one is missed and why. Run it again if `hooks/` changed since the
+   last run.
 1. Bump `version` in `plugin.json` and move the `CHANGELOG.md` entries from
    **Unreleased** under the new version and date.
 2. Merge that change to `main` through a pull request.
 3. On the merged commit, run `claude plugin tag --dry-run` (it checks the
    version and the working tree), then create a **signed** tag in the form
    `claude plugin tag` uses: `git tag -s m3l-prompt-optimizer--vX.Y.Z -m "m3l-prompt-optimizer X.Y.Z"`.
-4. Push the tag. The org tags ruleset lets a tag be created but never moved
+4. Push the tag. The repository tags ruleset lets a tag be created but never moved
    or deleted.
 
 Users who want a fixed release add the marketplace at its tag instead of at
 `main`: `claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--vX.Y.Z`.
-The Claude Code docs describe the `#ref` form but do not say that it pins the
-plugin files of a `"./"` source; check `claude plugin list` after adding it.
+The ref pins the plugin files as well: on Claude Code 2.1.303, adding the marketplace
+at the `release/v1.0.0` branch in an isolated config installed that branch's plugin
+version, and the docs say a `ref` is a branch or a tag. No tag existed to try, so
+check `claude plugin list` after adding one.
 
 ## Docs style
 

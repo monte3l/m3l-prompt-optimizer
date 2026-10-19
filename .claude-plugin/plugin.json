@@ -1,6 +1,6 @@
 {
   "name": "m3l-prompt-optimizer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Refines the prompts you type in Claude Code using Anthropic's prompt-engineering guidance; a clear prompt passes through unchanged and any failure sends your original.",
   "author": {
     "name": "Enrico Lionello"

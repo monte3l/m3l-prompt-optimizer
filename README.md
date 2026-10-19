@@ -51,6 +51,14 @@ and an Anthropic account (see [Requirements](#requirements) for versions).
 To skip one prompt, start it with `\raw `. To turn the mod off, see
 [When it pauses](#when-it-pauses).
 
+To pin a release, add the marketplace at its tag. The ref pins the plugin files as
+well (checked with a branch ref on Claude Code 2.1.303; no tag existed to try), so
+check `claude plugin list` afterwards:
+
+```zsh
+claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--v1.0.0
+```
+
 ## How it works
 
 Every prompt goes through gate, rewrite and guard, and every failure path sends
