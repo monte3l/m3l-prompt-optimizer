@@ -4,83 +4,287 @@
     "expect": "worse",
     "clause": "invents a cause or step",
     "original": "the signup form sometimes rejects valid emails, can you look into it",
-    "rewrite": "Look into why the signup form sometimes rejects valid emails. Check the validation regex first, then compare it against the email standard and review recent changes to the validator."
+    "rewrite": "Look into why the signup form sometimes rejects valid emails. Check the validation regex first, then compare it against the email standard and review recent changes to the validator.",
+    "tier": "easy"
   },
   {
     "id": "cal-worse-question-to-order",
     "expect": "worse",
     "clause": "a question becomes an order",
     "original": "is the cache layer still needed now that we moved to the new database?",
-    "rewrite": "Remove the cache layer, since the new database makes it unnecessary."
+    "rewrite": "Remove the cache layer, since the new database makes it unnecessary.",
+    "tier": "easy"
   },
   {
     "id": "cal-worse-scope-added",
     "expect": "worse",
     "clause": "adds something the developer did not ask for",
     "original": "add a --verbose flag to the export command",
-    "rewrite": "Add a --verbose flag to the export command, document it in the README, and add tests for it."
+    "rewrite": "Add a --verbose flag to the export command, document it in the README, and add tests for it.",
+    "tier": "easy"
   },
   {
     "id": "cal-worse-scope-dropped",
     "expect": "worse",
     "clause": "drops something the developer did ask for",
     "original": "fix the typo in the error message and also update the changelog for the next release",
-    "rewrite": "Fix the typo in the error message."
+    "rewrite": "Fix the typo in the error message.",
+    "tier": "easy"
   },
   {
     "id": "cal-worse-scaffolding",
     "expect": "worse",
     "clause": "adds reasoning or verification instructions",
     "original": "rename the helper that formats prices to formatPrice",
-    "rewrite": "Rename the helper that formats prices to formatPrice. Think step by step, and verify your work by running the full test suite before you finish."
+    "rewrite": "Rename the helper that formats prices to formatPrice. Think step by step, and verify your work by running the full test suite before you finish.",
+    "tier": "easy"
   },
   {
     "id": "cal-better-shouting-calmed",
     "expect": "better",
     "clause": "shouting is calm, and a restriction names the action",
     "original": "DO NOT change the public API!!! You MUST keep every existing export working, THIS IS VERY IMPORTANT, when you refactor the parser",
-    "rewrite": "When you refactor the parser, keep the public API unchanged and make sure every existing export still works."
+    "rewrite": "When you refactor the parser, keep the public API unchanged and make sure every existing export still works.",
+    "tier": "easy"
   },
   {
     "id": "cal-better-run-together-listed",
     "expect": "better",
     "clause": "run-together asks are a short numbered list in the original order",
     "original": "update the onboarding email copy and swap the logo in the footer and then send me a preview",
-    "rewrite": "1. Update the onboarding email copy.\n2. Swap the logo in the footer.\n3. Send me a preview."
+    "rewrite": "1. Update the onboarding email copy.\n2. Swap the logo in the footer.\n3. Send me a preview.",
+    "tier": "easy"
   },
   {
     "id": "cal-better-reason-beside",
     "expect": "better",
     "clause": "a stated reason sits beside its instruction",
     "original": "don't raise the batch size above 100. memory spikes when it goes higher and the worker gets killed. please tune the importer's throughput",
-    "rewrite": "Tune the importer's throughput without raising the batch size above 100, because memory spikes above that and the worker gets killed."
+    "rewrite": "Tune the importer's throughput without raising the batch size above 100, because memory spikes above that and the worker gets killed.",
+    "tier": "easy"
   },
   {
     "id": "cal-better-ideas-first",
     "expect": "better",
     "clause": "a request for ideas says so",
     "original": "think about how we could speed up the nightly report job, it takes forever",
-    "rewrite": "I want ideas for speeding up the nightly report job, which takes a very long time. Share your ideas before making any changes."
+    "rewrite": "I want ideas for speeding up the nightly report job, which takes a very long time. Share your ideas before making any changes.",
+    "tier": "easy"
   },
   {
     "id": "cal-equal-capitalization",
     "expect": "equal",
     "clause": "only capitalization and punctuation differ",
     "original": "add a retry to the upload step when the network drops",
-    "rewrite": "Add a retry to the upload step when the network drops."
+    "rewrite": "Add a retry to the upload step when the network drops.",
+    "tier": "easy"
   },
   {
     "id": "cal-equal-punctuation",
     "expect": "equal",
     "clause": "only punctuation differs",
     "original": "move the feature flags into their own module, keep the names the same",
-    "rewrite": "Move the feature flags into their own module. Keep the names the same."
+    "rewrite": "Move the feature flags into their own module. Keep the names the same.",
+    "tier": "easy"
   },
   {
     "id": "cal-equal-synonym",
     "expect": "equal",
     "clause": "a capable agent does the same work with either text",
     "original": "tidy up the tests for the pricing module",
-    "rewrite": "Clean up the tests for the pricing module."
+    "rewrite": "Clean up the tests for the pricing module.",
+    "tier": "easy"
+  },
+  {
+    "id": "hard-worse-every-narrowed",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a quantifier is narrowed",
+    "original": "update every import of the old logger across the repo",
+    "rewrite": "Update the imports of the old logger in the main packages."
+  },
+  {
+    "id": "hard-worse-anywhere-narrowed",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a word that sets reach is narrowed to a named place",
+    "original": "remove the old company name from the docs, and make sure it never shows up anywhere else either",
+    "rewrite": "Remove the old company name from the docs, and make sure it never shows up anywhere in the docs either."
+  },
+  {
+    "id": "hard-worse-pointer-resolved",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a pointer is settled on part of what it covers",
+    "original": "refactor the parser and the lexer, then write tests for them",
+    "rewrite": "Refactor the parser and the lexer, then write tests for the parser."
+  },
+  {
+    "id": "hard-worse-condition-invented",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a condition is invented",
+    "original": "turn off the beta banner once the release goes out",
+    "rewrite": "Turn off the beta banner once the release goes out and the migration has finished."
+  },
+  {
+    "id": "hard-worse-only-dropped",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a limiting word is dropped",
+    "original": "only run the slow integration tests on the main branch",
+    "rewrite": "Run the slow integration tests on the main branch."
+  },
+  {
+    "id": "hard-worse-language-switched",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "the language is switched",
+    "original": "aggiungi un controllo per i campi vuoti nel modulo di registrazione",
+    "rewrite": "Add a check for empty fields in the registration form."
+  },
+  {
+    "id": "hard-worse-voice-changed",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "the developer's voice and intent become a report",
+    "original": "I think the cache is stale, can you check why the header doesn't refresh",
+    "rewrite": "The developer thinks the cache is stale and wants to know why the header does not refresh."
+  },
+  {
+    "id": "hard-worse-example-added",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "an example and a limit are added",
+    "original": "write a short description for the new export setting",
+    "rewrite": "Write a short description for the new export setting, for example 'Exports the table as CSV', and keep it under 80 characters."
+  },
+  {
+    "id": "hard-worse-or-became-and",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "an alternative becomes a requirement",
+    "original": "delete the old feature flag or its tests, whichever is easier",
+    "rewrite": "Delete the old feature flag and its tests."
+  },
+  {
+    "id": "hard-worse-must-softened",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a firm constraint is softened",
+    "original": "you must keep the public function signatures unchanged",
+    "rewrite": "Try to keep the public function signatures mostly unchanged."
+  },
+  {
+    "id": "hard-worse-cause-assumed",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "a cause is assumed",
+    "original": "the nightly job fails sometimes, find out why",
+    "rewrite": "Find out why the nightly job fails, probably because of a timeout."
+  },
+  {
+    "id": "hard-worse-order-swapped",
+    "tier": "hard",
+    "expect": "worse",
+    "clause": "dependent steps are put in the other order",
+    "original": "first back up the database, then run the migration",
+    "rewrite": "Run the migration, then back up the database."
+  },
+  {
+    "id": "hard-better-caps-calmed",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "shouting is calm and the constraint is kept",
+    "original": "NEVER rename the exported functions!!! just fix the typos in the comments",
+    "rewrite": "Fix the typos in the comments, and leave the exported function names as they are."
+  },
+  {
+    "id": "hard-better-list-in-order",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "run-together asks become a numbered list in order",
+    "original": "add the retry button then style it like the cancel button and write a test for it",
+    "rewrite": "1. Add the retry button.\n2. Style it like the cancel button.\n3. Write a test for it."
+  },
+  {
+    "id": "hard-better-typos-fixed",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "unclear spelling is fixed",
+    "original": "the serach filtr dosnt reset wen i clear the inptu, fix it",
+    "rewrite": "The search filter doesn't reset when I clear the input; fix it."
+  },
+  {
+    "id": "hard-better-italian-calmed",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "shouting is calm in the developer's own language",
+    "original": "NON modificare le API pubbliche!!! sistema SOLO la validazione dei campi",
+    "rewrite": "Sistema solo la validazione dei campi e lascia invariate le API pubbliche."
+  },
+  {
+    "id": "hard-better-every-explicit",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "a clearly meant every item is spelled out with their items",
+    "original": "rename the config key in the loader, the docs and the sample file, all of them",
+    "rewrite": "Rename the config key in each of these: the loader, the docs and the sample file."
+  },
+  {
+    "id": "hard-better-reason-beside",
+    "tier": "hard",
+    "expect": "better",
+    "clause": "a reason sits beside its instruction",
+    "original": "the build is slow because of the image step. cache the docker layers in the workflow",
+    "rewrite": "Cache the docker layers in the workflow, because the image step is what makes the build slow."
+  },
+  {
+    "id": "hard-equal-capital-period",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "only capitalization and a full stop differ",
+    "original": "rename the internal helper to buildKey",
+    "rewrite": "Rename the internal helper to buildKey."
+  },
+  {
+    "id": "hard-equal-capital-only",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "only capitalization differs",
+    "original": "add a short note about the new flag to the readme",
+    "rewrite": "Add a short note about the new flag to the readme."
+  },
+  {
+    "id": "hard-equal-sentence-split",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "a comma splice becomes two sentences",
+    "original": "the export is slow, profile it and report what dominates the time",
+    "rewrite": "The export is slow. Profile it and report what dominates the time."
+  },
+  {
+    "id": "hard-equal-synonym",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "a synonym for the verb",
+    "original": "get rid of the unused imports in the api folder",
+    "rewrite": "Remove the unused imports in the api folder."
+  },
+  {
+    "id": "hard-equal-contraction",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "a contraction",
+    "original": "do not touch the lockfile when you update the version",
+    "rewrite": "Don't touch the lockfile when you update the version."
+  },
+  {
+    "id": "hard-equal-verb-swap",
+    "tier": "hard",
+    "expect": "equal",
+    "clause": "make and add mean the same here",
+    "original": "make a new test for the date parser edge cases",
+    "rewrite": "Add a new test for the date parser edge cases."
   }
 ]

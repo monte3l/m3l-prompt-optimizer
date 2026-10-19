@@ -31,6 +31,19 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 - Added tests at the exact gate and guard size limits, and four mutants that
   swap `<` for `<=` and `>` for `>=` on them.
 - Added the evaluation counts to `scripts/doc-parity.mjs`.
+- Changed what gates a release. A gate suite of 175 realistic prompts
+  (`evals/realistic.json`, plus a private set of the maintainer's own history that is
+  run locally and never committed) is held to a harm limit (95% upper limit of worse
+  rewrites at most 2%), a benefit ratio (better at least 5 times worse) and a
+  reliability limit. The 63 stress prompts become a diagnostic suite reported as known
+  limits. The limits were fixed before any paired comparison on the realistic set existed.
+- Added 24 hard calibration pairs, so the judge is checked on subtle cases (at least
+  90% of them) as well as the 12 easy ones.
+- Added `evals/compare.mjs`, a paired comparison of two prompts with exact tests, and
+  `evals/crosscheck.mjs`, a second-model check of the judge. A sentence proposed for the
+  prompt failed the comparison and was not adopted.
+- Changed the README to say the mod was tested on Claude Code 2.1.303 and to name the
+  fixes that affect `prompt.submit` rewrites.
 - Changed the multi-sample rate bar to use the 95% upper confidence limit of the
   share of rewrites judged worse (at most 2%, so at most 3 of 400) instead of the
   raw count, because the same wording gave 8 and 11 worse samples in two runs.

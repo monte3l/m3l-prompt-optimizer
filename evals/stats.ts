@@ -28,3 +28,28 @@ export const upperBound = (k: number, n: number, alpha = 0.05): number => {
   }
   return high
 }
+
+/** P(X <= k) for X ~ Binomial(n, p), summed in log space so a few hundred trials stay exact enough. */
+export const binomialCdf = (k: number, n: number, p = 0.5): number => {
+  if (k < 0) return 0
+  if (k >= n) return 1
+  const logFactorial = [0]
+  for (let i = 1; i <= n; i += 1) logFactorial.push((logFactorial[i - 1] ?? 0) + Math.log(i))
+  let sum = 0
+  for (let i = 0; i <= k; i += 1) {
+    const logChoose = (logFactorial[n] ?? 0) - (logFactorial[i] ?? 0) - (logFactorial[n - i] ?? 0)
+    sum += Math.exp(logChoose + i * Math.log(p) + (n - i) * Math.log1p(-p))
+  }
+  return Math.min(1, sum)
+}
+
+/**
+ * One-sided exact McNemar test on paired samples. `onlyA` counts pairs where only arm A had the event
+ * (for example "judged worse") and `onlyB` pairs where only arm B did. The result is the probability of
+ * seeing at most `onlyB` of the `onlyA + onlyB` discordant pairs fall on B's side if the two arms were
+ * equally likely to have it: a small value says B has the event less often than A.
+ */
+export const mcnemarOneSided = (onlyA: number, onlyB: number): number => {
+  const discordant = onlyA + onlyB
+  return discordant === 0 ? 1 : binomialCdf(onlyB, discordant, 0.5)
+}
