@@ -86,8 +86,9 @@ Users who want a fixed release add the marketplace at its tag instead of at
 `main`: `claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--vX.Y.Z`.
 The ref pins the plugin files as well: on Claude Code 2.1.303, adding the marketplace
 at the `release/v1.0.0` branch in an isolated config installed that branch's plugin
-version, and the docs say a `ref` is a branch or a tag. No tag existed to try, so
-check `claude plugin list` after adding one.
+version, and the docs say a `ref` is a branch or a tag. A tag works the same way: the
+marketplace is cloned as a detached checkout of it. Check `claude plugin list` after
+adding one.
 
 ## Docs style
 
