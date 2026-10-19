@@ -45,9 +45,10 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 - Changed the system prompt so that every line of a rewrite, list items included,
   stays in the language of the prompt, and a calmed restriction keeps the reach the
   developer gave it and gains no reason, constraint or fix step, with one Spanish
-  worked example. On held-out prompts it cut translations into English from 14 to 0
-  and worse rewrites from 28 to 18 of 315; on the gate suite worse rewrites fell from
-  15 to 2 of 650 paired samples. See `UNVERIFIED.md` item 22.
+  worked example. On held-out prompts it cut translations into English from 14 to 0,
+  which is all of the drop in worse rewrites there (28 to 18 of 315; the other kinds
+  went from 14 to 18). On the gate suite worse rewrites fell from 15 to 2 of 650
+  paired samples. See `UNVERIFIED.md` item 22.
 - Changed the README to say the mod was tested on Claude Code 2.1.303 and to name the
   fixes that affect `prompt.submit` rewrites.
 - Changed the multi-sample rate bar to use the 95% upper confidence limit of the

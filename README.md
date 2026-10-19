@@ -115,12 +115,15 @@ restrictions, 5.7% of rewrites were judged worse (upper limit 8.4%).
 | A reference you left open is settled | "never show it again after that" became "after it is skipped or completed" |
 
 An earlier wording of the prompt translated non-English prompts into English. The
-current wording did not in the held-out set (14 translated samples before, none after).
-The guard does not catch the failures above, because it checks structure and not
+current wording did not in the held-out set (14 translated samples before, none after),
+and that was the whole of its gain there: the same change aimed to stop invented
+reasons and constraints, and on those prompts it reduced them less clearly (7 samples
+before, 4 after) and introduced a few misreads. The guard does not catch the failures above, because it checks structure and not
 meaning. To send a prompt exactly as typed, start it with `\raw `. The project holds
 itself to limits on how often a rewrite may be judged worse, and the latest run met
-them: [`evals/results.md`](evals/results.md) and [`UNVERIFIED.md`](UNVERIFIED.md)
-(items 12, 14 and 22) give the figures.
+them on the public prompts, and with the maintainer's own prompts added:
+[`evals/results.md`](evals/results.md) and [`UNVERIFIED.md`](UNVERIFIED.md) (items 12,
+14 and 22) give the figures.
 
 ## Set up the key
 
