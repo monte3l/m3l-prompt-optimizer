@@ -5,6 +5,16 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 
 ## Unreleased
 
+## 1.0.0 (2026-10-19)
+
+First release. Each prompt goes through gate, client, parse and guard, and
+every failure path sends the original text unchanged. A spend limit, empty
+balance or rejected key pauses the mod for the session; rate limits, overload,
+network errors and timeouts skip only that prompt. From here on the README's
+settings, log-line prefixes and gate and guard reasons are the public contract
+(see "Versioning" in [CONTRIBUTING.md](CONTRIBUTING.md)). The README's "Known limits"
+section states how often a rewrite was judged worse in the project's own evaluation.
+
 - Added REUSE compliance (`REUSE.toml`, `LICENSES/`) checked in CI.
 - Added actionlint and zizmor for every workflow change.
 - Added `.gitattributes` and `.editorconfig`.
