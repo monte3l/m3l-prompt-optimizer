@@ -61,7 +61,7 @@ path sends the original text unchanged (fail open).
 | `design/` | Vendored m3l-design (`source/`, never hand-edited, including the docs kit), the vendored `tokens.css`, and `local/` for overrides of the kit's page shell (none today) |
 | `.github/workflows/docs.yml` | Deploys the site to Cloudflare Workers Static Assets at prompt-optimizer.monte3l.com on every push to `main`, then a `smoke` job compares the live site with the build |
 | `.github/workflows/docs-live.yml` | Daily: rebuilds the site from `main` and compares it with the live site, and compares the plugin manifest's description and homepage with the GitHub repository (keywords too, if the manifest ever gains them) |
-| `.github/workflows/verify.yml` | The required `verify` check |
+| `.github/workflows/verify.yml` | The required `verify` check: lanes `checks` (offline), `plugin` (the only one that installs Claude Code) and `dco`, rolled into one fail-closed `verify` job, the same shape as m3l-groundwork's `ci.yml` |
 | `.github/workflows/reuse.yml`, `workflow-lint.yml` | `reuse lint` against `REUSE.toml`, and actionlint plus zizmor on any change to a workflow. Copied from the org's `workflow-templates/` |
 
 Constraints that are not obvious from one file:

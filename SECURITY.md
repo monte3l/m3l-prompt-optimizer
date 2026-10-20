@@ -43,8 +43,8 @@ No workflow holds an Anthropic API key. The live eval reads one from the
 maintainer's shell and never runs in CI.
 
 > [!NOTE]
-> Accepted risk: `verify.yml` installs `@anthropic-ai/claude-code` from
-> `.github/ci-tools/` **with** its install script, because the script fetches
+> Accepted risk: the `plugin` lane of `verify.yml` installs
+> `@anthropic-ai/claude-code` from `.github/ci-tools/` **with** its install script, because the script fetches
 > the native binary. The lockfile pins the package by integrity hash, Dependabot
 > proposes bumps after a one-day cooldown, and the job holds read-only
 > permissions and no secrets. `docs.yml` installs its tools with
