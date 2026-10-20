@@ -40,8 +40,8 @@ None.
 ## Existing Claude Code harness
 
 - **Agent:** `invariant-reviewer` (`model: sonnet`, `effort: medium`, tools Read, Grep, Glob, Bash).
-- **Skills (8):** `add-safety-check`, `customize`, `harness-guidance`, `typescript-guidance`, `verify`, `reviewing-dependabot-prs`, `triaging-scan-alerts`, `watching-pr-checks`.
-- **Hooks (9 scripts):** `block-generated-edit`, `guard-js-extension`, `guard-secret-writes`, `guard-double-background`, the compaction handoff pair, and the three status line scripts. The four PreToolUse guards set `onFailure: "block"`.
+- **Skills (11):** `add-safety-check`, `customize`, `harness-guidance`, `typescript-guidance`, `verify`, `reviewing-dependabot-prs`, `triaging-scan-alerts`, `watching-pr-checks`, plus the retargeted `writing-commits`, `creating-prs` and `triaging-ci`.
+- **Hooks (10 scripts):** `block-generated-edit`, `guard-js-extension`, `guard-secret-writes`, `guard-double-background`, `guard-readonly-bash`, the compaction handoff pair, and the three status line scripts. The five PreToolUse guards set `onFailure: "block"`.
 - **Settings:** schemastore `$schema`, deny rules for `**/.env`, `**/.env.*` and `./secrets/**`, `statusLine`, `subagentStatusLine`, `enabledPlugins`.
 - **Mod:** `hooks/hooks.json` registers `hooks/register.ts`, the only file that touches `$`.
 - **Rules and commands:** none. Root `CLAUDE.md` is absent on purpose: the instructions live in `.claude/CLAUDE.md` because `claude plugin validate --strict` rejects a root file.
@@ -80,9 +80,9 @@ None.
 | Artifact | Installed | Baseline cap |
 | --- | --- | --- |
 | Agents | 1 | 5 |
-| Skills | 8 | 8 |
-| Hooks | 9 | 10 |
-| Workflows | 8 | 3 |
+| Skills | 11 | 8 |
+| Hooks | 10 | 10 |
+| Workflows | 9 | 3 |
 
 Workflows are over the baseline cap by design: the project's own docs, release and supply-chain workflows are not baseline files, and none was added in this run.
 
@@ -184,11 +184,12 @@ This is the 2026-10-20 re-adopt (m3l-groundwork 1.0.5 over the 1.0.4 customizati
 - **Conflicts:** all 10 kept as they were. The staged copies are older than the local ones (scorecard-action v2.4.4 against the local v2.5.0, and an unretargeted handoff comment).
 - **Packs:** none new installed. `harness-extras`, `statusline`, `github` and `supply-chain` were already in place; `licensing` and `publishing` are fresh-only; `quality`, `worktrees` and `claude-github` were not selected.
 - **Skill copy:** the project-local `/customize` was replaced with the 1.0.5 copy (four files).
+- **Second pass (after PR #30):** `guard-readonly-bash` installed with an empty writer roster in `.claude/hooks/lib/agent-roster.mjs`, so `harness-extras` is complete; `writing-commits`, `creating-prs` and `triaging-ci` installed, retargeted by hand. `quality`, `worktrees`, `claude-github`, `licensing`, `publishing`, `finishing-work` and `starting-work` were re-checked and stay declined.
 - **Round 2 edits:** `tsconfig.json` gained an `include` for `evals`, and `.github/ci-tools` pins Claude Code 2.1.304.
 
 ## Could not be determined
 
-None. The eight workflow files were read in the 2026-10-19 run and the lanes are described above. These paths sit outside both guidance sweeps' domains and were not reviewed: `.github/ci-tools/`, `.github/deploy-tools/`, `wrangler.jsonc` and `scripts/`.
+None. Eight workflow files were read in the 2026-10-19 run and the lanes are described above; `environments.yml` and `.github/environments.json` came in with PR #30 and were read for the second pass only. These paths sit outside both guidance sweeps' domains and were not reviewed: `.github/ci-tools/`, `.github/deploy-tools/`, `wrangler.jsonc` and `scripts/`.
 
 ## Next step
 

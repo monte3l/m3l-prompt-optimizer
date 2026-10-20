@@ -30,7 +30,7 @@ None outstanding.
 
 **Applied 2026-10-20**, after the owner confirmed it: `.github/ci-tools` now pins Claude Code 2.1.304 (lockfile regenerated with `--package-lock-only`), level with the local CLI again.
 
-**Owner decisions 2026-10-20, no change made:** `invariant-reviewer` keeps `model: sonnet`. The alias resolves to Sonnet 5.5 on the Anthropic API but to Sonnet 4.6 on Claude Platform on AWS and to Sonnet 4.5 on Bedrock, Google Cloud and Foundry, and `claude-sonnet-4-5-20250929` retires 2026-11-30. A `maxTurns` was not added: no Anthropic page recommends a value.
+**Owner decisions 2026-10-20, no change made:** `invariant-reviewer` keeps `model: sonnet`. The alias resolves to Sonnet 5.5 on the Anthropic API but to Sonnet 4.6 on Claude Platform on AWS and to Sonnet 4.5 on Bedrock, Google Cloud and Foundry, and `claude-sonnet-4-5-20250929` retires 2026-11-30. A `maxTurns` was not added: no Anthropic page recommends a value. Its read-only rule is no longer prompt-only: `.claude/hooks/guard-readonly-bash.mjs` (installed 2026-10-20, `onFailure: block`) refuses mutating Bash from it.
 
 ## Facet state
 
