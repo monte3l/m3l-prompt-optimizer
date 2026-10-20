@@ -21,7 +21,7 @@ each system-prompt rule to its source.
 | --- | --- |
 | `claude plugin test .` | Runs every `*.test.ts` under the folder. There is no single-test filter; to run one file, point it at a scratch folder holding only that test, or run the whole suite (it is fast) |
 | `claude plugin validate --strict .` | Checks the manifest, hook shape and the `$` calls the mod makes |
-| `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine. How it gets written now that this folder is no longer a marketplace is open (`UNVERIFIED.md`, item 11) |
+| `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine when an interactive `claude --plugin-dir .` session loads this folder (`UNVERIFIED.md`, item 11). A fresh clone must run one first; a headless `-p` run does not write it |
 | `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run. `--stale-only` runs no tests and only checks that every mutant's text still appears in its file |
 | `node scripts/doc-parity.mjs` | Fails when the README differs from the code: log lines, gate, guard and client reasons, quoted numbers, the model default (`plugin.json`, `handle.ts`, Settings), the eval script flags and the eval bars. It is a docs-kit parity module, so the docs check below also runs it. `--root <dir>` checks another checkout |
 | `node evals/run.mjs --gate-only` | Offline: checks which eval prompts the gate would send |
