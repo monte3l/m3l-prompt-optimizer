@@ -27,7 +27,7 @@ updates:
     labels:
       - "dependencies"
 
-  # .github/ci-tools/ pins the Claude Code and TypeScript versions verify.yml
+  # .github/ci-tools/ pins the Claude Code version verify.yml's `plugin` lane
   # installs. A bump to Claude Code can change how the mod is validated and
   # tested, so it arrives as a reviewed PR with the same one-day cooldown.
   - package-ecosystem: "npm"
