@@ -25,7 +25,7 @@ Nothing. The CLI's 54 staged additions are the pnpm, `bin/` and `src/` baseline 
 
 - **Skill copy:** `.claude/skills/customize/` now matches the 1.0.5 copy: `domain-map.ts`, `pack-map.ts`, `plugin-map.ts` and `step-3-round-1.md`. Without this the CLI diverts the skill to `.groundwork/customize/` on every run.
 - **Conflicts:** all ten kept as they were (`.claude/settings.json`, both guidance `SKILL.md` files, both trackers, `dependabot.yml`, `dependency-review.yml`, `README.md`, `.gitignore`, `tsconfig.json`).
-- **Packs:** none installed. `harness-extras`, `statusline`, `github` and `supply-chain` were already in place from the last run.
+- **Packs:** none newly installed in the first pass. `harness-extras`, `statusline`, `github` and `supply-chain` were already in place from the last run; the second pass finished `harness-extras`.
 - **Reports:** `adoption-report.md` has its semantic sections rewritten by heading; this file replaces the one the CLI deleted.
 
 ## Dropped, with the reason
@@ -41,9 +41,8 @@ Unchanged from 2026-10-19, so the reasons are summarized.
 | `.github/workflows/ci.yml` | Its aggregate job is also named `verify`, which collides with the required check |
 | `.github/workflows/security-audit.yml` | Needs a lockfile |
 | The five baseline agents and `.claude/rules/*` | Declined, or scoped to `src/` and a hub-and-spoke loop that was not adopted |
-| creating-prs, finishing-work, starting-work, triaging-ci, writing-commits | Assume `pnpm verify`, `bin/` and `src/` |
+| finishing-work, starting-work | Declined in the second pass (see below). The other three were installed retargeted |
 | guard-branch-isolation, guard-hub-src-writes, guard-git-push-signed, guard-protected-paths, guard-no-commonjs, inject-decision-gate, post-edit-verify | Need `bin/lib`, pnpm, `src/` or the agent roster |
-| `guard-readonly-bash.mjs` (harness-extras) | Imports `bin/lib/agent-roster.mjs`, which is not installed. Skipped again |
 | The `quality`, `worktrees` and `claude-github` packs | Not selected. `worktrees` runs `pnpm install` and hard-codes `src/`; `claude-github` needs an API-key secret and spends credits on every PR |
 | The `licensing` and `publishing` packs | Fresh-only; adopt mode cannot install them. To add either by hand, copy `.groundwork/packs/<name>/files/` with the `.staged` suffix dropped and follow the pack's adopt notes |
 | The `statusline` pack | Already in place: `statusLine` and `subagentStatusLine` are set and the three scripts are identical to the pack's |
@@ -102,17 +101,40 @@ Both trackers are now at `last-verified=2026-10-20`. The TypeScript tracker stay
 | `tsc -p .` | Exit 0 under TypeScript 7.0.2, after the `include` change |
 | Harness grader (`check-harness.mjs`, run from the staged copy, then deleted) | 33 structural checks passed, rubric 100% over 30 checks |
 
+## Second pass (2026-10-20, after PR #30)
+
+Run on request: touch up this report, then re-evaluate the packs and the baseline git skills.
+
+| Item | Decision | Reason |
+| --- | --- | --- |
+| `harness-extras` | **Finished**: `guard-readonly-bash.mjs` installed, registered under `PreToolUse` `Bash` with `onFailure: block` | `invariant-reviewer` holds `Bash`, so its read-only rule rested on the prompt alone. The import now points at `.claude/hooks/lib/agent-roster.mjs`, an empty `WRITER_SPOKES`, not `bin/` (a plugin root's `bin/` goes on `PATH`) |
+| `statusline`, `github` | In place, byte-identical to the staged files | |
+| `supply-chain` | In place; local files kept | They are newer than the staged ones (scorecard-action v2.5.0, the fake-key allowlist, required-check wording) |
+| `quality` | Declined | Largest file is 314 lines, no verify runner, and nothing dispatches `type-design-analyzer` |
+| `worktrees` | Declined | Runs `pnpm install`, assumes `src/`; `repair-core-bare` fixes a bug nobody confirmed still happens |
+| `claude-github` | Declined | Needs an API secret and spends credits on every PR |
+| `licensing` | Declined, superseded | `REUSE.toml` and `reuse.yml` already do this |
+| `publishing` | Declined | The plugin ships through `m3l-plugins`, not npm |
+| `writing-commits`, `creating-prs`, `triaging-ci` | **Installed, retargeted** | The pnpm, `bin/` and `src/` references were text, not code dependencies |
+| `finishing-work`, `starting-work` | Declined | The first is generic and GitHub deletes the branch; the second needs the absent `guard-branch-isolation` |
+
+**Needs a human read (added):** `.claude/hooks/guard-readonly-bash.mjs` (two edits, an import and a comment), and the three git skills, which were rewritten by hand: `git commit -s` for the DCO lane, the `verify.yml` steps in place of `pnpm verify`, `invariant-reviewer` in place of the baseline reviewers, the PR template, and a hand-off with no auto-merge because the repository has it off.
+
+**Smoke test of the guard:** as `invariant-reviewer`, `git diff`, `git log`, `grep` and `node scripts/doc-parity.mjs` exit 0; `git commit`, `rm` and `echo x > f` exit 2; with no `agent_type`, `git commit` exits 0.
+
+**Re-run gate:** design `SHA256SUMS` pass; docs-kit `--check` pass; eval gate pass; `plugin validate --strict` pass; `plugin test` 101 pass, 0 fail; `guard-break` 40 of 40 caught; `tsc -p .` exit 0 under TypeScript 7.0.2 (from the npm cache); harness grader 39 structural checks and rubric 100% over 37 checks.
+
 ## Coverage gap in the domain map
 
-These files are outside both sweeps' domains and were not reviewed: `.github/ci-tools/`, `.github/deploy-tools/`, `wrangler.jsonc` and `scripts/`.
+These files are outside both sweeps' domains and were not reviewed: `.github/ci-tools/`, `.github/deploy-tools/`, `wrangler.jsonc`, `scripts/`, and `.github/workflows/environments.yml` with `.github/environments.json` (added by PR #30 after the sweeps).
 
 ## Plugins
 
-No plugin question was asked: the interview answers are unchanged, so `enabledPlugins` was left as it was. Nine are enabled.
+No plugin question was asked: the interview answers are unchanged, so `enabledPlugins` was left as it was. Eight are enabled: `85abff6` stopped enabling `claude-code-setup`.
 
 | Plugin | State |
 | --- | --- |
-| `context7`, `skill-creator`, `github`, `claude-md-management`, `security-guidance`, `claude-code-setup` at `anthropic-plugin-directory` | Enabled |
+| `context7`, `skill-creator`, `github`, `claude-md-management`, `security-guidance` at `anthropic-plugin-directory` | Enabled |
 | `typescript-lsp`, `claude-security`, `plugin-dev` at `claude-plugins-official` | Enabled |
 
 **Follow-up commands** (carried from 2026-10-19; skip any already run). Enabling a plugin in project settings does not install it for anyone, and collaborators repeat this after they pull:
