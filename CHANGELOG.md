@@ -5,6 +5,12 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 
 ## Unreleased
 
+- Removed `.claude-plugin/marketplace.json`: the plugin is now listed only in the
+  `monte3l/m3l-plugins` catalog, as `m3l-prompt-optimizer@monte3l`. If you
+  installed it from the `monte3l-prompt-optimizer` marketplace, remove that
+  marketplace and install again from the catalog. The README, CONTRIBUTING and
+  `UNVERIFIED.md` follow, and "Releasing" gains the step that moves the catalog
+  pin. Type-checking from a fresh clone is an open item (`UNVERIFIED.md`, 11).
 - Changed the docs site to build with the m3l-design docs kit (`v1.1.0`) from
   `docs.config.mjs`, replacing `scripts/build-docs.mjs` and its copies of the
   renderer. A tracked `.md` file that is neither a page nor excluded now fails

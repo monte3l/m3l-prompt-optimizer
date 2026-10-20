@@ -21,7 +21,7 @@ Run every step below from the repository root, in this order, and keep going aft
 ## Notes
 
 - **Step 6 runs the suite once per mutant**, so it is the slow step. It edits source files and restores them afterwards. If it is interrupted, run `git status` and `git diff hooks/` to confirm nothing was left mutated, and restore any file that was.
-- **Step 7 needs `.claude-plugin/types/tsconfig.json`**, which is gitignored. If it is missing, report the step as `SKIPPED` with the reason "types not installed", and tell the user to run `claude plugin marketplace add .` and `claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user` once. Do not report it as passed.
+- **Step 7 needs `.claude-plugin/types/tsconfig.json`**, which is gitignored. If it is missing, report the step as `SKIPPED` with the reason "types not installed", and tell the user that how the types get written is open (`UNVERIFIED.md`, item 11). Do not report it as passed.
 - **Never run `node evals/run.mjs` without `--gate-only`.** The live eval needs `ANTHROPIC_API_KEY` and spends money, so CI deliberately never runs it.
 
 ## Report

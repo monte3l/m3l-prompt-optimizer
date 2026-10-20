@@ -144,7 +144,7 @@ conflict-resolution machinery for an existing value.
    | ---------------------------- | --------------------------------------------------------------------------------------- |
    | `compiler-config-flags`      | `tsconfig.json` and the engine-written `.claude-plugin/types/tsconfig.json` it extends  |
    | `modules-esm-node-interop`   | `.claude/hooks/guard-js-extension.mjs`, the `./x.js` import specifiers in `hooks/`      |
-   | `packaging-declaration-emit` | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` (no npm publish)        |
+   | `packaging-declaration-emit` | `.claude-plugin/plugin.json` (no npm publish)                                           |
    | `lint-typing-rules`          | `tsc -p .` and the engine's types (no eslint config exists)                             |
    | `testing-language-features`  | `tests/*.test.ts` under `claude plugin test .`, `scripts/guard-break.mjs`, `evals/`     |
 
