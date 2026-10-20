@@ -1,9 +1,9 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   // Cloudflare's own recommendation for a new static site as of late 2026:
-  // Workers Static Assets, not Pages (Pages is in maintenance -- see
-  // the m3l-groundwork repo's docs/cloudflare-docs.md). No "main" script is needed for an
-  // assets-only Worker.
+  // Workers Static Assets, not Pages (Pages is in maintenance -- see the
+  // runbook blueprint/docs-site.md in the org .github repository). No "main"
+  // script is needed for an assets-only Worker.
   "name": "m3l-prompt-optimizer-docs",
   "compatibility_date": "2026-09-27",
   "assets": {
@@ -12,14 +12,14 @@
     // root before this deploy job downloads its artifact there.
     "directory": "../../_site",
     "html_handling": "auto-trailing-slash",
-    // bin/build-docs.mjs emits a real 404.html at the site root; without
+    // The docs kit (design/source/docs-kit/build.mjs) emits a real 404.html at the site root; without
     // this, a missing path would silently fall through to index.html.
     "not_found_handling": "404-page",
   },
   "routes": [
     // A Custom Domain: Cloudflare creates the DNS record and an Advanced
     // Certificate automatically. The hostname must carry no existing CNAME
-    // record in the zone (see the m3l-groundwork repo's docs/cloudflare-docs.md's one-time setup).
+    // record in the zone (see the one-time setup in blueprint/docs-site.md of the org .github repository).
     { "pattern": "prompt-optimizer.monte3l.com", "custom_domain": true },
   ],
   // Both false: this is a public repo, and a workers.dev / version preview

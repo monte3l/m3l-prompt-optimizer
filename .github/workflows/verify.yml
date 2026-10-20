@@ -43,8 +43,9 @@ jobs:
       - run: echo "$PWD/.github/ci-tools/node_modules/.bin" >> "$GITHUB_PATH"
 
       - run: cd design && sha256sum -c SHA256SUMS
-      - run: node scripts/build-docs.mjs --check
-      - run: node scripts/doc-parity.mjs
+      # The docs kit: links, page coverage, design integrity, and
+      # scripts/doc-parity.mjs (README against the code), in one report.
+      - run: node design/source/docs-kit/build.mjs --check
       - run: node evals/run.mjs --gate-only
       - run: claude plugin validate --strict .
       - run: claude plugin test .

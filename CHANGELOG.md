@@ -5,6 +5,17 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 
 ## Unreleased
 
+- Changed the docs site to build with the m3l-design docs kit (`v1.1.0`) from
+  `docs.config.mjs`, replacing `scripts/build-docs.mjs` and its copies of the
+  renderer. A tracked `.md` file that is neither a page nor excluded now fails
+  the docs check.
+- Extended `scripts/doc-parity.mjs`: it now runs inside the docs check and also
+  compares the model default, the guard refusal reasons, the client pause and
+  skip reasons, the eval script flags and the evaluation bars with the README.
+- Added a `Logged as` column to the README guard and pause tables, and option
+  tables for `compare.mjs` and `crosscheck.mjs`.
+- Added a smoke test after each docs deploy and a daily live check of the site.
+
 ## 1.0.0 (2026-10-19)
 
 First release. Each prompt goes through gate, client, parse and guard, and
