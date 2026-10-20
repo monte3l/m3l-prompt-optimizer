@@ -62,6 +62,7 @@ path sends the original text unchanged (fail open).
 | `.github/workflows/verify.yml` | The required `verify` check: lanes `checks` (offline), `plugin` (the only one that installs Claude Code) and `dco`, rolled into one fail-closed `verify` job, the same shape as m3l-groundwork's `ci.yml` |
 | `.github/workflows/environments.yml` | Weekly cleanup of stale GitHub Deployments and Environments. The policy is `.github/environments.json` (`docs-cloudflare` and `env-janitor`); the planner lives in m3l-groundwork and is checked out at a pinned commit. Copied from the org's `workflow-templates/` |
 | `.github/workflows/reuse.yml`, `workflow-lint.yml` | `reuse lint` against `REUSE.toml`, and actionlint plus zizmor on any change to a workflow. Copied from the org's `workflow-templates/` |
+| `.github/workflows/labeler.yml`, `.github/labeler.yml` | Labels each pull request by the paths it changes (`area:ci`, `area:docs`, `area:design`, `area:harness` from the org blueprint; `area:hooks`, `area:plugin`, `area:evals` for this repo). Labels only, never a required check. The labels already exist on GitHub; a new rule needs its label created first. Copied from the org's `workflow-templates/` |
 
 Constraints that are not obvious from one file:
 
