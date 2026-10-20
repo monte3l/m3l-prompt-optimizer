@@ -6,5 +6,6 @@
     "noImplicitOverride": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true
-  }
+  },
+  "include": ["hooks", "types", "tests", "evals"]
 }
