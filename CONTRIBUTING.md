@@ -23,13 +23,18 @@ agents, so expect more detail than you need for a first change.
 ```bash
 git clone https://github.com/monte3l/m3l-prompt-optimizer.git
 cd m3l-prompt-optimizer
-claude plugin marketplace add .
-claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user
+claude plugin marketplace add monte3l/m3l-plugins
+claude plugin install m3l-prompt-optimizer@monte3l --scope user
+claude --plugin-dir .
 ```
 
-Edits apply after `/reload-plugins`. Do not load an installed copy and a
-`--plugin-dir` copy at the same time. `tsc -p .` needs the engine-written
-types in `.claude-plugin/types/`, so install once from this folder first.
+This repository ships no `marketplace.json`: the plugin is listed in the
+`monte3l/m3l-plugins` catalog. The `--plugin-dir` copy replaces the installed
+one for that session, and edits apply after `/reload-plugins`. `tsc -p .` needs
+the engine-written types in `.claude-plugin/types/`. An interactive
+`claude --plugin-dir .` session writes them (`UNVERIFIED.md`, item 11), so run
+that once in a fresh clone, then `npx -p typescript tsc -p .` if `tsc` is not
+installed. A headless `-p` run does not write them.
 
 ## Before opening a PR
 
@@ -67,9 +72,9 @@ The version follows semver against the contract in the README.
 ## Releasing
 
 The version lives in one place: `version` in `.claude-plugin/plugin.json`.
-Do not add it to `marketplace.json`; `claude plugin validate` warns when the
-two disagree. Claude Code treats a set `version` as the update signal, so users
-receive nothing new until it is bumped.
+This repository has no `marketplace.json`, and the catalog entry carries no
+`version` either, so the two cannot disagree. Claude Code treats a set `version`
+as the update signal, so users receive nothing new until it is bumped.
 
 0. Run `node evals/run.mjs --rewrites 3` and commit `evals/results.md`. Every
    bar in the README's "Evaluation" section must be met, or the pull request
@@ -83,14 +88,10 @@ receive nothing new until it is bumped.
    `claude plugin tag` uses: `git tag -s m3l-prompt-optimizer--vX.Y.Z -m "m3l-prompt-optimizer X.Y.Z"`.
 4. Push the tag. The repository tags ruleset lets a tag be created but never moved
    or deleted.
-
-Users who want a fixed release add the marketplace at its tag instead of at
-`main`: `claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--vX.Y.Z`.
-The ref pins the plugin files as well: on Claude Code 2.1.303, adding the marketplace
-at the `release/v1.0.0` branch in an isolated config installed that branch's plugin
-version, and the docs say a `ref` is a branch or a tag. A tag works the same way: the
-marketplace is cloned as a detached checkout of it. Check `claude plugin list` after
-adding one.
+5. Users get the release only when the catalog pin moves. In
+   `monte3l/m3l-plugins`, run `node bin/bump-pins.mjs --apply`, then
+   `node bin/check-catalog.mjs`, and open the pull request. Its daily `pins`
+   workflow opens an issue when a pin is stale.
 
 ## Docs style
 

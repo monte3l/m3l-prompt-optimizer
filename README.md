@@ -37,11 +37,19 @@ and an Anthropic account (see [Requirements](#requirements) for versions).
 1. Install the mod:
 
    ```
-   /plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-prompt-optimizer
+   /plugin marketplace add monte3l/m3l-plugins
+   /plugin install m3l-prompt-optimizer@monte3l
    ```
 
-   Answer `y` to add the marketplace, then pick the user scope so the mod is
-   active in every repository.
+   Pick the user scope so the mod is active in every repository.
+
+   If you installed it before the catalog existed, from the
+   `monte3l-prompt-optimizer` marketplace, remove that marketplace first with
+   `claude plugin marketplace remove monte3l-prompt-optimizer`, so the plugin is
+   not installed twice. The plugin name does not change, but its id becomes
+   `m3l-prompt-optimizer@monte3l`. Run
+   `claude plugin configure m3l-prompt-optimizer@monte3l` and check that the key
+   is still set.
 
 2. Create a dedicated, spend-limited key and store it, following
    [Set up the key](#set-up-the-key).
@@ -52,14 +60,12 @@ and an Anthropic account (see [Requirements](#requirements) for versions).
 To skip one prompt, start it with `\raw `. To turn the mod off, see
 [When it pauses](#when-it-pauses).
 
-To pin a release, add the marketplace at its tag. The ref pins the plugin files as
-well: on Claude Code 2.1.303 a branch ref installed that branch's plugin version, and
-this release's tag is cloned as a detached checkout of the tag. Check
-`claude plugin list` afterwards:
-
-```zsh
-claude plugin marketplace add monte3l/m3l-prompt-optimizer#m3l-prompt-optimizer--v1.0.0
-```
+`monte3l` is not an official Anthropic marketplace, so Claude Code does not
+update its plugins automatically. To get a new release, run
+`claude plugin update m3l-prompt-optimizer@monte3l`. The catalog lists one
+release at a time, pinned to its tag. To run an older one, check out its tag,
+`m3l-prompt-optimizer--vX.Y.Z`, and load that folder as described in
+[Install from a checkout](#install-from-a-checkout).
 
 ## How it works
 
@@ -151,12 +157,12 @@ Use a dedicated key with a low spend limit.
    process listings (`read` and `printf` are zsh builtins):
 
    ```zsh
-   read -s "?Anthropic key: " K && printf '{"apiKey":"%s"}' "$K" | claude plugin configure m3l-prompt-optimizer@monte3l-prompt-optimizer --values-stdin; unset K
+   read -s "?Anthropic key: " K && printf '{"apiKey":"%s"}' "$K" | claude plugin configure m3l-prompt-optimizer@monte3l --values-stdin; unset K
    ```
 
    The key is stored in secure storage (the macOS Keychain), not in
    `settings.json`. Check that it is set with
-   `claude plugin configure m3l-prompt-optimizer@monte3l-prompt-optimizer`, which never prints the value.
+   `claude plugin configure m3l-prompt-optimizer@monte3l`, which never prints the value.
 
 At about $0.00015 per prompt, $5 covers roughly 30,000 rewrites. Max and Team
 plan API credits apply to the whole linked organization, so they cover this use
@@ -243,7 +249,7 @@ In the log, `<n>` is the HTTP status code.
 The host cannot cancel a request already in flight, so one that outlasts the 6.5-second
 deadline is simply abandoned and ends at the host's own 30-second timeout. To
 turn the mod off, set **Rewrite prompts** off in `/config`, or run
-`claude plugin disable m3l-prompt-optimizer@monte3l-prompt-optimizer`.
+`claude plugin disable m3l-prompt-optimizer@monte3l`.
 
 ### If the log says `key rejected (401)`
 
@@ -282,16 +288,17 @@ read -s "?Anthropic key: " K && curl -s -o /dev/null -w "%{http_code}\n" https:/
 
 ## Install from a checkout
 
-To install from a local checkout instead, add the folder as a marketplace. Edits
-to the folder then apply after `/reload-plugins`, with no reinstall:
+This repository ships no marketplace of its own. To try a checkout, install the
+released mod from the catalog once and set the key (see
+[Set up the key](#set-up-the-key)), then load the folder for a session:
 
 ```zsh
-claude plugin marketplace add /path/to/m3l-prompt-optimizer
-claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user
+claude --plugin-dir /path/to/m3l-prompt-optimizer
 ```
 
-`claude --plugin-dir` loads the mod for one session, but `claude plugin configure`
-needs it installed, so set the key after installing.
+The checkout replaces the installed copy for that session without an error.
+`claude plugin configure` cannot find a `--plugin-dir` mod, so it only works on
+the installed one.
 
 ## Working on this repo
 

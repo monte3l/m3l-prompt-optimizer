@@ -21,7 +21,7 @@ each system-prompt rule to its source.
 | --- | --- |
 | `claude plugin test .` | Runs every `*.test.ts` under the folder. There is no single-test filter; to run one file, point it at a scratch folder holding only that test, or run the whole suite (it is fast) |
 | `claude plugin validate --strict .` | Checks the manifest, hook shape and the `$` calls the mod makes |
-| `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine when the mod is installed from this folder. A fresh clone must install once first |
+| `tsc -p .` | Type-checks. `tsconfig.json` extends `.claude-plugin/types/tsconfig.json`, which is gitignored and written by the engine when an interactive `claude --plugin-dir .` session loads this folder (`UNVERIFIED.md`, item 11). A fresh clone must run one first; a headless `-p` run does not write it |
 | `node scripts/guard-break.mjs` | Removes each gate, guard and client safety check in turn and requires the suite to fail every time. Restores files after each run. `--stale-only` runs no tests and only checks that every mutant's text still appears in its file |
 | `node scripts/doc-parity.mjs` | Fails when the README differs from the code: log lines, gate, guard and client reasons, quoted numbers, the model default (`plugin.json`, `handle.ts`, Settings), the eval script flags and the eval bars. It is a docs-kit parity module, so the docs check below also runs it. `--root <dir>` checks another checkout |
 | `node evals/run.mjs --gate-only` | Offline: checks which eval prompts the gate would send |
@@ -29,10 +29,7 @@ each system-prompt rule to its source.
 | `cd design && shasum -a 256 -c SHA256SUMS` | Fails if anything under `design/source/` or `design/tokens.css` was edited. Update with `bin/sync-design.sh vX.Y.Z .` from an `m3l-design` checkout |
 | `node evals/run.mjs` | Live eval with `ANTHROPIC_API_KEY` set for that one command (see README "Evaluation"). Writes `evals/results.md` |
 
-Local install for manual testing: `claude plugin marketplace add .` then
-`claude plugin install m3l-prompt-optimizer@monte3l-prompt-optimizer --scope user`;
-edits apply after `/reload-plugins`. Do not load an installed copy and a
-`--plugin-dir` copy at the same time.
+Local testing: there is no `marketplace.json` here; the plugin is listed in the `monte3l/m3l-plugins` catalog. Install it with `claude plugin marketplace add monte3l/m3l-plugins` then `claude plugin install m3l-prompt-optimizer@monte3l --scope user`, and load the checkout with `claude --plugin-dir .`; edits apply after `/reload-plugins`. The `--plugin-dir` copy replaces the installed one for the session.
 
 ## Claude Code automations in this folder
 
