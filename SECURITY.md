@@ -38,7 +38,7 @@ timeline beyond that, but you will hear back before a fix ships.
 | `GITLEAKS_LICENSE` | Organization secret shared with this repository | A free license for the Gitleaks action. It reads nothing in the repository | Annual renewal |
 | `CLOUDFLARE_API_TOKEN` | The `docs-cloudflare` environment, restricted to `main` | Deploys the docs Worker for `prompt-optimizer.monte3l.com` | At most 1 year; rotate at expiry |
 | `CLOUDFLARE_ACCOUNT_ID` | The `docs-cloudflare` environment | An identifier, not a credential | None |
-| `JANITOR_APP_CLIENT_ID`, `JANITOR_APP_PRIVATE_KEY` | `env-janitor` environment, restricted to `main` | Client ID and private key of the `monte3l-env-janitor` GitHub App, used by the weekly environment cleanup. The token it mints is limited to this repository: `administration: write`, `deployments: write`, `environments: read`, never repository secrets | The private key does not expire |
+| `JANITOR_APP_CLIENT_ID`, `JANITOR_APP_PRIVATE_KEY` | Organization secrets shared with this repository, named only in `environments.yml` | Client ID and private key of the `monte3l-env-janitor` GitHub App, used by the weekly environment cleanup. The token it mints is limited to this repository: `administration: write`, `deployments: write`, `environments: read`, never repository secrets | The private key does not expire |
 
 No workflow holds an Anthropic API key. The live eval reads one from the
 maintainer's shell and never runs in CI.
