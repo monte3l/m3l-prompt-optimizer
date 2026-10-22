@@ -21,7 +21,7 @@
     ],
     "SessionStart": [
       {
-        "matcher": "compact|resume|startup|clear",
+        "matcher": "compact|resume|startup|clear|fork",
         "hooks": [
           {
             "type": "command",
@@ -97,13 +97,13 @@
     "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/subagent-statusline.mjs\""
   },
   "enabledPlugins": {
-    "context7@anthropic-plugin-directory": true,
-    "skill-creator@anthropic-plugin-directory": true,
-    "github@anthropic-plugin-directory": true,
-    "claude-md-management@anthropic-plugin-directory": true,
-    "security-guidance@anthropic-plugin-directory": true,
     "typescript-lsp@claude-plugins-official": true,
     "claude-security@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true
+    "plugin-dev@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   }
 }

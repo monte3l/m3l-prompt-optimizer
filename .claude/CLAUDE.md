@@ -70,7 +70,7 @@ Constraints that are not obvious from one file:
   only within one file. Everything else is a plain module tested directly with
   fakes (see the `fake()` helper in `tests/handle.test.ts`).
 - **Imports use `./x.js` specifiers for `.ts` files.** The engine resolves them;
-  `evals/run.mjs` installs a Node resolve hook to do the same.
+  `evals/harness.mjs` installs a Node resolve hook to do the same (`evals/run.mjs` imports it).
 - **`scripts/guard-break.mjs` matches source lines verbatim.** Its `MUTANTS`
   table holds exact strings from `gate.ts`, `guard.ts`, `client.ts`,
   `handle.ts` and `register.ts`. Rewording one of those lines makes the mutant
