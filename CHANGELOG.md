@@ -22,6 +22,19 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
   tables for `compare.mjs` and `crosscheck.mjs`.
 - Added a smoke test after each docs deploy and a daily live check of the site.
 
+## [1.1.0](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.0.0...m3l-prompt-optimizer--v1.1.0) (2026-10-22)
+
+
+### Features
+
+* **docs:** build the docs site with the m3l-design docs kit ([c732814](https://github.com/monte3l/m3l-prompt-optimizer/commit/c73281475019a3853e422e4f6223055dc5031094))
+* **docs:** move the docs site onto the m3l-design docs kit ([9cab88c](https://github.com/monte3l/m3l-prompt-optimizer/commit/9cab88c6f629845e0eb3f001649112216f0ba6e8))
+
+
+### Bug Fixes
+
+* **plugin:** match the manifest description to the GitHub repository ([9ca2f6d](https://github.com/monte3l/m3l-prompt-optimizer/commit/9ca2f6d1208e958b052e0e603ea57a2a52ae5fc3))
+
 ## 1.0.0 (2026-10-19)
 
 First release. Each prompt goes through gate, client, parse and guard, and
