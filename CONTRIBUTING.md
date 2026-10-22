@@ -76,22 +76,34 @@ This repository has no `marketplace.json`, and the catalog entry carries no
 `version` either, so the two cannot disagree. Claude Code treats a set `version`
 as the update signal, so users receive nothing new until it is bumped.
 
-0. Run `node evals/run.mjs --rewrites 3` and commit `evals/results.md`. Every
-   bar in the README's "Evaluation" section must be met, or the pull request
-   says which one is missed and why. Run it again if `hooks/` changed since the
-   last run.
-1. Bump `version` in `plugin.json` and move the `CHANGELOG.md` entries from
-   **Unreleased** under the new version and date.
-2. Merge that change to `main` through a pull request.
-3. On the merged commit, run `claude plugin tag --dry-run` (it checks the
-   version and the working tree), then create a **signed** tag in the form
-   `claude plugin tag` uses: `git tag -s m3l-prompt-optimizer--vX.Y.Z -m "m3l-prompt-optimizer X.Y.Z"`.
-4. Push the tag. The repository tags ruleset lets a tag be created but never moved
-   or deleted.
-5. Users get the release only when the catalog pin moves. In
-   `monte3l/m3l-plugins`, run `node bin/bump-pins.mjs --apply`, then
-   `node bin/check-catalog.mjs`, and open the pull request. Its daily `pins`
-   workflow opens an issue when a pin is stale.
+Releases are automatic. Only a collaborator merges, and a tag cannot be moved or
+deleted once the release is published (the org tags ruleset and immutable
+releases), so review the release pull request before you merge it.
+
+1. Write Conventional Commits. `fix:` is a patch, `feat:` a minor, and `!` or a
+   `BREAKING CHANGE:` footer a major. The `Commit lint` check fails a pull
+   request whose title or commits do not parse. Merge with a merge commit, never
+   a squash, so every commit reaches the release notes.
+2. On every merge to `main`, the `Release` workflow opens or updates one release
+   pull request. It bumps `version` in `.claude-plugin/plugin.json` and writes
+   the new section of `CHANGELOG.md`. Review both.
+3. Before you merge it, run `node evals/run.mjs --rewrites 3` and commit
+   `evals/results.md` to that pull request. Every bar in the README's
+   "Evaluation" section must be met, or the pull request says which one is
+   missed and why. Run it again if `hooks/` changed since the last run.
+4. Merge the release pull request with a merge commit. That tags
+   `m3l-prompt-optimizer--vX.Y.Z` and creates the GitHub release as a draft with
+   the changelog section as its notes. The workflow then attests and publishes
+   it. Nothing is tagged by hand.
+5. The workflow sends `release-published` to `monte3l/m3l-plugins`. Until that
+   repository acts on it, users get the release only when the catalog pin moves:
+   there, run `node bin/bump-pins.mjs --apply`, then `node bin/check-catalog.mjs`,
+   and open the pull request. Its daily `pins` workflow opens an issue when a pin
+   is stale.
+
+The shared workflows are `release-prepare.yml` and `release-finalize.yml` in
+`monte3l/.github`, and `.github/workflows/release.yml` here calls them. The org
+blueprint's "Releases" section explains the flow.
 
 ## Docs style
 
