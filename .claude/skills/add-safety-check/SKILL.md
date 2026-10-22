@@ -29,7 +29,7 @@ Keep every `$` call in `hooks/register.ts` and nowhere else, because `claude plu
 1. **Write the check as one self-contained line** shaped like its neighbours, with a short `reason` string. Make that line distinctive enough to find with an exact string match, because the mutant will match it verbatim.
 2. **Fail open.** Every failure path sends the original text unchanged. A new check may only ever cause a skip, a refusal or a latch, and must not throw past `handle.ts`'s catch-all.
 3. **Keep log text clean.** Reasons and log lines carry an outcome, a reason, a request id and counts only. Never put prompt text, rewrite text or the key in one, including through string interpolation of `e.text`.
-4. **Use `./x.js` import specifiers** for `.ts` files. The engine resolves them, and `evals/run.mjs` installs a resolve hook to do the same.
+4. **Use `./x.js` import specifiers** for `.ts` files. The engine resolves them, and `evals/harness.mjs` installs a resolve hook to do the same.
 5. **Add a test that fails without the line.** Put it beside its siblings (`tests/gate.test.ts`, `tests/guard.test.ts`, `tests/client.test.ts`, `tests/handle.test.ts`) using `claude-code/testing` and the existing helpers such as `fake()` in `tests/handle.test.ts`. Assert on the specific reason or outcome, not just `isGo: false`, so a different check cannot satisfy it by accident.
 6. **Add a mutant** to the `MUTANTS` table in `scripts/guard-break.mjs`:
    `['<area>: <what it guards>', 'hooks/<file>.ts', '<exact source line including its indent and trailing \n>', '']`.

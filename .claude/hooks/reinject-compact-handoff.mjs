@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * SessionStart (matcher `compact|resume|startup`): reads the handoff
+ * SessionStart (matcher `compact|resume|startup|clear|fork`; only
+ * `compact`, `resume` and `startup` pass `REINJECT_SOURCES`): reads the handoff
  * artifact `write-compact-handoff.mjs` (`PreCompact`) wrote and re-injects
  * it as `additionalContext` -- so state reconstruction doesn't depend on the
  * summary having retained it, whether the next session started because of a
