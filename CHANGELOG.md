@@ -3,7 +3,7 @@
 Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Unreleased
+## [1.1.0](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.0.0...m3l-prompt-optimizer--v1.1.0) (2026-10-22)
 
 - Removed `.claude-plugin/marketplace.json`: the plugin is now listed only in the
   `monte3l/m3l-plugins` catalog, as `m3l-prompt-optimizer@monte3l`. If you
@@ -21,9 +21,6 @@ Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 - Added a `Logged as` column to the README guard and pause tables, and option
   tables for `compare.mjs` and `crosscheck.mjs`.
 - Added a smoke test after each docs deploy and a daily live check of the site.
-
-## [1.1.0](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.0.0...m3l-prompt-optimizer--v1.1.0) (2026-10-22)
-
 
 ### Features
 
