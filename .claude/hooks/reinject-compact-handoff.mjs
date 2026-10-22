@@ -159,10 +159,11 @@ export function formatHandoff(handoff, nowMs = Date.now()) {
 export const REINJECT_SOURCES = new Set(["compact", "resume", "startup"]);
 
 /**
- * Belt-and-suspenders alongside the settings.json
- * `matcher: "compact|resume|startup"` registration -- if the harness ever
- * routes an unmatched `SessionStart` here, stay silent rather than
- * injecting a handoff into a `clear`/`fork` session it wasn't meant for.
+ * The settings.json `matcher` (`compact|resume|startup|clear|fork`) is
+ * deliberately wider than this set, so this check is what keeps a
+ * `clear`/`fork` session silent rather than injecting a handoff it wasn't
+ * meant for. It also stays silent if the harness ever routes any other
+ * `SessionStart` source here.
  * `input` can itself be `null` (valid JSON, e.g. a bare `null` payload) or
  * any other shape -- read defensively rather than assume it's an object.
  * Extracted from the CLI entry block so this check is unit-testable without
