@@ -2,6 +2,10 @@ name: Feature request
 description: Propose a change to what the mod does
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the idea. Starting from the problem, not the solution, helps us find the best fit.
   - type: textarea
     id: problem
     attributes:
