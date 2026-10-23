@@ -9,6 +9,7 @@ export default {
   repo: 'https://github.com/monte3l/m3l-prompt-optimizer',
   siteUrl: 'https://prompt-optimizer.monte3l.com',
   designDir: 'design',
+  brand: true,
   // Its homepage must equal siteUrl.
   manifest: '.claude-plugin/plugin.json',
   navGroups: ['Start', 'Project', 'Security', 'Internals'],
