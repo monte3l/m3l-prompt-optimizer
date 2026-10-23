@@ -19,7 +19,7 @@
 //
 // Put the key on the command line of that one run (or export it for the run);
 // it is read from the environment and never written anywhere.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { createJudge, createLock, loadHooks, loadJudge, loadStats, pool, root, stripText, takeSample } from './harness.mjs'
@@ -69,10 +69,7 @@ const readPrivate = file => {
 const diagnostic = read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))
 const realistic = read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))
 const privateCases = privatePath === undefined ? [] : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))
-const cases = [
-  ...(suite === 'gate' ? [] : diagnostic),
-  ...(suite === 'diagnostic' ? [] : [...realistic, ...privateCases]),
-]
+const cases = [...(suite === 'gate' ? [] : diagnostic), ...(suite === 'diagnostic' ? [] : [...realistic, ...privateCases])]
 const calibration = read(join(root, 'evals/calibration.json'))
 
 // The system prompt's worked examples must not be eval prompts, or the eval only
@@ -99,9 +96,23 @@ const calibrate = () =>
   pool(calibration, async pair => {
     try {
       const judged = await judge(pair.original, pair.rewrite)
-      return { ...pair, verdict: judged.verdict, verdicts: judged.verdicts, isRight: judged.verdicts.every(v => v === pair.expect), reason: judged.reason, thinking: judged.thinking }
+      return {
+        ...pair,
+        verdict: judged.verdict,
+        verdicts: judged.verdicts,
+        isRight: judged.verdicts.every(v => v === pair.expect),
+        reason: judged.reason,
+        thinking: judged.thinking,
+      }
     } catch (error) {
-      return { ...pair, verdict: 'error', verdicts: [], isRight: false, reason: String(error?.message ?? error).slice(0, 200), thinking: [] }
+      return {
+        ...pair,
+        verdict: 'error',
+        verdicts: [],
+        isRight: false,
+        reason: String(error?.message ?? error).slice(0, 200),
+        thinking: [],
+      }
     }
   })
 
@@ -124,7 +135,18 @@ const evaluate = async c => {
 }
 
 /** A private prompt leaves only its outcomes behind: no text, no rewrite, no judge reason. */
-const hidePrivate = r => (r.private ? { id: r.id, category: r.category, expect: r.expect, suite: r.suite, private: true, outcome: r.outcome, sampled: r.sampled.map(stripText) } : r)
+const hidePrivate = r =>
+  r.private
+    ? {
+        id: r.id,
+        category: r.category,
+        expect: r.expect,
+        suite: r.suite,
+        private: true,
+        outcome: r.outcome,
+        sampled: r.sampled.map(stripText),
+      }
+    : r
 
 const runCases = () =>
   pool(cases, async c => {
@@ -171,12 +193,18 @@ if (!isCalibrationOnly && (isGateOnly || isCalibrated)) {
 if (!isGateOnly) {
   bars.push(['the judge is right on every easy calibration pair', isEasyRight])
   if (hard.length > 0) {
-    bars.push([`the judge is right on at least ${pct(HARD_CALIBRATION_SHARE)} of the hard calibration pairs (${hardRight} of ${hard.length})`, isHardRight])
+    bars.push([
+      `the judge is right on at least ${pct(HARD_CALIBRATION_SHARE)} of the hard calibration pairs (${hardRight} of ${hard.length})`,
+      isHardRight,
+    ])
   }
   if (!isCalibrationOnly && isCalibrated) {
     bars.push(
       ['no case errored', count(allSamples, 'error') === 0],
-      ['at least 90% of "unchanged" cases left untouched', count(unchangedSamples, 'unchanged') >= Math.ceil(unchangedSamples.length * 0.9)],
+      [
+        'at least 90% of "unchanged" cases left untouched',
+        count(unchangedSamples, 'unchanged') >= Math.ceil(unchangedSamples.length * 0.9),
+      ],
       ['at least 70% of "rewrite" cases judged better', count(rewriteSamples, 'better') >= Math.ceil(rewriteSamples.length * 0.7)],
     )
     // The release bars are on the gate suite, the prompts that look like real typing. The harm limit is held
@@ -192,9 +220,18 @@ if (!isGateOnly) {
       const harm = upperBound(worse, n)
       const unreliable = upperBound(failed, gateSamples.length)
       bars.push(
-        [`harm: at most ${pct(HARM_LIMIT)} of realistic rewrites judged worse, with 95% confidence (${worse} of ${n}, upper limit ${pct(harm)})`, harm <= HARM_LIMIT],
-        [`benefit: realistic rewrites judged better are at least ${BENEFIT_RATIO} times those judged worse (${better} better, ${worse} worse)`, better > 0 && better >= BENEFIT_RATIO * worse],
-        [`reliability: at most ${pct(RELIABILITY_LIMIT)} of realistic calls failed, with 95% confidence (${failed} of ${gateSamples.length}, upper limit ${pct(unreliable)})`, unreliable <= RELIABILITY_LIMIT],
+        [
+          `harm: at most ${pct(HARM_LIMIT)} of realistic rewrites judged worse, with 95% confidence (${worse} of ${n}, upper limit ${pct(harm)})`,
+          harm <= HARM_LIMIT,
+        ],
+        [
+          `benefit: realistic rewrites judged better are at least ${BENEFIT_RATIO} times those judged worse (${better} better, ${worse} worse)`,
+          better > 0 && better >= BENEFIT_RATIO * worse,
+        ],
+        [
+          `reliability: at most ${pct(RELIABILITY_LIMIT)} of realistic calls failed, with 95% confidence (${failed} of ${gateSamples.length}, upper limit ${pct(unreliable)})`,
+          unreliable <= RELIABILITY_LIMIT,
+        ],
       )
     }
     if (repeat > 1) {
@@ -209,12 +246,20 @@ if (!isGateOnly) {
 const mode = isGateOnly
   ? 'gate only (no API calls)'
   : `live, rewriter claude-haiku-5-5${rewrites > 1 ? ` (${rewrites} samples per prompt)` : ''}, judge ${JUDGE_MODEL} at ${effort} effort, ${repeat} judgment${repeat === 1 ? '' : 's'} per item, suite ${suite}${isCalibrationOnly ? ', calibration only' : ''}`
-const cell = text => String(text ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ')
+const cell = text =>
+  String(text ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\n/g, ' ')
 const stableColumn = repeat > 1
 const sampleColumn = rewrites > 1 && !isGateOnly
 const OUTCOMES = ['better', 'equal', 'worse', 'unchanged', 'reverted', 'failed', 'error']
-const tally = r => OUTCOMES.filter(o => r.sampled.some(x => x.outcome === o)).map(o => `${o} ${count(r.sampled, o)}`).join(', ')
-const countsLine = (label, samples) => `${label}: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(samples, o)}`).join(', ')}`
+const tally = r =>
+  OUTCOMES.filter(o => r.sampled.some(x => x.outcome === o))
+    .map(o => `${o} ${count(r.sampled, o)}`)
+    .join(', ')
+const countsLine = (label, samples) =>
+  `${label}: ${['better', 'equal', 'worse', 'unchanged', 'reverted', 'skipped', 'failed', 'error', 'sent'].map(o => `${o} ${count(samples, o)}`).join(', ')}`
 
 // Listed rows: every diagnostic prompt, and the gate prompts that did not simply go well. Private prompts never.
 const hasTrouble = r => r.sampled.some(s => ['worse', 'reverted', 'failed', 'error'].includes(s.outcome))
@@ -232,7 +277,10 @@ const lines = [
     : [
         `| id | expected | outcome |${sampleColumn ? ' samples |' : ''}${stableColumn ? ' judgments |' : ''} detail |`,
         `| --- | --- | --- |${sampleColumn ? ' --- |' : ''}${stableColumn ? ' --- |' : ''} --- |`,
-        ...listed.map(r => `| ${r.id} | ${r.expect} | ${r.outcome} |${sampleColumn ? ` ${tally(r)} |` : ''}${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`),
+        ...listed.map(
+          r =>
+            `| ${r.id} | ${r.expect} | ${r.outcome} |${sampleColumn ? ` ${tally(r)} |` : ''}${stableColumn ? ` ${(r.verdicts ?? []).join(', ')} |` : ''} ${cell(r.detail)} |`,
+        ),
         ``,
       ]),
   ...(calibrated.length === 0
@@ -242,7 +290,10 @@ const lines = [
         ``,
         `| pair | tier | known answer | judge said | right |`,
         `| --- | --- | --- | --- | --- |`,
-        ...calibrated.map(c => `| ${c.id} | ${c.tier ?? 'easy'} | ${c.expect} | ${c.verdicts.length > 1 ? c.verdicts.join(', ') : c.verdict} | ${c.isRight ? 'yes' : '**no**'} |`),
+        ...calibrated.map(
+          c =>
+            `| ${c.id} | ${c.tier ?? 'easy'} | ${c.expect} | ${c.verdicts.length > 1 ? c.verdicts.join(', ') : c.verdict} | ${c.isRight ? 'yes' : '**no**'} |`,
+        ),
         ``,
       ]),
   ...(results.length === 0
@@ -251,7 +302,11 @@ const lines = [
         countsLine(`Counts${sampleColumn ? ` (samples, ${rewrites} per prompt)` : ''}, all`, allSamples),
         ...(gateSuite.length > 0 ? [countsLine('Counts, gate suite', samplesOf(gateSuite))] : []),
         ...(diagnosticSuite.length > 0 ? [countsLine('Counts, diagnostic suite', samplesOf(diagnosticSuite))] : []),
-        ...(privateRows.length > 0 ? [`Private prompts (not listed, part of the gate suite): ${privateRows.length} prompts, ${samplesOf(privateRows).length} samples`] : []),
+        ...(privateRows.length > 0
+          ? [
+              `Private prompts (not listed, part of the gate suite): ${privateRows.length} prompts, ${samplesOf(privateRows).length} samples`,
+            ]
+          : []),
         ``,
       ]),
   ...(knownLimits.length === 0
@@ -283,6 +338,7 @@ const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 mkdirSync(join(root, 'evals/.results'), { recursive: true })
 writeFileSync(join(root, `evals/.results/${stamp}.json`), JSON.stringify({ mode, results, calibrated, stats, bars }, null, 2))
 // Only a run of everything replaces the committed file; a partial run would leave a partial "release" result behind.
-if (!isGateOnly && !isCalibrationOnly && isCalibrated && privatePath === undefined && suite === 'all') writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
+if (!isGateOnly && !isCalibrationOnly && isCalibrated && privatePath === undefined && suite === 'all')
+  writeFileSync(join(root, 'evals/results.md'), lines.join('\n'))
 console.log(lines.join('\n'))
 process.exit(bars.every(([, met]) => met) ? 0 : 1)

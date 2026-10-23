@@ -40,11 +40,11 @@
  * Advisory-only: any parse or read failure falls back to a minimal
  * `ctx --%` segment rather than an empty or broken status line.
  */
-import { readFileSync, realpathSync } from "node:fs";
-import os from "node:os";
-import { dirname, isAbsolute, join } from "node:path";
-import process from "node:process";
-import { fileURLToPath } from "node:url";
+import { readFileSync, realpathSync } from 'node:fs'
+import os from 'node:os'
+import { dirname, isAbsolute, join } from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import {
   BLUE,
   CYAN,
@@ -62,12 +62,12 @@ import {
   formatDuration,
   formatTokenCount,
   terminalColumns,
-} from "./statusline-layout.mjs";
+} from './statusline-layout.mjs'
 
-export const WARN_THRESHOLD_PERCENT = 70;
-export const HIGH_THRESHOLD_PERCENT = 90;
-export const CONTEXT_BAR_WIDTH = 20;
-export const QUOTA_BAR_WIDTH = 10;
+export const WARN_THRESHOLD_PERCENT = 70
+export const HIGH_THRESHOLD_PERCENT = 90
+export const CONTEXT_BAR_WIDTH = 20
+export const QUOTA_BAR_WIDTH = 10
 
 /**
  * @typedef {{ id: string, priority: number, text: string, minWidth: number }} RowSegment
@@ -83,12 +83,12 @@ export const QUOTA_BAR_WIDTH = 10;
  * @returns {unknown}
  */
 function pick(value, ...path) {
-  let current = value;
+  let current = value
   for (const key of path) {
-    if (typeof current !== "object" || current === null) return undefined;
-    current = /** @type {Record<string, unknown>} */ (current)[key];
+    if (typeof current !== 'object' || current === null) return undefined
+    current = /** @type {Record<string, unknown>} */ (current)[key]
   }
-  return current;
+  return current
 }
 
 /**
@@ -96,7 +96,7 @@ function pick(value, ...path) {
  * @returns {value is number}
  */
 function isFiniteNumber(value) {
-  return typeof value === "number" && Number.isFinite(value);
+  return typeof value === 'number' && Number.isFinite(value)
 }
 
 /**
@@ -104,7 +104,7 @@ function isFiniteNumber(value) {
  * @returns {value is string}
  */
 function isNonEmptyString(value) {
-  return typeof value === "string" && value.length > 0;
+  return typeof value === 'string' && value.length > 0
 }
 
 /**
@@ -118,17 +118,10 @@ function isNonEmptyString(value) {
  */
 export function sanitizeDisplayText(text) {
   const controlChars = new RegExp(
-    "[" +
-      String.fromCharCode(0) +
-      "-" +
-      String.fromCharCode(31) +
-      String.fromCharCode(127) +
-      "-" +
-      String.fromCharCode(159) +
-      "]",
-    "g",
-  );
-  return text.replace(controlChars, "");
+    '[' + String.fromCharCode(0) + '-' + String.fromCharCode(31) + String.fromCharCode(127) + '-' + String.fromCharCode(159) + ']',
+    'g',
+  )
+  return text.replace(controlChars, '')
 }
 
 /**
@@ -139,10 +132,8 @@ export function sanitizeDisplayText(text) {
  *   `/compact`).
  */
 export function resolveUsedPercentage(payload) {
-  const pct = pick(payload, "context_window", "used_percentage");
-  return isFiniteNumber(pct)
-    ? Math.min(100, Math.max(0, Math.round(pct)))
-    : null;
+  const pct = pick(payload, 'context_window', 'used_percentage')
+  return isFiniteNumber(pct) ? Math.min(100, Math.max(0, Math.round(pct))) : null
 }
 
 /**
@@ -150,10 +141,10 @@ export function resolveUsedPercentage(payload) {
  * @returns {"unknown" | "ok" | "warn" | "high"}
  */
 export function zoneForPercentage(pct) {
-  if (pct === null) return "unknown";
-  if (pct >= HIGH_THRESHOLD_PERCENT) return "high";
-  if (pct >= WARN_THRESHOLD_PERCENT) return "warn";
-  return "ok";
+  if (pct === null) return 'unknown'
+  if (pct >= HIGH_THRESHOLD_PERCENT) return 'high'
+  if (pct >= WARN_THRESHOLD_PERCENT) return 'warn'
+  return 'ok'
 }
 
 /**
@@ -161,9 +152,9 @@ export function zoneForPercentage(pct) {
  * @returns {string} the ANSI color for a usage zone.
  */
 function zoneColor(zone) {
-  if (zone === "high") return RED;
-  if (zone === "warn") return YELLOW;
-  return GREEN;
+  if (zone === 'high') return RED
+  if (zone === 'warn') return YELLOW
+  return GREEN
 }
 
 /**
@@ -172,8 +163,8 @@ function zoneColor(zone) {
  * @returns {string} a `█`/`░` bar `width` cells wide.
  */
 function renderBar(pct, width) {
-  const filled = Math.min(width, Math.max(0, Math.round((pct / 100) * width)));
-  return `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+  const filled = Math.min(width, Math.max(0, Math.round((pct / 100) * width)))
+  return `${'█'.repeat(filled)}${'░'.repeat(width - filled)}`
 }
 
 /**
@@ -182,9 +173,9 @@ function renderBar(pct, width) {
  *   raw SHA / garbage.
  */
 export function parseHeadRef(headContent) {
-  if (typeof headContent !== "string") return null;
-  const match = /^ref:\s*refs\/heads\/(.+)$/.exec(headContent.trim());
-  return match ? match[1].trim() : null;
+  if (typeof headContent !== 'string') return null
+  const match = /^ref:\s*refs\/heads\/(.+)$/.exec(headContent.trim())
+  return match ? match[1].trim() : null
 }
 
 /**
@@ -195,9 +186,9 @@ export function parseHeadRef(headContent) {
  *   {@link parseHeadRef} so a commit id can never be mistaken for a branch name.
  */
 export function parseDetachedHead(headContent) {
-  if (typeof headContent !== "string") return null;
-  const sha = headContent.trim();
-  return /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(sha) ? sha.slice(0, 7) : null;
+  if (typeof headContent !== 'string') return null
+  const sha = headContent.trim()
+  return /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(sha) ? sha.slice(0, 7) : null
 }
 
 /**
@@ -206,9 +197,9 @@ export function parseDetachedHead(headContent) {
  * @returns {string | null} the pointed-to gitdir path, or null.
  */
 export function parseGitdirPointer(content) {
-  if (typeof content !== "string") return null;
-  const match = /^gitdir:\s*(.+)$/m.exec(content);
-  return match ? match[1].trim() : null;
+  if (typeof content !== 'string') return null
+  const match = /^gitdir:\s*(.+)$/m.exec(content)
+  return match ? match[1].trim() : null
 }
 
 /**
@@ -232,18 +223,18 @@ export function parseGitdirPointer(content) {
  *   `.git` is found within the walk bound.
  */
 export function resolveWorkspaceRoot(readFile, startDir) {
-  if (typeof startDir !== "string" || startDir.length === 0) return null;
+  if (typeof startDir !== 'string' || startDir.length === 0) return null
 
-  let dir = startDir;
+  let dir = startDir
   for (let i = 0; i < 40; i++) {
-    if (typeof readFile(join(dir, ".git", "HEAD")) === "string") return dir;
-    if (typeof readFile(join(dir, ".git")) === "string") return dir;
+    if (typeof readFile(join(dir, '.git', 'HEAD')) === 'string') return dir
+    if (typeof readFile(join(dir, '.git')) === 'string') return dir
 
-    const parent = dirname(dir);
-    if (parent === dir) return null;
-    dir = parent;
+    const parent = dirname(dir)
+    if (parent === dir) return null
+    dir = parent
   }
-  return null;
+  return null
 }
 
 /**
@@ -260,22 +251,22 @@ export function resolveWorkspaceRoot(readFile, startDir) {
  *   be resolved.
  */
 export function readHead(readFile, startDir) {
-  const dir = resolveWorkspaceRoot(readFile, startDir);
-  if (dir === null) return null;
+  const dir = resolveWorkspaceRoot(readFile, startDir)
+  if (dir === null) return null
 
-  const headContent = readFile(join(dir, ".git", "HEAD"));
-  if (typeof headContent === "string") return headContent;
+  const headContent = readFile(join(dir, '.git', 'HEAD'))
+  if (typeof headContent === 'string') return headContent
 
-  const gitEntry = readFile(join(dir, ".git"));
-  if (typeof gitEntry === "string") {
-    const pointer = parseGitdirPointer(gitEntry);
-    if (pointer === null || pointer.length === 0) return null;
-    const resolvedGitDir = isAbsolute(pointer) ? pointer : join(dir, pointer);
-    const linkedHead = readFile(join(resolvedGitDir, "HEAD"));
-    return typeof linkedHead === "string" ? linkedHead : null;
+  const gitEntry = readFile(join(dir, '.git'))
+  if (typeof gitEntry === 'string') {
+    const pointer = parseGitdirPointer(gitEntry)
+    if (pointer === null || pointer.length === 0) return null
+    const resolvedGitDir = isAbsolute(pointer) ? pointer : join(dir, pointer)
+    const linkedHead = readFile(join(resolvedGitDir, 'HEAD'))
+    return typeof linkedHead === 'string' ? linkedHead : null
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -291,9 +282,7 @@ export function readHead(readFile, startDir) {
  * @returns {RowSegment | null}
  */
 function seg(id, priority, text, minWidth) {
-  return text === null || text === undefined
-    ? null
-    : { id, priority, text, minWidth };
+  return text === null || text === undefined ? null : { id, priority, text, minWidth }
 }
 
 /**
@@ -301,7 +290,7 @@ function seg(id, priority, text, minWidth) {
  * @returns {string} the dim, fixed-width row label.
  */
 function gutter(label) {
-  return `${DIM}${label.padEnd(GUTTER_WIDTH)}${RESET}`;
+  return `${DIM}${label.padEnd(GUTTER_WIDTH)}${RESET}`
 }
 
 /**
@@ -313,13 +302,11 @@ function gutter(label) {
  *   is absent, so every row always renders exactly one non-empty line.
  */
 function buildRow(label, segments, columns) {
-  const g = gutter(label);
-  const nonEmpty = /** @type {RowSegment[]} */ (
-    segments.filter((s) => s !== null)
-  );
-  if (nonEmpty.length === 0) return `${g}${PLACEHOLDER}`;
-  const budget = columns - displayWidth(g);
-  return `${g}${fitRow(nonEmpty, budget, SEGMENT_SEPARATOR)}`;
+  const g = gutter(label)
+  const nonEmpty = /** @type {RowSegment[]} */ (segments.filter(s => s !== null))
+  if (nonEmpty.length === 0) return `${g}${PLACEHOLDER}`
+  const budget = columns - displayWidth(g)
+  return `${g}${fitRow(nonEmpty, budget, SEGMENT_SEPARATOR)}`
 }
 
 /**
@@ -327,9 +314,9 @@ function buildRow(label, segments, columns) {
  * @returns {RowSegment | null} dim `↳ agent-name` segment, or null when absent.
  */
 export function formatAgentSegment(payload) {
-  const name = pick(payload, "agent", "name");
-  if (!isNonEmptyString(name)) return null;
-  return seg("agent", 55, `${DIM}↳ ${sanitizeDisplayText(name)}${RESET}`, 6);
+  const name = pick(payload, 'agent', 'name')
+  if (!isNonEmptyString(name)) return null
+  return seg('agent', 55, `${DIM}↳ ${sanitizeDisplayText(name)}${RESET}`, 6)
 }
 
 /**
@@ -342,11 +329,9 @@ export function formatAgentSegment(payload) {
  *   null.
  */
 export function formatSessionNameSegment(payload) {
-  const name = pick(payload, "session_name");
-  const text = isNonEmptyString(name)
-    ? sanitizeDisplayText(name)
-    : `${DIM}unnamed${RESET}`;
-  return /** @type {RowSegment} */ (seg("session_name", 100, text, 12));
+  const name = pick(payload, 'session_name')
+  const text = isNonEmptyString(name) ? sanitizeDisplayText(name) : `${DIM}unnamed${RESET}`
+  return /** @type {RowSegment} */ (seg('session_name', 100, text, 12))
 }
 
 /**
@@ -360,19 +345,11 @@ export function formatSessionNameSegment(payload) {
  */
 export function formatBranchSegment(branchName, detachedSha = null) {
   if (!isNonEmptyString(branchName)) {
-    if (!isNonEmptyString(detachedSha)) return null;
-    return seg(
-      "branch",
-      95,
-      `${YELLOW}detached @ ${sanitizeDisplayText(detachedSha)}${RESET}`,
-      8,
-    );
+    if (!isNonEmptyString(detachedSha)) return null
+    return seg('branch', 95, `${YELLOW}detached @ ${sanitizeDisplayText(detachedSha)}${RESET}`, 8)
   }
-  const text =
-    branchName === "main"
-      ? `${RED}⚠ main${RESET}`
-      : `${BLUE}🌿 ${sanitizeDisplayText(branchName)}${RESET}`;
-  return seg("branch", 95, text, 6);
+  const text = branchName === 'main' ? `${RED}⚠ main${RESET}` : `${BLUE}🌿 ${sanitizeDisplayText(branchName)}${RESET}`
+  return seg('branch', 95, text, 6)
 }
 
 /**
@@ -381,14 +358,9 @@ export function formatBranchSegment(branchName, detachedSha = null) {
  *   `workspace.git_worktree` is absent/empty.
  */
 export function formatWorktreeSegment(payload) {
-  const name = pick(payload, "workspace", "git_worktree");
-  if (!isNonEmptyString(name)) return null;
-  return seg(
-    "worktree",
-    85,
-    `${BLUE}🌳 ${sanitizeDisplayText(name)}${RESET}`,
-    6,
-  );
+  const name = pick(payload, 'workspace', 'git_worktree')
+  if (!isNonEmptyString(name)) return null
+  return seg('worktree', 85, `${BLUE}🌳 ${sanitizeDisplayText(name)}${RESET}`, 6)
 }
 
 /**
@@ -398,18 +370,12 @@ export function formatWorktreeSegment(payload) {
  *   or when no `origin` remote is configured.
  */
 export function formatOriginRepoSegment(payload) {
-  const host = pick(payload, "workspace", "repo", "host");
-  const owner = pick(payload, "workspace", "repo", "owner");
-  const name = pick(payload, "workspace", "repo", "name");
-  if (!isNonEmptyString(owner) || !isNonEmptyString(name)) return null;
-  const prefix =
-    isNonEmptyString(host) && host !== "github.com" ? `${host}/` : "";
-  return seg(
-    "origin_repo",
-    40,
-    `${DIM}${sanitizeDisplayText(`${prefix}${owner}/${name}`)}${RESET}`,
-    10,
-  );
+  const host = pick(payload, 'workspace', 'repo', 'host')
+  const owner = pick(payload, 'workspace', 'repo', 'owner')
+  const name = pick(payload, 'workspace', 'repo', 'name')
+  if (!isNonEmptyString(owner) || !isNonEmptyString(name)) return null
+  const prefix = isNonEmptyString(host) && host !== 'github.com' ? `${host}/` : ''
+  return seg('origin_repo', 40, `${DIM}${sanitizeDisplayText(`${prefix}${owner}/${name}`)}${RESET}`, 10)
 }
 
 /**
@@ -418,11 +384,11 @@ export function formatOriginRepoSegment(payload) {
  *   id), or null when neither is present.
  */
 export function formatModelSegment(payload) {
-  const display = pick(payload, "model", "display_name");
-  const id = pick(payload, "model", "id");
-  const name = isNonEmptyString(display) ? display : id;
-  if (!isNonEmptyString(name)) return null;
-  return seg("model", 100, `${CYAN}${sanitizeDisplayText(name)}${RESET}`, 6);
+  const display = pick(payload, 'model', 'display_name')
+  const id = pick(payload, 'model', 'id')
+  const name = isNonEmptyString(display) ? display : id
+  if (!isNonEmptyString(name)) return null
+  return seg('model', 100, `${CYAN}${sanitizeDisplayText(name)}${RESET}`, 6)
 }
 
 /**
@@ -431,14 +397,9 @@ export function formatModelSegment(payload) {
  *   doesn't support the effort parameter.
  */
 export function formatEffortSegment(payload) {
-  const level = pick(payload, "effort", "level");
-  if (!isNonEmptyString(level)) return null;
-  return seg(
-    "effort",
-    80,
-    `${DIM}effort${RESET} ${MAGENTA}${sanitizeDisplayText(level)}${RESET}`,
-    8,
-  );
+  const level = pick(payload, 'effort', 'level')
+  if (!isNonEmptyString(level)) return null
+  return seg('effort', 80, `${DIM}effort${RESET} ${MAGENTA}${sanitizeDisplayText(level)}${RESET}`, 8)
 }
 
 /**
@@ -447,9 +408,7 @@ export function formatEffortSegment(payload) {
  *   enabled; hidden when it is off, since off is the uninteresting case.
  */
 export function formatThinkingSegment(payload) {
-  return pick(payload, "thinking", "enabled") === true
-    ? seg("thinking", 60, `${MAGENTA}thinking${RESET}`, 8)
-    : null;
+  return pick(payload, 'thinking', 'enabled') === true ? seg('thinking', 60, `${MAGENTA}thinking${RESET}`, 8) : null
 }
 
 /**
@@ -457,9 +416,7 @@ export function formatThinkingSegment(payload) {
  * @returns {RowSegment | null} a `⚡ fast` marker when fast mode is on.
  */
 export function formatFastModeSegment(payload) {
-  return pick(payload, "fast_mode") === true
-    ? seg("fast_mode", 70, `${YELLOW}⚡ fast${RESET}`, 6)
-    : null;
+  return pick(payload, 'fast_mode') === true ? seg('fast_mode', 70, `${YELLOW}⚡ fast${RESET}`, 6) : null
 }
 
 /**
@@ -467,14 +424,9 @@ export function formatFastModeSegment(payload) {
  * @returns {RowSegment | null} the output style's name, hidden for `default`.
  */
 export function formatOutputStyleSegment(payload) {
-  const name = pick(payload, "output_style", "name");
-  if (!isNonEmptyString(name) || name === "default") return null;
-  return seg(
-    "output_style",
-    40,
-    `${DIM}style ${sanitizeDisplayText(name)}${RESET}`,
-    8,
-  );
+  const name = pick(payload, 'output_style', 'name')
+  if (!isNonEmptyString(name) || name === 'default') return null
+  return seg('output_style', 40, `${DIM}style ${sanitizeDisplayText(name)}${RESET}`, 8)
 }
 
 /**
@@ -482,9 +434,9 @@ export function formatOutputStyleSegment(payload) {
  * @returns {RowSegment | null} the vim mode, or null when vim mode is off.
  */
 export function formatVimModeSegment(payload) {
-  const mode = pick(payload, "vim", "mode");
-  if (!isNonEmptyString(mode)) return null;
-  return seg("vim_mode", 50, `${CYAN}${sanitizeDisplayText(mode)}${RESET}`, 6);
+  const mode = pick(payload, 'vim', 'mode')
+  if (!isNonEmptyString(mode)) return null
+  return seg('vim_mode', 50, `${CYAN}${sanitizeDisplayText(mode)}${RESET}`, 6)
 }
 
 /**
@@ -493,15 +445,10 @@ export function formatVimModeSegment(payload) {
  *   zone; null when the session has no context data yet.
  */
 export function formatContextBarSegment(payload) {
-  const pct = resolveUsedPercentage(payload);
-  if (pct === null) return null;
-  const color = zoneColor(zoneForPercentage(pct));
-  return seg(
-    "context_bar",
-    50,
-    `${color}${renderBar(pct, CONTEXT_BAR_WIDTH)}${RESET}`,
-    10,
-  );
+  const pct = resolveUsedPercentage(payload)
+  if (pct === null) return null
+  const color = zoneColor(zoneForPercentage(pct))
+  return seg('context_bar', 50, `${color}${renderBar(pct, CONTEXT_BAR_WIDTH)}${RESET}`, 10)
 }
 
 /**
@@ -512,12 +459,9 @@ export function formatContextBarSegment(payload) {
  * @returns {RowSegment}
  */
 export function formatContextPercentSegment(payload) {
-  const pct = resolveUsedPercentage(payload);
-  const text =
-    pct === null
-      ? `${DIM}--%${RESET}`
-      : `${zoneColor(zoneForPercentage(pct))}${pct}%${RESET}`;
-  return /** @type {RowSegment} */ (seg("context_pct", 100, text, 3));
+  const pct = resolveUsedPercentage(payload)
+  const text = pct === null ? `${DIM}--%${RESET}` : `${zoneColor(zoneForPercentage(pct))}${pct}%${RESET}`
+  return /** @type {RowSegment} */ (seg('context_pct', 100, text, 3))
 }
 
 /**
@@ -526,18 +470,13 @@ export function formatContextPercentSegment(payload) {
  *   window's size; null when either is absent or non-positive.
  */
 export function formatContextDenominatorSegment(payload) {
-  const numerator = pick(payload, "context_window", "total_input_tokens");
-  const denominator = pick(payload, "context_window", "context_window_size");
-  if (
-    !isFiniteNumber(numerator) ||
-    numerator <= 0 ||
-    !isFiniteNumber(denominator) ||
-    denominator <= 0
-  ) {
-    return null;
+  const numerator = pick(payload, 'context_window', 'total_input_tokens')
+  const denominator = pick(payload, 'context_window', 'context_window_size')
+  if (!isFiniteNumber(numerator) || numerator <= 0 || !isFiniteNumber(denominator) || denominator <= 0) {
+    return null
   }
-  const text = `${formatTokenCount(numerator)}/${formatTokenCount(denominator)}`;
-  return seg("context_denom", 80, text, 10);
+  const text = `${formatTokenCount(numerator)}/${formatTokenCount(denominator)}`
+  return seg('context_denom', 80, text, 10)
 }
 
 /**
@@ -547,9 +486,9 @@ export function formatContextDenominatorSegment(payload) {
  *   what survives a compaction is a separate concern.
  */
 export function buildCompactSuggestion(zone) {
-  if (zone === "high") return "/compact now";
-  if (zone === "warn") return "/compact soon";
-  return null;
+  if (zone === 'high') return '/compact now'
+  if (zone === 'warn') return '/compact soon'
+  return null
 }
 
 /**
@@ -559,26 +498,17 @@ export function buildCompactSuggestion(zone) {
  *   window size is absent.
  */
 export function formatContextHeadroomSegment(payload) {
-  const remainingPct = pick(payload, "context_window", "remaining_percentage");
-  const windowSize = pick(payload, "context_window", "context_window_size");
-  if (
-    !isFiniteNumber(remainingPct) ||
-    !isFiniteNumber(windowSize) ||
-    windowSize <= 0
-  ) {
-    return null;
+  const remainingPct = pick(payload, 'context_window', 'remaining_percentage')
+  const windowSize = pick(payload, 'context_window', 'context_window_size')
+  if (!isFiniteNumber(remainingPct) || !isFiniteNumber(windowSize) || windowSize <= 0) {
+    return null
   }
-  const clamped = Math.min(100, Math.max(0, remainingPct));
-  const color = zoneColor(zoneForPercentage(Math.round(100 - clamped)));
-  const left = `~${formatTokenCount((clamped / 100) * windowSize)} left`;
-  const suggestion = buildCompactSuggestion(
-    zoneForPercentage(Math.round(100 - clamped)),
-  );
-  const text =
-    suggestion === null
-      ? `${color}${left}${RESET}`
-      : `${color}${left}${RESET}${SEGMENT_SEPARATOR}${color}${suggestion}${RESET}`;
-  return seg("context_headroom", 60, text, 10);
+  const clamped = Math.min(100, Math.max(0, remainingPct))
+  const color = zoneColor(zoneForPercentage(Math.round(100 - clamped)))
+  const left = `~${formatTokenCount((clamped / 100) * windowSize)} left`
+  const suggestion = buildCompactSuggestion(zoneForPercentage(Math.round(100 - clamped)))
+  const text = suggestion === null ? `${color}${left}${RESET}` : `${color}${left}${RESET}${SEGMENT_SEPARATOR}${color}${suggestion}${RESET}`
+  return seg('context_headroom', 60, text, 10)
 }
 
 /**
@@ -593,17 +523,15 @@ export function formatContextHeadroomSegment(payload) {
  *   drops one once its `resets_at` passes).
  */
 function formatQuotaWindow(id, label, priority, window, nowMs) {
-  const used = pick(window, "used_percentage");
-  if (!isFiniteNumber(used)) return null;
+  const used = pick(window, 'used_percentage')
+  if (!isFiniteNumber(used)) return null
 
-  const barPct = Math.min(100, Math.max(0, used));
-  const color = zoneColor(zoneForPercentage(Math.round(barPct)));
-  const resetsAt = pick(window, "resets_at");
-  const resetText = isFiniteNumber(resetsAt)
-    ? ` ${DIM}↻${formatDuration(Math.floor(resetsAt - nowMs / 1000))}${RESET}`
-    : "";
-  const text = `${DIM}${label}${RESET} ${color}${renderBar(barPct, QUOTA_BAR_WIDTH)}${RESET} ${Math.round(used)}%${resetText}`;
-  return seg(id, priority, text, 8);
+  const barPct = Math.min(100, Math.max(0, used))
+  const color = zoneColor(zoneForPercentage(Math.round(barPct)))
+  const resetsAt = pick(window, 'resets_at')
+  const resetText = isFiniteNumber(resetsAt) ? ` ${DIM}↻${formatDuration(Math.floor(resetsAt - nowMs / 1000))}${RESET}` : ''
+  const text = `${DIM}${label}${RESET} ${color}${renderBar(barPct, QUOTA_BAR_WIDTH)}${RESET} ${Math.round(used)}%${resetText}`
+  return seg(id, priority, text, 8)
 }
 
 /**
@@ -612,13 +540,7 @@ function formatQuotaWindow(id, label, priority, window, nowMs) {
  * @returns {RowSegment | null}
  */
 export function formatFiveHourSegment(payload, nowMs) {
-  return formatQuotaWindow(
-    "five_hour",
-    "5h",
-    100,
-    pick(payload, "rate_limits", "five_hour"),
-    nowMs,
-  );
+  return formatQuotaWindow('five_hour', '5h', 100, pick(payload, 'rate_limits', 'five_hour'), nowMs)
 }
 
 /**
@@ -627,13 +549,7 @@ export function formatFiveHourSegment(payload, nowMs) {
  * @returns {RowSegment | null}
  */
 export function formatSevenDaySegment(payload, nowMs) {
-  return formatQuotaWindow(
-    "seven_day",
-    "7d",
-    90,
-    pick(payload, "rate_limits", "seven_day"),
-    nowMs,
-  );
+  return formatQuotaWindow('seven_day', '7d', 90, pick(payload, 'rate_limits', 'seven_day'), nowMs)
 }
 
 /**
@@ -643,13 +559,7 @@ export function formatSevenDaySegment(payload, nowMs) {
  *   sets a spend limit for the user.
  */
 export function formatSpendLimitSegment(payload, nowMs) {
-  return formatQuotaWindow(
-    "spend_limit",
-    "spend",
-    70,
-    pick(payload, "rate_limits", "spend_limit"),
-    nowMs,
-  );
+  return formatQuotaWindow('spend_limit', 'spend', 70, pick(payload, 'rate_limits', 'spend_limit'), nowMs)
 }
 
 /**
@@ -657,9 +567,9 @@ export function formatSpendLimitSegment(payload, nowMs) {
  * @returns {RowSegment | null} the estimated session cost in USD.
  */
 export function formatCostSegment(payload) {
-  const cost = pick(payload, "cost", "total_cost_usd");
-  if (!isFiniteNumber(cost) || cost < 0) return null;
-  return seg("cost", 100, `$${cost.toFixed(2)}`, 5);
+  const cost = pick(payload, 'cost', 'total_cost_usd')
+  if (!isFiniteNumber(cost) || cost < 0) return null
+  return seg('cost', 100, `$${cost.toFixed(2)}`, 5)
 }
 
 /**
@@ -668,14 +578,9 @@ export function formatCostSegment(payload) {
  *   started; hidden at zero, where `formatDuration` would read `now`.
  */
 export function formatDurationSegment(payload) {
-  const ms = pick(payload, "cost", "total_duration_ms");
-  if (!isFiniteNumber(ms) || ms <= 0) return null;
-  return seg(
-    "duration",
-    90,
-    `${DIM}${formatDuration(Math.floor(ms / 1000))}${RESET}`,
-    3,
-  );
+  const ms = pick(payload, 'cost', 'total_duration_ms')
+  if (!isFiniteNumber(ms) || ms <= 0) return null
+  return seg('duration', 90, `${DIM}${formatDuration(Math.floor(ms / 1000))}${RESET}`, 3)
 }
 
 /**
@@ -683,17 +588,12 @@ export function formatDurationSegment(payload) {
  * @returns {RowSegment | null} `+156/-23`; null when nothing has changed.
  */
 export function formatLinesChangedSegment(payload) {
-  const added = pick(payload, "cost", "total_lines_added");
-  const removed = pick(payload, "cost", "total_lines_removed");
-  const a = isFiniteNumber(added) ? added : 0;
-  const r = isFiniteNumber(removed) ? removed : 0;
-  if (a <= 0 && r <= 0) return null;
-  return seg(
-    "lines",
-    70,
-    `${GREEN}+${a}${RESET}${DIM}/${RESET}${RED}-${r}${RESET}`,
-    6,
-  );
+  const added = pick(payload, 'cost', 'total_lines_added')
+  const removed = pick(payload, 'cost', 'total_lines_removed')
+  const a = isFiniteNumber(added) ? added : 0
+  const r = isFiniteNumber(removed) ? removed : 0
+  if (a <= 0 && r <= 0) return null
+  return seg('lines', 70, `${GREEN}+${a}${RESET}${DIM}/${RESET}${RED}-${r}${RESET}`, 6)
 }
 
 /**
@@ -703,11 +603,11 @@ export function formatLinesChangedSegment(payload) {
  *   then pays to rebuild it); null before the first API response.
  */
 export function formatCacheSegment(payload) {
-  const ratio = pick(payload, "prompt_cache", "hit_ratio");
-  if (!isFiniteNumber(ratio)) return null;
-  const pct = Math.round(Math.min(1, Math.max(0, ratio)) * 100);
-  const color = pick(payload, "prompt_cache", "warm") === true ? GREEN : YELLOW;
-  return seg("cache", 60, `${DIM}cache${RESET} ${color}${pct}%${RESET}`, 8);
+  const ratio = pick(payload, 'prompt_cache', 'hit_ratio')
+  if (!isFiniteNumber(ratio)) return null
+  const pct = Math.round(Math.min(1, Math.max(0, ratio)) * 100)
+  const color = pick(payload, 'prompt_cache', 'warm') === true ? GREEN : YELLOW
+  return seg('cache', 60, `${DIM}cache${RESET} ${color}${pct}%${RESET}`, 8)
 }
 
 /**
@@ -715,7 +615,7 @@ export function formatCacheSegment(payload) {
  * @returns {string} gibibytes to one decimal, trailing `.0` dropped.
  */
 function gigabytes(bytes) {
-  return String(Math.round((bytes / 2 ** 30) * 10) / 10);
+  return String(Math.round((bytes / 2 ** 30) * 10) / 10)
 }
 
 /**
@@ -751,28 +651,24 @@ function gigabytes(bytes) {
  *   the figures in bytes, or `{}` when no trustworthy free figure exists.
  */
 export function resolveMemory(sources) {
-  const { platform, availableMemory, constrainedMemory } = sources;
-  let total = sources.totalmem;
-  if (
-    isFiniteNumber(constrainedMemory) &&
-    constrainedMemory > 0 &&
-    constrainedMemory < total
-  ) {
-    total = constrainedMemory;
+  const { platform, availableMemory, constrainedMemory } = sources
+  let total = sources.totalmem
+  if (isFiniteNumber(constrainedMemory) && constrainedMemory > 0 && constrainedMemory < total) {
+    total = constrainedMemory
   }
-  if (!isFiniteNumber(total) || total <= 0) return {};
+  if (!isFiniteNumber(total) || total <= 0) return {}
 
-  let free;
+  let free
   if (isFiniteNumber(availableMemory) && availableMemory >= 0) {
-    free = availableMemory;
-  } else if (platform === "darwin") {
-    return {};
+    free = availableMemory
+  } else if (platform === 'darwin') {
+    return {}
   } else {
-    free = sources.freemem;
+    free = sources.freemem
   }
-  if (!isFiniteNumber(free)) return {};
+  if (!isFiniteNumber(free)) return {}
 
-  return { freemem: Math.min(free, total), totalmem: total };
+  return { freemem: Math.min(free, total), totalmem: total }
 }
 
 /**
@@ -781,21 +677,21 @@ export function resolveMemory(sources) {
  *   null when either figure is absent.
  */
 export function formatMemorySegment(env) {
-  const freemem = env?.freemem;
-  const totalmem = env?.totalmem;
+  const freemem = env?.freemem
+  const totalmem = env?.totalmem
   if (
-    typeof freemem !== "number" ||
+    typeof freemem !== 'number' ||
     !Number.isFinite(freemem) ||
-    typeof totalmem !== "number" ||
+    typeof totalmem !== 'number' ||
     !Number.isFinite(totalmem) ||
     totalmem <= 0
   ) {
-    return null;
+    return null
   }
-  const freePct = (freemem / totalmem) * 100;
-  const zone = zoneForPercentage(100 - freePct);
-  const text = `${zoneColor(zone)}${gigabytes(freemem)}/${gigabytes(totalmem)}G free${RESET}`;
-  return seg("memory", 50, text, 10);
+  const freePct = (freemem / totalmem) * 100
+  const zone = zoneForPercentage(100 - freePct)
+  const text = `${zoneColor(zone)}${gigabytes(freemem)}/${gigabytes(totalmem)}G free${RESET}`
+  return seg('memory', 50, text, 10)
 }
 
 /**
@@ -807,19 +703,19 @@ export function formatMemorySegment(env) {
  */
 export function buildSessionRow(payload, env, columns) {
   return buildRow(
-    "session",
+    'session',
     [
       formatSessionNameSegment(payload),
       formatBranchSegment(
-        typeof env?.branch === "string" ? env.branch : null,
-        typeof env?.detachedSha === "string" ? env.detachedSha : null,
+        typeof env?.branch === 'string' ? env.branch : null,
+        typeof env?.detachedSha === 'string' ? env.detachedSha : null,
       ),
       formatWorktreeSegment(payload),
       formatAgentSegment(payload),
       formatOriginRepoSegment(payload),
     ],
     columns,
-  );
+  )
 }
 
 /**
@@ -830,7 +726,7 @@ export function buildSessionRow(payload, env, columns) {
  */
 export function buildModelRow(payload, columns) {
   return buildRow(
-    "model",
+    'model',
     [
       formatModelSegment(payload),
       formatEffortSegment(payload),
@@ -840,7 +736,7 @@ export function buildModelRow(payload, columns) {
       formatVimModeSegment(payload),
     ],
     columns,
-  );
+  )
 }
 
 /**
@@ -851,7 +747,7 @@ export function buildModelRow(payload, columns) {
  */
 export function buildContextRow(payload, columns) {
   return buildRow(
-    "context",
+    'context',
     [
       formatContextBarSegment(payload),
       formatContextPercentSegment(payload),
@@ -859,7 +755,7 @@ export function buildContextRow(payload, columns) {
       formatContextHeadroomSegment(payload),
     ],
     columns,
-  );
+  )
 }
 
 /**
@@ -870,16 +766,12 @@ export function buildContextRow(payload, columns) {
  *   Renders a placeholder for anyone without a subscription rate limit.
  */
 export function buildQuotaRow(payload, env, columns) {
-  const nowMs = isFiniteNumber(env?.now) ? env.now : Date.now();
+  const nowMs = isFiniteNumber(env?.now) ? env.now : Date.now()
   return buildRow(
-    "quota",
-    [
-      formatFiveHourSegment(payload, nowMs),
-      formatSevenDaySegment(payload, nowMs),
-      formatSpendLimitSegment(payload, nowMs),
-    ],
+    'quota',
+    [formatFiveHourSegment(payload, nowMs), formatSevenDaySegment(payload, nowMs), formatSpendLimitSegment(payload, nowMs)],
     columns,
-  );
+  )
 }
 
 /**
@@ -890,7 +782,7 @@ export function buildQuotaRow(payload, env, columns) {
  */
 export function buildWorkRow(payload, env, columns) {
   return buildRow(
-    "work",
+    'work',
     [
       formatCostSegment(payload),
       formatDurationSegment(payload),
@@ -899,7 +791,7 @@ export function buildWorkRow(payload, env, columns) {
       formatMemorySegment(env),
     ],
     columns,
-  );
+  )
 }
 
 /**
@@ -917,14 +809,14 @@ export function buildWorkRow(payload, env, columns) {
  * @returns {string} the full, always-five-line status-line output.
  */
 export function renderStatusLine(payload, env = {}) {
-  const columns = terminalColumns(env);
+  const columns = terminalColumns(env)
   return [
     buildSessionRow(payload, env, columns),
     buildModelRow(payload, columns),
     buildContextRow(payload, columns),
     buildQuotaRow(payload, env, columns),
     buildWorkRow(payload, env, columns),
-  ].join("\n");
+  ].join('\n')
 }
 
 /**
@@ -933,9 +825,9 @@ export function renderStatusLine(payload, env = {}) {
  */
 function safeReadFile(path) {
   try {
-    return readFileSync(path, "utf8");
+    return readFileSync(path, 'utf8')
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -947,7 +839,7 @@ function resolveHeadState(headContent) {
   return {
     branch: parseHeadRef(headContent),
     detachedSha: parseDetachedHead(headContent),
-  };
+  }
 }
 
 /**
@@ -962,29 +854,28 @@ function resolveHeadState(headContent) {
  */
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 // Only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  let output;
+  let output
   try {
-    const payload = JSON.parse(await readStdin());
-    const startDir =
-      pick(payload, "workspace", "current_dir") ?? pick(payload, "cwd");
+    const payload = JSON.parse(await readStdin())
+    const startDir = pick(payload, 'workspace', 'current_dir') ?? pick(payload, 'cwd')
     output = renderStatusLine(payload, {
       now: Date.now(),
       ...resolveHeadState(readHead(safeReadFile, startDir)),
-      COLUMNS: process.env["COLUMNS"],
+      COLUMNS: process.env['COLUMNS'],
       ...resolveMemory({
         platform: process.platform,
         totalmem: os.totalmem(),
@@ -992,9 +883,9 @@ if (isEntryPoint()) {
         availableMemory: process.availableMemory?.(),
         constrainedMemory: process.constrainedMemory?.(),
       }),
-    });
+    })
   } catch {
-    output = "ctx --%";
+    output = 'ctx --%'
   }
-  process.stdout.write(`${output}\n`);
+  process.stdout.write(`${output}\n`)
 }

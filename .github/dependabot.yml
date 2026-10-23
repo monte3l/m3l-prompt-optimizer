@@ -40,3 +40,17 @@ updates:
       prefix: "ci"
     labels:
       - "dependencies"
+
+  # .github/test-tools/ pins the Biome and fast-check versions verify.yml's
+  # `quality` lane installs, with install scripts disabled. Same one-day
+  # cooldown as the other tool folders.
+  - package-ecosystem: "npm"
+    directory: "/.github/test-tools"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 1
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"

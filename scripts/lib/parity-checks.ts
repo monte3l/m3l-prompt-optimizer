@@ -10,7 +10,12 @@
 
 export type Table = { header: string[]; rows: string[][] }
 
-const splitRow = (line: string): string[] => line.trim().replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())
+const splitRow = (line: string): string[] =>
+  line
+    .trim()
+    .replace(/^\||\|$/g, '')
+    .split('|')
+    .map(cell => cell.trim())
 
 /** Every pipe table in `markdown`, indented or not, in order. The separator row is dropped. */
 export const tables = (markdown: string): Table[] => {
@@ -80,5 +85,5 @@ export const percent = (share: number): number => Math.round(share * 1000) / 10
 export const flagOfCell = (cell: string): string | null => {
   const code = spans(cell)[0]
   const flag = code?.split(/\s+/)[0]
-  return flag !== undefined && flag.startsWith('--') ? flag : null
+  return flag?.startsWith('--') ? flag : null
 }

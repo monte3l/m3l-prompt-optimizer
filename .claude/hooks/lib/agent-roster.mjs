@@ -4,4 +4,4 @@
  * empty. It lives here, not in `bin/lib/`, because a plugin root's `bin/` is
  * put on the Bash `PATH`.
  */
-export const WRITER_SPOKES = new Set();
+export const WRITER_SPOKES = new Set()

@@ -62,11 +62,17 @@ const firstWorse = ok.filter(j => j.first === 'worse')
 const bothWorse = firstWorse.filter(j => j.second === 'worse').length
 const secondWorse = ok.filter(j => j.second === 'worse')
 
-console.log(`First judge ${JUDGE_MODEL}, second judge ${model}, ${n} distinct rewrites of public prompts (${judged.length - n} could not be judged).`)
+console.log(
+  `First judge ${JUDGE_MODEL}, second judge ${model}, ${n} distinct rewrites of public prompts (${judged.length - n} could not be judged).`,
+)
 console.log(`| first \\ second | better | equal | worse |\n| --- | --- | --- | --- |`)
 for (const a of labels) console.log(`| ${a} | ${cell(a, 'better')} | ${cell(a, 'equal')} | ${cell(a, 'worse')} |`)
-console.log(`Agreement ${agree} of ${n} (${n === 0 ? 'n/a' : ((100 * agree) / n).toFixed(1) + '%'}), Cohen's kappa ${Number.isNaN(kappa) ? 'n/a' : kappa.toFixed(3)}.`)
-console.log(`Of the first judge's ${firstWorse.length} worse verdicts, the second judge also says worse on ${bothWorse} (${firstWorse.length === 0 ? 'n/a' : ((100 * bothWorse) / firstWorse.length).toFixed(0) + '%'}); of the second judge's ${secondWorse.length} worse verdicts, the first also says worse on ${secondWorse.filter(j => j.first === 'worse').length}.`)
+console.log(
+  `Agreement ${agree} of ${n} (${n === 0 ? 'n/a' : ((100 * agree) / n).toFixed(1) + '%'}), Cohen's kappa ${Number.isNaN(kappa) ? 'n/a' : kappa.toFixed(3)}.`,
+)
+console.log(
+  `Of the first judge's ${firstWorse.length} worse verdicts, the second judge also says worse on ${bothWorse} (${firstWorse.length === 0 ? 'n/a' : ((100 * bothWorse) / firstWorse.length).toFixed(0) + '%'}); of the second judge's ${secondWorse.length} worse verdicts, the first also says worse on ${secondWorse.filter(j => j.first === 'worse').length}.`,
+)
 for (const j of firstWorse.filter(x => x.second !== 'worse')) console.log(`  disputed worse: ${j.id} -> second says ${j.second}`)
 
 // Sample level: every decided sample of a public prompt, in either arm, counted once each.

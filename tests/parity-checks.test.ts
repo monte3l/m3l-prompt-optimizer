@@ -90,7 +90,8 @@ describe('clientReasons', () => {
 
 describe('flagsOf', () => {
   test('collects each flag once, whichever way it is read', () => {
-    const source = "const a = valueOf('--effort')\nconst b = args.includes('--gate-only')\nvalueOf('--effort')\nconst c = ['--model', '--out']"
+    const source =
+      "const a = valueOf('--effort')\nconst b = args.includes('--gate-only')\nvalueOf('--effort')\nconst c = ['--model', '--out']"
     expect(flagsOf(source)).toEqual(['--effort', '--gate-only'])
   })
 })

@@ -25,5 +25,6 @@ export const register: Register = (on, options) => {
     )
 
     return next(text === e.text ? e : { ...e, text })
+    // biome-ignore lint/correctness/noUnusedFunctionParameters: the host passes `$` first, so `e` is the second parameter
   }).catch(($, e, next) => next(e))
 }

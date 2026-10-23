@@ -2,10 +2,7 @@
 export const MAX_GROWTH = 1.5
 export const MAX_EXTRA_CHARS = 40
 
-export type Parsed =
-  | { kind: 'unchanged' }
-  | { kind: 'rewrite'; text: string }
-  | { kind: 'invalid' }
+export type Parsed = { kind: 'unchanged' } | { kind: 'rewrite'; text: string } | { kind: 'invalid' }
 
 export type Verdict = { isOk: true } | { isOk: false; reason: string }
 

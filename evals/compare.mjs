@@ -61,11 +61,30 @@ const readPrivate = file => {
     return usage('The --private-cases file could not be read as a JSON array of prompts.')
   }
 }
-const prompts = casesPath !== undefined ? read(casesPath).map(c => ({ ...c, suite: 'gate' })).filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo).slice(0, limit) : [
-  ...(suite === 'gate' ? [] : read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))),
-  ...(suite === 'diagnostic' ? [] : read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))),
-  ...(suite === 'diagnostic' || privatePath === undefined ? [] : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
-].filter(c => arms.a.shouldRewrite({ text: c.prompt, origin: c.origin ?? { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo).slice(0, limit)
+const prompts =
+  casesPath !== undefined
+    ? read(casesPath)
+        .map(c => ({ ...c, suite: 'gate' }))
+        .filter(
+          c =>
+            arms.a.shouldRewrite({ text: c.prompt, origin: { kind: 'composer' } }, { enabled: true, hasKey: true, isLatched: false }).isGo,
+        )
+        .slice(0, limit)
+    : [
+        ...(suite === 'gate' ? [] : read(join(root, 'evals/cases.json')).map(c => ({ ...c, suite: 'diagnostic' }))),
+        ...(suite === 'diagnostic' ? [] : read(join(root, 'evals/realistic.json')).map(c => ({ ...c, suite: 'gate' }))),
+        ...(suite === 'diagnostic' || privatePath === undefined
+          ? []
+          : readPrivate(privatePath).map(c => ({ ...c, suite: 'gate', private: true }))),
+      ]
+        .filter(
+          c =>
+            arms.a.shouldRewrite(
+              { text: c.prompt, origin: c.origin ?? { kind: 'composer' } },
+              { enabled: true, hasKey: true, isLatched: false },
+            ).isGo,
+        )
+        .slice(0, limit)
 
 const { judge, stats } = await createJudge({ apiKey, effort: DEFAULT_JUDGE_EFFORT, repeat: 1 })
 const alone = createLock(concurrency)
@@ -82,7 +101,13 @@ const rows = await pool(
       taken.push(pair)
     }
     const keep = s => (c.private ? stripText(s) : s)
-    return { id: c.id, suite: c.suite, private: c.private === true, prompt: c.private ? undefined : c.prompt, pairs: taken.map(p => ({ a: keep(p.a), b: keep(p.b) })) }
+    return {
+      id: c.id,
+      suite: c.suite,
+      private: c.private === true,
+      prompt: c.private ? undefined : c.prompt,
+      pairs: taken.map(p => ({ a: keep(p.a), b: keep(p.b) })),
+    }
   },
   6,
 )
@@ -148,6 +173,22 @@ console.log(lines.join('\n'))
 if (outPath !== undefined) {
   writeFileSync(
     outPath,
-    JSON.stringify({ dirA, dirB, samples, suite, judge: JUDGE_MODEL, armCounts: { a: armCounts('a'), b: armCounts('b') }, worse, better, worseByPrompt, betterByPrompt, rows }, null, 1),
+    JSON.stringify(
+      {
+        dirA,
+        dirB,
+        samples,
+        suite,
+        judge: JUDGE_MODEL,
+        armCounts: { a: armCounts('a'), b: armCounts('b') },
+        worse,
+        better,
+        worseByPrompt,
+        betterByPrompt,
+        rows,
+      },
+      null,
+      1,
+    ),
   )
 }

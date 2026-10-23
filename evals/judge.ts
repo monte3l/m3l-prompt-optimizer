@@ -73,9 +73,15 @@ export const readJudgeReply = (body: unknown): JudgeReply => {
   if (stop !== 'end_turn') throw new Error(`judge reply did not finish: stop_reason ${String(stop)}`)
   const blocks = field(body, 'content')
   const list = Array.isArray(blocks) ? blocks : []
-  const text = field(list.find(block => field(block, 'type') === 'text'), 'text')
+  const text = field(
+    list.find(block => field(block, 'type') === 'text'),
+    'text',
+  )
   if (typeof text !== 'string') throw new Error('judge reply has no text block')
-  const thinking = field(list.find(block => field(block, 'type') === 'thinking'), 'thinking')
+  const thinking = field(
+    list.find(block => field(block, 'type') === 'thinking'),
+    'thinking',
+  )
   const tokens = field(field(body, 'usage'), 'output_tokens')
   return {
     ...readVerdict(text),

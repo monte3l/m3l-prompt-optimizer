@@ -40,7 +40,8 @@ const take = (id, prompt, sample, isPrivate) => {
 }
 for (const file of files) {
   const data = JSON.parse(readFileSync(file, 'utf8'))
-  for (const row of data.rows ?? []) for (const pair of row.pairs) for (const arm of ['a', 'b']) take(row.id, row.prompt, pair[arm], row.private)
+  for (const row of data.rows ?? [])
+    for (const pair of row.pairs) for (const arm of ['a', 'b']) take(row.id, row.prompt, pair[arm], row.private)
   for (const row of data.results ?? []) for (const s of row.sampled) take(row.id, row.prompt, s, row.private)
 }
 
@@ -55,11 +56,17 @@ const graded = await pool(items, async item => {
 const reasons = [...new Set(graded.map(g => g.reason))]
 const verdicts = ['better', 'equal', 'worse', 'error']
 const weight = (reason, verdict) => graded.filter(g => g.reason === reason && g.verdict === verdict).reduce((sum, g) => sum + g.count, 0)
-console.log(`Judge ${JUDGE_MODEL}. ${samples} samples read, ${refusedSamples} refused by the guard; ${privateRefused} of those on private prompts or without text, not graded.`)
+console.log(
+  `Judge ${JUDGE_MODEL}. ${samples} samples read, ${refusedSamples} refused by the guard; ${privateRefused} of those on private prompts or without text, not graded.`,
+)
 console.log(`${graded.length} distinct refused rewrites of public prompts graded, ${graded.reduce((s, g) => s + g.count, 0)} samples.`)
 console.log(`| guard reason | samples | better | equal | worse |\n| --- | --- | --- | --- | --- |`)
 for (const reason of reasons) {
-  console.log(`| ${reason} | ${verdicts.reduce((s, v) => s + weight(reason, v), 0)} | ${weight(reason, 'better')} | ${weight(reason, 'equal')} | ${weight(reason, 'worse')} |`)
+  console.log(
+    `| ${reason} | ${verdicts.reduce((s, v) => s + weight(reason, v), 0)} | ${weight(reason, 'better')} | ${weight(reason, 'equal')} | ${weight(reason, 'worse')} |`,
+  )
 }
 const total = v => reasons.reduce((s, r) => s + weight(r, v), 0)
-console.log(`Total: better ${total('better')}, equal ${total('equal')}, worse ${total('worse')}${total('error') > 0 ? `, ${total('error')} not graded` : ''}.`)
+console.log(
+  `Total: better ${total('better')}, equal ${total('equal')}, worse ${total('worse')}${total('error') > 0 ? `, ${total('error')} not graded` : ''}.`,
+)

@@ -94,9 +94,7 @@ export const classify = (res: HttpReply): Outcome => {
   if (res.status === 429) {
     const seconds = Number(res.headers['retry-after'] ?? '1')
     const afterMs = Number.isFinite(seconds) ? seconds * 1000 : 1000
-    return afterMs <= MAX_RETRY_AFTER_MS
-      ? { kind: 'retry', afterMs, requestId }
-      : { kind: 'skip', reason: 'rate limited', requestId }
+    return afterMs <= MAX_RETRY_AFTER_MS ? { kind: 'retry', afterMs, requestId } : { kind: 'skip', reason: 'rate limited', requestId }
   }
   if ([500, 504, 529].includes(res.status)) return { kind: 'retry', afterMs: 500, requestId }
 
@@ -110,10 +108,7 @@ const attempt = async (deps: Deps, config: ClientConfig, text: string, ms: numbe
   const { url, init } = buildRequest(config, text)
   const stop = new AbortController()
   try {
-    const won = await Promise.race([
-      deps.fetch(url, init),
-      deps.timeout(ms, stop.signal).then((): typeof TIMED_OUT => TIMED_OUT),
-    ])
+    const won = await Promise.race([deps.fetch(url, init), deps.timeout(ms, stop.signal).then((): typeof TIMED_OUT => TIMED_OUT)])
     return won === TIMED_OUT ? TIMED_OUT : classify(won)
   } catch {
     return { kind: 'retry', afterMs: 500, requestId: 'none' }

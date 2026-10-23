@@ -26,7 +26,7 @@
  * must reset `.lastIndex = 0` between calls or clone the pattern first.
  */
 // eslint-disable-next-line no-control-regex -- intentionally matches the ESC (\x1b) and BEL (\x07) control characters that delimit ANSI/OSC-8 sequences
-export const ESCAPE_SEQUENCE_RE = /\x1b\[[0-9;]*m|\x1b\]8;;[^\x07]*\x07/g;
+export const ESCAPE_SEQUENCE_RE = /\x1b\[[0-9;]*m|\x1b\]8;;[^\x07]*\x07/g
 
 const COMBINING_RANGES = [
   [0x03_00, 0x03_6f],
@@ -34,13 +34,13 @@ const COMBINING_RANGES = [
   [0x1d_c0, 0x1d_ff],
   [0x20_d0, 0x20_ff],
   [0xfe_20, 0xfe_2f],
-];
+]
 
 const PUA_RANGES = [
   [0xe0_00, 0xf8_ff],
   [0xf_00_00, 0xf_ff_fd],
   [0x10_00_00, 0x10_ff_fd],
-];
+]
 
 const WIDE_RANGES = [
   [0x11_00, 0x11_5f],
@@ -54,7 +54,7 @@ const WIDE_RANGES = [
   [0xff_00, 0xff_60],
   [0xff_e0, 0xff_e6],
   [0x2_00_00, 0x3_ff_fd],
-];
+]
 
 /**
  * Codepoints a terminal draws two cells wide because the font renders them as
@@ -66,13 +66,13 @@ const WIDE_RANGES = [
  * V8, so it costs no dependency. It does not cover East Asian Wide text, which
  * is why `WIDE_RANGES` stays.
  */
-const EMOJI_PRESENTATION_RE = /^\p{Emoji_Presentation}$/u;
+const EMOJI_PRESENTATION_RE = /^\p{Emoji_Presentation}$/u
 
 /** Codepoints that *can* be drawn as an emoji when followed by U+FE0F. */
-const EMOJI_CAPABLE_RE = /^\p{Emoji}$/u;
+const EMOJI_CAPABLE_RE = /^\p{Emoji}$/u
 
-const ZERO_WIDTH_JOINER = 0x20_0d;
-const VARIATION_SELECTOR_16 = 0xfe_0f;
+const ZERO_WIDTH_JOINER = 0x20_0d
+const VARIATION_SELECTOR_16 = 0xfe_0f
 
 /**
  * @param {number} code a Unicode codepoint.
@@ -81,7 +81,7 @@ const VARIATION_SELECTOR_16 = 0xfe_0f;
  * @returns {boolean} whether `code` falls in any of `ranges`.
  */
 function inRanges(code, ranges) {
-  return ranges.some(([start, end]) => code >= start && code <= end);
+  return ranges.some(([start, end]) => code >= start && code <= end)
 }
 
 /**
@@ -95,17 +95,13 @@ function inRanges(code, ranges) {
  * @returns {0 | 1 | 2}
  */
 function codepointWidth(cp) {
-  const code = cp.codePointAt(0) ?? 0;
-  if (
-    code === VARIATION_SELECTOR_16 ||
-    code === ZERO_WIDTH_JOINER ||
-    inRanges(code, COMBINING_RANGES)
-  ) {
-    return 0;
+  const code = cp.codePointAt(0) ?? 0
+  if (code === VARIATION_SELECTOR_16 || code === ZERO_WIDTH_JOINER || inRanges(code, COMBINING_RANGES)) {
+    return 0
   }
-  if (inRanges(code, PUA_RANGES)) return 1;
-  if (EMOJI_PRESENTATION_RE.test(cp) || inRanges(code, WIDE_RANGES)) return 2;
-  return 1;
+  if (inRanges(code, PUA_RANGES)) return 1
+  if (EMOJI_PRESENTATION_RE.test(cp) || inRanges(code, WIDE_RANGES)) return 2
+  return 1
 }
 
 /**
@@ -126,29 +122,25 @@ function codepointWidth(cp) {
  */
 function clusters(text) {
   /** @type {Array<{ raw: string, width: 0 | 1 | 2 }>} */
-  const out = [];
-  let afterJoiner = false;
+  const out = []
+  let afterJoiner = false
   for (const cp of text) {
-    const code = cp.codePointAt(0) ?? 0;
-    const previous = out.at(-1);
+    const code = cp.codePointAt(0) ?? 0
+    const previous = out.at(-1)
 
     if (previous !== undefined && (afterJoiner || codepointWidth(cp) === 0)) {
-      previous.raw += cp;
-      if (
-        code === VARIATION_SELECTOR_16 &&
-        previous.width === 1 &&
-        EMOJI_CAPABLE_RE.test([...previous.raw][0] ?? "")
-      ) {
-        previous.width = 2;
+      previous.raw += cp
+      if (code === VARIATION_SELECTOR_16 && previous.width === 1 && EMOJI_CAPABLE_RE.test([...previous.raw][0] ?? '')) {
+        previous.width = 2
       }
-      afterJoiner = code === ZERO_WIDTH_JOINER;
-      continue;
+      afterJoiner = code === ZERO_WIDTH_JOINER
+      continue
     }
 
-    out.push({ raw: cp, width: codepointWidth(cp) });
-    afterJoiner = code === ZERO_WIDTH_JOINER;
+    out.push({ raw: cp, width: codepointWidth(cp) })
+    afterJoiner = code === ZERO_WIDTH_JOINER
   }
-  return out;
+  return out
 }
 
 /**
@@ -161,10 +153,10 @@ function clusters(text) {
  * @returns {number}
  */
 export function displayWidth(str) {
-  const stripped = str.replace(ESCAPE_SEQUENCE_RE, "");
-  let width = 0;
-  for (const cluster of clusters(stripped)) width += cluster.width;
-  return width;
+  const stripped = str.replace(ESCAPE_SEQUENCE_RE, '')
+  let width = 0
+  for (const cluster of clusters(stripped)) width += cluster.width
+  return width
 }
 
 /**
@@ -181,26 +173,26 @@ export function displayWidth(str) {
  */
 function tokenize(str) {
   /** @type {Array<EscToken | CharToken>} */
-  const tokens = [];
-  let cursor = 0;
-  ESCAPE_SEQUENCE_RE.lastIndex = 0;
-  let match = ESCAPE_SEQUENCE_RE.exec(str);
+  const tokens = []
+  let cursor = 0
+  ESCAPE_SEQUENCE_RE.lastIndex = 0
+  let match = ESCAPE_SEQUENCE_RE.exec(str)
   while (match !== null) {
     if (match.index > cursor) {
       for (const { raw, width } of clusters(str.slice(cursor, match.index))) {
-        tokens.push({ type: "char", raw, width });
+        tokens.push({ type: 'char', raw, width })
       }
     }
-    tokens.push({ type: "esc", raw: match[0] });
-    cursor = match.index + match[0].length;
-    match = ESCAPE_SEQUENCE_RE.exec(str);
+    tokens.push({ type: 'esc', raw: match[0] })
+    cursor = match.index + match[0].length
+    match = ESCAPE_SEQUENCE_RE.exec(str)
   }
   if (cursor < str.length) {
     for (const { raw, width } of clusters(str.slice(cursor))) {
-      tokens.push({ type: "char", raw, width });
+      tokens.push({ type: 'char', raw, width })
     }
   }
-  return tokens;
+  return tokens
 }
 
 /**
@@ -211,7 +203,7 @@ function tokenize(str) {
  * @returns {boolean}
  */
 function isColorOpen(raw) {
-  return raw.startsWith("\x1b[") && raw !== "\x1b[0m";
+  return raw.startsWith('\x1b[') && raw !== '\x1b[0m'
 }
 
 /**
@@ -225,30 +217,29 @@ function isColorOpen(raw) {
  * @param {string} [ellipsis]
  * @returns {string}
  */
-export function truncateToWidth(str, maxWidth, ellipsis = "…") {
-  if (maxWidth <= 0) return "";
-  if (displayWidth(str) <= maxWidth) return str;
+export function truncateToWidth(str, maxWidth, ellipsis = '…') {
+  if (maxWidth <= 0) return ''
+  if (displayWidth(str) <= maxWidth) return str
 
-  const tokens = tokenize(str);
-  const ellipsisWidth = displayWidth(ellipsis);
-  const limit = maxWidth - ellipsisWidth;
+  const tokens = tokenize(str)
+  const ellipsisWidth = displayWidth(ellipsis)
+  const limit = maxWidth - ellipsisWidth
 
-  let accumulated = 0;
-  let colorOpen = false;
-  const kept = [];
+  let accumulated = 0
+  let colorOpen = false
+  const kept = []
   for (const token of tokens) {
-    if (token.type === "esc") {
-      kept.push(token.raw);
-      colorOpen =
-        token.raw === "\x1b[0m" ? false : colorOpen || isColorOpen(token.raw);
-      continue;
+    if (token.type === 'esc') {
+      kept.push(token.raw)
+      colorOpen = token.raw === '\x1b[0m' ? false : colorOpen || isColorOpen(token.raw)
+      continue
     }
-    if (accumulated + token.width > limit) break;
-    accumulated += token.width;
-    kept.push(token.raw);
+    if (accumulated + token.width > limit) break
+    accumulated += token.width
+    kept.push(token.raw)
   }
 
-  return kept.join("") + ellipsis + (colorOpen ? "\x1b[0m" : "");
+  return kept.join('') + ellipsis + (colorOpen ? '\x1b[0m' : '')
 }
 
 /**
@@ -262,8 +253,8 @@ export function truncateToWidth(str, maxWidth, ellipsis = "…") {
  * @returns {number}
  */
 function currentWidth(segments, kept, separator) {
-  const texts = segments.filter((s) => kept.has(s.id)).map((s) => s.text);
-  return displayWidth(texts.join(separator));
+  const texts = segments.filter(s => kept.has(s.id)).map(s => s.text)
+  return displayWidth(texts.join(separator))
 }
 
 /**
@@ -287,30 +278,30 @@ function currentWidth(segments, kept, separator) {
  * @returns {string}
  */
 export function fitRow(segments, budget, separator) {
-  const kept = new Set(segments.map((s) => s.id));
+  const kept = new Set(segments.map(s => s.id))
 
   while (kept.size > 1 && currentWidth(segments, kept, separator) > budget) {
-    let dropId = null;
-    let dropPriority = Number.POSITIVE_INFINITY;
+    let dropId = null
+    let dropPriority = Number.POSITIVE_INFINITY
     for (const s of segments) {
-      if (!kept.has(s.id)) continue;
+      if (!kept.has(s.id)) continue
       if (s.priority <= dropPriority) {
-        dropPriority = s.priority;
-        dropId = s.id;
+        dropPriority = s.priority
+        dropId = s.id
       }
     }
-    if (dropId === null) break;
-    kept.delete(dropId);
+    if (dropId === null) break
+    kept.delete(dropId)
   }
 
-  const survivors = segments.filter((s) => kept.has(s.id));
+  const survivors = segments.filter(s => kept.has(s.id))
 
   if (survivors.length === 1 && displayWidth(survivors[0].text) > budget) {
-    const [sole] = survivors;
-    return truncateToWidth(sole.text, Math.max(sole.minWidth, budget));
+    const [sole] = survivors
+    return truncateToWidth(sole.text, Math.max(sole.minWidth, budget))
   }
 
-  return survivors.map((s) => s.text).join(separator);
+  return survivors.map(s => s.text).join(separator)
 }
 
 /**
@@ -322,21 +313,21 @@ export function fitRow(segments, budget, separator) {
  * @returns {number} the parsed column count, or `80` when absent/invalid.
  */
 export function terminalColumns(env) {
-  const n = Number.parseInt(String(env?.COLUMNS ?? ""), 10);
-  return Number.isFinite(n) && n > 0 ? n : 80;
+  const n = Number.parseInt(String(env?.COLUMNS ?? ''), 10)
+  return Number.isFinite(n) && n > 0 ? n : 80
 }
 
-export const GREEN = "\x1b[32m";
-export const YELLOW = "\x1b[33m";
-export const RED = "\x1b[31m";
-export const CYAN = "\x1b[36m";
-export const BLUE = "\x1b[34m";
-export const MAGENTA = "\x1b[35m";
-export const DIM = "\x1b[2m";
-export const RESET = "\x1b[0m";
-export const SEGMENT_SEPARATOR = `${DIM} · ${RESET}`;
-export const PLACEHOLDER = `${DIM}—${RESET}`;
-export const GUTTER_WIDTH = 10;
+export const GREEN = '\x1b[32m'
+export const YELLOW = '\x1b[33m'
+export const RED = '\x1b[31m'
+export const CYAN = '\x1b[36m'
+export const BLUE = '\x1b[34m'
+export const MAGENTA = '\x1b[35m'
+export const DIM = '\x1b[2m'
+export const RESET = '\x1b[0m'
+export const SEGMENT_SEPARATOR = `${DIM} · ${RESET}`
+export const PLACEHOLDER = `${DIM}—${RESET}`
+export const GUTTER_WIDTH = 10
 
 /**
  * Compact token-count formatter (`45000` -> `"45k"`, `15500` -> `"15.5k"`).
@@ -345,12 +336,10 @@ export const GUTTER_WIDTH = 10;
  * @returns {string}
  */
 export function formatTokenCount(n) {
-  if (Math.abs(n) < 1000) return String(Math.round(n));
-  const kk = n / 1000;
-  const rounded = Math.round(kk * 10) / 10;
-  return Number.isInteger(rounded)
-    ? `${rounded.toFixed(0)}k`
-    : `${rounded.toFixed(1)}k`;
+  if (Math.abs(n) < 1000) return String(Math.round(n))
+  const kk = n / 1000
+  const rounded = Math.round(kk * 10) / 10
+  return Number.isInteger(rounded) ? `${rounded.toFixed(0)}k` : `${rounded.toFixed(1)}k`
 }
 
 /**
@@ -358,8 +347,8 @@ export function formatTokenCount(n) {
  * @returns {string} `"now"`, `"NNm"`, or `"NhMMm"`.
  */
 export function formatDuration(deltaSec) {
-  if (deltaSec <= 0) return "now";
-  const h = Math.floor(deltaSec / 3600);
-  const m = Math.floor((deltaSec % 3600) / 60);
-  return h > 0 ? `${h}h${String(m).padStart(2, "0")}m` : `${m}m`;
+  if (deltaSec <= 0) return 'now'
+  const h = Math.floor(deltaSec / 3600)
+  const m = Math.floor((deltaSec % 3600) / 60)
+  return h > 0 ? `${h}h${String(m).padStart(2, '0')}m` : `${m}m`
 }

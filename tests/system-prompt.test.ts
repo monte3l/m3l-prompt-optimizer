@@ -3,7 +3,7 @@ import { describe, expect, test } from 'claude-code/testing'
 import { SYSTEM_PROMPT } from '../hooks/system-prompt.js'
 
 describe('system prompt', () => {
-  test('keeps the developer\'s requests and adds none of its own', () => {
+  test("keeps the developer's requests and adds none of its own", () => {
     expect(SYSTEM_PROMPT.includes('add none of your own')).toBe(true)
     expect(SYSTEM_PROMPT.includes('suggested cause or approach')).toBe(true)
   })
