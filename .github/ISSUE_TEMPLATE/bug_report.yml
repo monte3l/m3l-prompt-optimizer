@@ -5,8 +5,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Found a security vulnerability instead? Use [private vulnerability reporting](https://github.com/monte3l/m3l-prompt-optimizer/security/advisories/new), not this form.
-        Do not paste your prompt text or your API key. The debug log carries outcomes, reasons, counts and request ids, never prompt text or your key, so those lines are safe to share.
+        Thank you for taking the time to report this.
+
+        If you think it is a security vulnerability, please do not use this form. Use [private vulnerability reporting](https://github.com/monte3l/m3l-prompt-optimizer/security/advisories/new) instead.
+
+        Please do not paste your prompt text or your API key. The debug log carries outcomes, reasons, counts and request ids, never prompt text or your key, so those lines are safe to share.
   - type: input
     id: version
     attributes:
@@ -25,7 +28,7 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: Expected vs. actual behavior
+      label: What you expected, and what happened instead
       description: Describe the kind of prompt (length, whether it had code, paths or a question) without pasting it
     validations:
       required: true

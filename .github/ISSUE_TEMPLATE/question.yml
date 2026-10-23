@@ -2,10 +2,14 @@ name: Question
 description: Ask how the mod works or how to set it up
 labels: ["question"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Questions are welcome. Say what you are trying to do and what you have tried, and the answer will come sooner.
   - type: textarea
     id: question
     attributes:
       label: Your question
-      description: Check the README first, especially "Set up the key" and "When it pauses".
+      description: What are you trying to do, and what have you tried? The README may already answer it, especially "Set up the key" and "When it pauses".
     validations:
       required: true
