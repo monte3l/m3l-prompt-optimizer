@@ -101,6 +101,7 @@ const MUTANTS = [
     '',
   ],
   ['client: retry-after cap', 'hooks/client.ts', 'return afterMs <= MAX_RETRY_AFTER_MS', 'return true'],
+  ['client: negative Retry-After clamped', 'hooks/client.ts', 'Math.max(0, seconds) * 1000', 'seconds * 1000'],
   ['client: retry cap', 'hooks/client.ts', 'for (let tries = 0; tries < 2; tries += 1)', 'for (let tries = 0; tries < 5; tries += 1)'],
   ['client: timeout', 'hooks/client.ts', "if (last === TIMED_OUT) return { kind: 'skip', reason: 'timeout', requestId: 'none' }", ''],
   ['handle: malformed reply refused', 'hooks/handle.ts', "if (parsed.kind === 'invalid') {", 'if (false) {'],

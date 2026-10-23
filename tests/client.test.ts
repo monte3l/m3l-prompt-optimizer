@@ -121,6 +121,11 @@ describe('classify', () => {
     for (const s of [500, 504, 529]) expect(classify(error(s, 'overloaded_error', 'busy')).kind).toBe('retry')
   })
 
+  test('never waits a negative time when Retry-After is negative', () => {
+    const negative = { ...error(429, 'rate_limit_error', 'slow'), headers: { 'request-id': 'req_1', 'retry-after': '-5' } }
+    expect(classify(negative)).toEqual({ kind: 'retry', afterMs: 0, requestId: 'req_1' })
+  })
+
   test('skips any other failure', () => {
     for (const s of [400, 404, 413]) expect(classify(error(s, 'invalid_request_error', 'bad')).kind).toBe('skip')
   })

@@ -93,7 +93,7 @@ export const classify = (res: HttpReply): Outcome => {
 
   if (res.status === 429) {
     const seconds = Number(res.headers['retry-after'] ?? '1')
-    const afterMs = Number.isFinite(seconds) ? seconds * 1000 : 1000
+    const afterMs = Number.isFinite(seconds) ? Math.max(0, seconds) * 1000 : 1000
     return afterMs <= MAX_RETRY_AFTER_MS ? { kind: 'retry', afterMs, requestId } : { kind: 'skip', reason: 'rate limited', requestId }
   }
   if ([500, 504, 529].includes(res.status)) return { kind: 'retry', afterMs: 500, requestId }
