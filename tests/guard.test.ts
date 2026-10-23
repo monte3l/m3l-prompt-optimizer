@@ -88,9 +88,14 @@ describe('acceptRewrite', () => {
 
   test('accepts the legitimate rewrites the eval set expects', () => {
     const shouting = 'NEVER touch the migrations folder!!! IMPORTANT: ONLY change the API layer, and do NOT add new dependencies'
-    expect(acceptRewrite(shouting, "Only change the API layer. Please don't touch the migrations folder, and don't add any new dependencies.").isOk).toBe(true)
+    expect(
+      acceptRewrite(shouting, "Only change the API layer. Please don't touch the migrations folder, and don't add any new dependencies.")
+        .isOk,
+    ).toBe(true)
     const run = 'rename the config loader and update callers and also bump the version and changelog'
-    expect(acceptRewrite(run, '1. Rename the config loader.\n2. Update its callers.\n3. Bump the version.\n4. Update the changelog.').isOk).toBe(true)
+    expect(
+      acceptRewrite(run, '1. Rename the config loader.\n2. Update its callers.\n3. Bump the version.\n4. Update the changelog.').isOk,
+    ).toBe(true)
   })
 
   test('rejects a rewrite that starts like a command', () => {

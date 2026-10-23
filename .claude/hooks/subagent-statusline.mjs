@@ -28,24 +28,15 @@
  * Advisory-only: any parse failure or malformed payload exits 0 with no
  * output, leaving every row at Claude Code's own default rendering.
  */
-import { realpathSync } from "node:fs";
-import process from "node:process";
-import { fileURLToPath } from "node:url";
-import {
-  DIM,
-  GREEN,
-  MAGENTA,
-  RED,
-  RESET,
-  YELLOW,
-  formatTokenCount,
-  truncateToWidth,
-} from "./statusline-layout.mjs";
+import { realpathSync } from 'node:fs'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
+import { DIM, GREEN, MAGENTA, RED, RESET, YELLOW, formatTokenCount, truncateToWidth } from './statusline-layout.mjs'
 
 /** Elapsed-time threshold, in seconds, past which a row turns yellow. */
-export const ELAPSED_WARN_THRESHOLD_SEC = 15 * 60;
+export const ELAPSED_WARN_THRESHOLD_SEC = 15 * 60
 /** Elapsed-time threshold, in seconds, past which a row turns red. */
-export const ELAPSED_HIGH_THRESHOLD_SEC = 30 * 60;
+export const ELAPSED_HIGH_THRESHOLD_SEC = 30 * 60
 
 /**
  * @param {unknown} value a task's `startTime` field. The statusline docs
@@ -54,12 +45,12 @@ export const ELAPSED_HIGH_THRESHOLD_SEC = 30 * 60;
  * @returns {number | null} epoch milliseconds, or null when unparseable.
  */
 export function parseStartTime(value) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = Date.parse(value);
-    if (!Number.isNaN(parsed)) return parsed;
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value)
+    if (!Number.isNaN(parsed)) return parsed
   }
-  return null;
+  return null
 }
 
 /**
@@ -68,10 +59,10 @@ export function parseStartTime(value) {
  * @returns {string} `"0m"`, `"NNm"`, or `"NhMMm"`.
  */
 export function formatElapsed(elapsedSec) {
-  const clamped = Math.max(0, Math.floor(elapsedSec));
-  const h = Math.floor(clamped / 3600);
-  const m = Math.floor((clamped % 3600) / 60);
-  return h > 0 ? `${h}h${String(m).padStart(2, "0")}m` : `${m}m`;
+  const clamped = Math.max(0, Math.floor(elapsedSec))
+  const h = Math.floor(clamped / 3600)
+  const m = Math.floor((clamped % 3600) / 60)
+  return h > 0 ? `${h}h${String(m).padStart(2, '0')}m` : `${m}m`
 }
 
 /**
@@ -79,9 +70,9 @@ export function formatElapsed(elapsedSec) {
  * @returns {string} GREEN under 15 minutes, YELLOW at 15-30, RED at 30+.
  */
 export function elapsedColor(elapsedSec) {
-  if (elapsedSec >= ELAPSED_HIGH_THRESHOLD_SEC) return RED;
-  if (elapsedSec >= ELAPSED_WARN_THRESHOLD_SEC) return YELLOW;
-  return GREEN;
+  if (elapsedSec >= ELAPSED_HIGH_THRESHOLD_SEC) return RED
+  if (elapsedSec >= ELAPSED_WARN_THRESHOLD_SEC) return YELLOW
+  return GREEN
 }
 
 /**
@@ -92,16 +83,10 @@ export function elapsedColor(elapsedSec) {
  *   are omitted for a task whose model isn't resolved yet.
  */
 export function formatTokenFraction(tokenCount, contextWindowSize) {
-  if (typeof tokenCount !== "number" || !Number.isFinite(tokenCount))
-    return null;
-  if (
-    typeof contextWindowSize !== "number" ||
-    !Number.isFinite(contextWindowSize) ||
-    contextWindowSize <= 0
-  )
-    return null;
-  const pct = Math.round((tokenCount / contextWindowSize) * 100);
-  return `${formatTokenCount(tokenCount)}/${formatTokenCount(contextWindowSize)} (${pct}%)`;
+  if (typeof tokenCount !== 'number' || !Number.isFinite(tokenCount)) return null
+  if (typeof contextWindowSize !== 'number' || !Number.isFinite(contextWindowSize) || contextWindowSize <= 0) return null
+  const pct = Math.round((tokenCount / contextWindowSize) * 100)
+  return `${formatTokenCount(tokenCount)}/${formatTokenCount(contextWindowSize)} (${pct}%)`
 }
 
 /**
@@ -110,10 +95,9 @@ export function formatTokenFraction(tokenCount, contextWindowSize) {
  * @returns {string | null}
  */
 export function formatEffort(effort) {
-  if (typeof effort === "string" && effort.length > 0) return effort;
-  if (typeof effort === "number" && Number.isFinite(effort))
-    return formatTokenCount(effort);
-  return null;
+  if (typeof effort === 'string' && effort.length > 0) return effort
+  if (typeof effort === 'number' && Number.isFinite(effort)) return formatTokenCount(effort)
+  return null
 }
 
 /**
@@ -125,42 +109,30 @@ export function formatEffort(effort) {
  *   this task, or null to leave Claude Code's default row rendering.
  */
 export function formatSubagentRow(task, env) {
-  if (typeof task !== "object" || task === null) return null;
-  const {
-    id,
-    name,
-    agentType,
-    effort,
-    startTime,
-    tokenCount,
-    contextWindowSize,
-  } = /** @type {Record<string, unknown>} */ (task);
-  if (typeof id !== "string" || id.length === 0) return null;
+  if (typeof task !== 'object' || task === null) return null
+  const { id, name, agentType, effort, startTime, tokenCount, contextWindowSize } = /** @type {Record<string, unknown>} */ (task)
+  if (typeof id !== 'string' || id.length === 0) return null
   const label =
-    typeof name === "string" && name.length > 0
-      ? name
-      : typeof agentType === "string" && agentType.length > 0
-        ? agentType
-        : null;
-  if (label === null) return null;
+    typeof name === 'string' && name.length > 0 ? name : typeof agentType === 'string' && agentType.length > 0 ? agentType : null
+  if (label === null) return null
 
-  const segments = [label];
+  const segments = [label]
 
-  const effortText = formatEffort(effort);
-  if (effortText !== null) segments.push(`${MAGENTA}${effortText}${RESET}`);
+  const effortText = formatEffort(effort)
+  if (effortText !== null) segments.push(`${MAGENTA}${effortText}${RESET}`)
 
-  const tokenText = formatTokenFraction(tokenCount, contextWindowSize);
-  if (tokenText !== null) segments.push(tokenText);
+  const tokenText = formatTokenFraction(tokenCount, contextWindowSize)
+  if (tokenText !== null) segments.push(tokenText)
 
-  const startMs = parseStartTime(startTime);
+  const startMs = parseStartTime(startTime)
   if (startMs !== null) {
-    const nowMs = typeof env?.now === "number" ? env.now : Date.now();
-    const elapsedSec = Math.max(0, (nowMs - startMs) / 1000);
-    const color = elapsedColor(elapsedSec);
-    segments.push(`${color}${formatElapsed(elapsedSec)}${RESET}`);
+    const nowMs = typeof env?.now === 'number' ? env.now : Date.now()
+    const elapsedSec = Math.max(0, (nowMs - startMs) / 1000)
+    const color = elapsedColor(elapsedSec)
+    segments.push(`${color}${formatElapsed(elapsedSec)}${RESET}`)
   }
 
-  return { id, content: segments.join(`${DIM} · ${RESET}`) };
+  return { id, content: segments.join(`${DIM} · ${RESET}`) }
 }
 
 /**
@@ -175,44 +147,40 @@ export function formatSubagentRow(task, env) {
  */
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 // Only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  const raw = await readStdin();
+  const raw = await readStdin()
   try {
-    const payload = JSON.parse(raw);
-    const tasks = Array.isArray(payload?.tasks) ? payload.tasks : [];
-    const columns =
-      typeof payload?.columns === "number" && payload.columns > 0
-        ? payload.columns
-        : null;
-    const env = { now: Date.now() };
+    const payload = JSON.parse(raw)
+    const tasks = Array.isArray(payload?.tasks) ? payload.tasks : []
+    const columns = typeof payload?.columns === 'number' && payload.columns > 0 ? payload.columns : null
+    const env = { now: Date.now() }
 
-    const lines = [];
+    const lines = []
     for (const task of tasks) {
-      const row = formatSubagentRow(task, env);
-      if (row === null) continue;
-      const content =
-        columns === null ? row.content : truncateToWidth(row.content, columns);
-      lines.push(JSON.stringify({ id: row.id, content }));
+      const row = formatSubagentRow(task, env)
+      if (row === null) continue
+      const content = columns === null ? row.content : truncateToWidth(row.content, columns)
+      lines.push(JSON.stringify({ id: row.id, content }))
     }
 
-    if (lines.length > 0) process.stdout.write(`${lines.join("\n")}\n`);
+    if (lines.length > 0) process.stdout.write(`${lines.join('\n')}\n`)
   } catch {
     // Advisory-only: any parse failure or unexpected payload shape exits 0
     // with no output, leaving every row at Claude Code's own default
     // rendering — matches the file header's documented contract.
   }
-  process.exit(0);
+  process.exit(0)
 }

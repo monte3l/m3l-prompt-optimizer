@@ -47,26 +47,128 @@ jobs:
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     permissions:
       contents: read
-    uses: monte3l/.github/.github/workflows/release-prepare.yml@ee47e005c774a2efae036a7b3201910e4eaf9e6f # release-baseline
+    uses: monte3l/.github/.github/workflows/release-prepare.yml@4e2797a213e85b6dd24c3e729fe15385924fc091 # release-baseline
     secrets:
       RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-  # A repository-specific job goes here. It runs only when a release was
-  # created, and attaches its assets to the draft named by
-  # `needs.prepare.outputs.tag_name`. Then add it to `finalize`'s `needs`.
+  # Builds the release tarball and its CycloneDX SBOM, attests both, and
+  # attaches them and the provenance's Sigstore bundle to the draft. It runs
+  # only when a release was created, and it must finish before `finalize`
+  # publishes the draft: the repository's releases are immutable, so an asset
+  # cannot be added once the release is public.
+  #
+  # Nothing is built or installed: `git archive` packs the tracked files of
+  # the commit the release PR merged as, and the SBOM script is plain Node.
+  # The job holds the OIDC token, so it runs no code from the repository
+  # other than that one script.
+  assets:
+    name: Assets
+    needs: [prepare]
+    if: needs.prepare.outputs.releases_created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # gh release upload to the draft
+      id-token: write # the Sigstore identity actions/attest signs with
+      attestations: write # actions/attest on the tarball and its SBOM
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      # The draft's tag is made at the commit the release PR merged as. The
+      # attestations name this run's commit, so a tag anywhere else means the
+      # release and the build disagree, and nothing is attested. The tags
+      # ruleset blocks moving or deleting a tag, so the fix is a maintainer's.
+      - name: Check that the release tag points at the commit that was built
+        env:
+          REPOSITORY: ${{ github.repository }}
+          TAG: ${{ needs.prepare.outputs.tag_name }}
+          BUILT_SHA: ${{ github.sha }}
+        run: |
+          # An annotated tag lists its peeled commit last; a lightweight tag has
+          # one line. Anonymous read: the repository is public.
+          tagged="$(git ls-remote "https://github.com/${REPOSITORY}.git" \
+            "refs/tags/${TAG}" "refs/tags/${TAG}^{}" | awk 'END { print $1 }')"
+          if [ -n "$tagged" ] && [ "$tagged" = "$BUILT_SHA" ]; then
+            echo "tag ${TAG} points at the built commit ${BUILT_SHA}"
+            exit 0
+          fi
+          echo "::error title=Release tag does not match the build::${TAG} points at '${tagged:-nothing}' but the assets were built from ${BUILT_SHA}."
+          exit 1
+
+      # release-please writes the version into plugin.json in the release PR,
+      # so a mismatch means the PR and its release disagree.
+      - name: Build the tarball and its SBOM
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "not a release version: $VERSION" >&2
+            exit 1
+          fi
+          manifest_version="$(node -p 'require("./.claude-plugin/plugin.json").version')"
+          if [ "$manifest_version" != "$VERSION" ]; then
+            echo "plugin.json says $manifest_version but the release is $VERSION" >&2
+            exit 1
+          fi
+          mkdir release-assets
+          tarball="release-assets/m3l-prompt-optimizer-${VERSION}.tar.gz"
+          git archive --format=tar.gz --prefix="m3l-prompt-optimizer-${VERSION}/" --output="$tarball" HEAD
+          # Named <tarball>.cdx.json, the OSSF SBOM Everywhere convention.
+          node scripts/release-sbom.mjs "$tarball" "$VERSION"
+
+      - name: Attest build provenance for the tarball
+        id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release-assets/*.tar.gz
+
+      - name: Attest the SBOM against the tarball
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: release-assets/*.tar.gz
+          sbom-path: release-assets/*.cdx.json
+
+      # OpenSSF Scorecard's Signed-Releases check only looks at release assets
+      # (`*.sigstore.json` scores 8), never at GitHub's attestation store, so
+      # the provenance bundle is an asset. The SBOM attestation's bundle is
+      # deliberately not uploaded: beside the provenance bundle it would blur
+      # what that name means. Verify both as SECURITY.md describes.
+      - name: Attach the attested assets to the draft and read them back
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag_name }}
+          ATTEST_BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          tarball="$(find release-assets -name '*.tar.gz' -print -quit)"
+          cp "$ATTEST_BUNDLE" "${tarball}.sigstore.json"
+          assets=("$tarball" "${tarball}.sigstore.json" "${tarball}.cdx.json")
+          gh release upload "$TAG" "${assets[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+          mkdir uploaded
+          gh release download "$TAG" --dir uploaded --repo "$GITHUB_REPOSITORY"
+          for asset in "${assets[@]}"; do
+            cmp -- "$asset" "uploaded/$(basename -- "$asset")"
+          done
 
   finalize:
     name: Finalize
-    needs: [prepare]
+    needs: [prepare, assets]
     if: needs.prepare.outputs.releases_created == 'true'
     permissions:
       contents: write
       id-token: write
       attestations: write
-    uses: monte3l/.github/.github/workflows/release-finalize.yml@ee47e005c774a2efae036a7b3201910e4eaf9e6f # release-baseline
+    uses: monte3l/.github/.github/workflows/release-finalize.yml@4e2797a213e85b6dd24c3e729fe15385924fc091 # release-baseline
     with:
       tag: ${{ needs.prepare.outputs.tag_name }}
+      # `assets` attested the tarball and its SBOM; the shared workflow only publishes.
+      attest: false
       notify: '["m3l-plugins"]'
     secrets:
       RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}

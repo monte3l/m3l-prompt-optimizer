@@ -159,7 +159,14 @@ export const takeSample = async ({ hooks, apiKey, judge, alone }, prompt) => {
     if (!verdict.isOk) return { outcome: 'reverted', final: prompt, detail: verdict.reason, rejected: parsed.text }
 
     const judged = await judge(prompt, parsed.text)
-    return { outcome: judged.verdict, final: parsed.text, detail: judged.reason, verdicts: judged.verdicts, isStable: judged.isStable, thinking: judged.thinking }
+    return {
+      outcome: judged.verdict,
+      final: parsed.text,
+      detail: judged.reason,
+      verdicts: judged.verdicts,
+      isStable: judged.isStable,
+      thinking: judged.thinking,
+    }
   } catch (error) {
     return { outcome: 'error', final: prompt, detail: String(error?.message ?? error).slice(0, 200) }
   }

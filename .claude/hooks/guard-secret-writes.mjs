@@ -22,29 +22,22 @@
  * placeholder exclusion keep false positives off legitimate config/docs
  * (e.g. `GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}` in a workflow).
  */
-import process from "node:process";
-import { realpathSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import process from 'node:process'
+import { realpathSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 /**
  * Env-var-name prefixes/exact names whose assigned *value* is a secret we
  * must never persist. Project-specific keys can be appended here.
  */
-export const SECRET_KEYS = [
-  "NPM_TOKEN",
-  "GITHUB_TOKEN",
-  "GH_TOKEN",
-  "AWS_SECRET_ACCESS_KEY",
-  "AWS_ACCESS_KEY_ID",
-  "AWS_SESSION_TOKEN",
-];
+export const SECRET_KEYS = ['NPM_TOKEN', 'GITHUB_TOKEN', 'GH_TOKEN', 'AWS_SECRET_ACCESS_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SESSION_TOKEN']
 
 // High-signal literal shapes -- a match is almost certainly a real credential.
 const TOKEN_LITERALS = [
@@ -53,7 +46,7 @@ const TOKEN_LITERALS = [
   /\bnpm_[A-Za-z0-9]{36}\b/, // npm automation token
   /\bAKIA[0-9A-Z]{16}\b/, // AWS access key id
   /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/, // PEM private key
-];
+]
 
 /**
  * A value is a placeholder/reference, not a real secret, when it defers to an
@@ -63,16 +56,13 @@ const TOKEN_LITERALS = [
  * @returns {boolean}
  */
 function isPlaceholderValue(value) {
-  const v = value.trim().replace(/^["']|["']$/g, "");
-  if (v.length === 0) return true;
-  if (/\$\{|\$\(|process\.env|secrets\.|env\./.test(v)) return true; // reference
-  if (/^<.*>$/.test(v)) return true; // <your-token>
-  if (
-    /(example|placeholder|changeme|your[-_]|xxx+|dummy|fake|redacted)/i.test(v)
-  )
-    return true;
+  const v = value.trim().replace(/^["']|["']$/g, '')
+  if (v.length === 0) return true
+  if (/\$\{|\$\(|process\.env|secrets\.|env\./.test(v)) return true // reference
+  if (/^<.*>$/.test(v)) return true // <your-token>
+  if (/(example|placeholder|changeme|your[-_]|xxx+|dummy|fake|redacted)/i.test(v)) return true
   // Too short / low-entropy to be a real token.
-  return v.length < 16;
+  return v.length < 16
 }
 
 /**
@@ -82,9 +72,9 @@ function isPlaceholderValue(value) {
  * @returns {boolean}
  */
 export function isEnvFilePath(filePath) {
-  const base = path.basename(filePath);
-  if (!/^\.env(\.|$)/.test(base)) return false;
-  return !/\.(example|sample|template|dist)$/.test(base);
+  const base = path.basename(filePath)
+  if (!/^\.env(\.|$)/.test(base)) return false
+  return !/\.(example|sample|template|dist)$/.test(base)
 }
 
 /**
@@ -96,23 +86,21 @@ export function isEnvFilePath(filePath) {
  * @returns {string[]}
  */
 export function findSecrets(content) {
-  const hits = [];
+  const hits = []
 
   for (const key of SECRET_KEYS) {
     // KEY = value  or  KEY: value  (env/yaml/json-ish), value runs to EOL.
-    const re = new RegExp(`\\b${key}\\b\\s*[:=]\\s*(.+)`, "g");
+    const re = new RegExp(`\\b${key}\\b\\s*[:=]\\s*(.+)`, 'g')
     for (const m of content.matchAll(re)) {
-      if (!isPlaceholderValue(m[1]))
-        hits.push(`${key} assigned a literal value`);
+      if (!isPlaceholderValue(m[1])) hits.push(`${key} assigned a literal value`)
     }
   }
 
   for (const re of TOKEN_LITERALS) {
-    if (re.test(content))
-      hits.push(`recognised token/key literal (${re.source})`);
+    if (re.test(content)) hits.push(`recognised token/key literal (${re.source})`)
   }
 
-  return hits;
+  return hits
 }
 
 /**
@@ -123,12 +111,12 @@ export function findSecrets(content) {
  * @returns {string[]}
  */
 export function isSecretWrite(filePath, content) {
-  const reasons = [];
+  const reasons = []
   if (isEnvFilePath(filePath)) {
-    reasons.push(`writing a dotenv secret file (${path.basename(filePath)})`);
+    reasons.push(`writing a dotenv secret file (${path.basename(filePath)})`)
   }
-  reasons.push(...findSecrets(content ?? ""));
-  return reasons;
+  reasons.push(...findSecrets(content ?? ''))
+  return reasons
 }
 
 // Kept as a duplicated, self-contained block in every hook file rather than
@@ -140,46 +128,41 @@ export function isSecretWrite(filePath, content) {
 // i.e. silently fail open (exit 0) instead of blocking.
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
 // Main execution -- only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  const raw = await readStdin();
-  let input;
+  const raw = await readStdin()
+  let input
   try {
-    input = JSON.parse(raw);
+    input = JSON.parse(raw)
   } catch {
-    process.exit(0);
+    process.exit(0)
   }
 
-  const filePath = input.tool_input?.file_path ?? "";
-  if (typeof filePath !== "string" || filePath.length === 0) process.exit(0);
+  const filePath = input.tool_input?.file_path ?? ''
+  if (typeof filePath !== 'string' || filePath.length === 0) process.exit(0)
 
   // Content by field presence (Write -> content, Edit -> new_string), matching
   // the sibling-hook convention so the guard stays live if tool_name is absent.
-  const ti = input.tool_input ?? {};
-  const content =
-    typeof ti.content === "string"
-      ? ti.content
-      : typeof ti.new_string === "string"
-        ? ti.new_string
-        : "";
+  const ti = input.tool_input ?? {}
+  const content = typeof ti.content === 'string' ? ti.content : typeof ti.new_string === 'string' ? ti.new_string : ''
 
-  const reasons = isSecretWrite(filePath, content);
-  if (reasons.length === 0) process.exit(0);
+  const reasons = isSecretWrite(filePath, content)
+  if (reasons.length === 0) process.exit(0)
 
   process.stderr.write(`\
 [guard-secret-writes] Blocked write to ${filePath}:
-${reasons.map((r) => `  - ${r}`).join("\n")}
+${reasons.map(r => `  - ${r}`).join('\n')}
 
 Secrets and tokens must never be written to the working tree -- they persist in
 git objects/reflog even after removal. Use a CI secret or an env var reference
 instead of a literal value, and keep real dotenv files out of the repo (.env*
 is gitignored; author .env.example with placeholders).
-`);
-  process.exit(2);
+`)
+  process.exit(2)
 }

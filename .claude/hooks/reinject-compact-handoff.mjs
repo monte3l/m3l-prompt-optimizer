@@ -46,32 +46,20 @@
  * silently no-op rather than surfacing a confusing "handoff not found"
  * line every time the artifact is legitimately absent.
  */
-import process from "node:process";
-import {
-  readFileSync,
-  existsSync,
-  unlinkSync,
-  realpathSync,
-  readdirSync,
-  statSync,
-} from "node:fs";
-import { fileURLToPath } from "node:url";
-import { join } from "node:path";
-import {
-  HANDOFF_GLOB_PREFIX,
-  currentWorktree,
-  handoffRelPath,
-  resolveRoot,
-} from "./write-compact-handoff.mjs";
+import process from 'node:process'
+import { readFileSync, existsSync, unlinkSync, realpathSync, readdirSync, statSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { HANDOFF_GLOB_PREFIX, currentWorktree, handoffRelPath, resolveRoot } from './write-compact-handoff.mjs'
 
 /** Age past which a handoff is flagged stale, and another session's is pruned. */
-export const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+export const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
 
 /**
  * Minimum mtime age before another session's handoff is eligible for orphan
  * recovery -- a younger one may belong to a live session about to reinject it.
  */
-export const ORPHAN_MIN_AGE_MS = 10 * 60 * 1000;
+export const ORPHAN_MIN_AGE_MS = 10 * 60 * 1000
 
 /**
  * True when `handoff.capturedAt` parses to a timestamp more than 24h before
@@ -83,11 +71,11 @@ export const ORPHAN_MIN_AGE_MS = 10 * 60 * 1000;
  * @returns {boolean}
  */
 export function isStale(handoff, nowMs = Date.now()) {
-  const capturedAt = handoff.capturedAt;
-  if (typeof capturedAt !== "string") return false;
-  const capturedMs = Date.parse(capturedAt);
-  if (Number.isNaN(capturedMs)) return false;
-  return nowMs - capturedMs > STALE_THRESHOLD_MS;
+  const capturedAt = handoff.capturedAt
+  if (typeof capturedAt !== 'string') return false
+  const capturedMs = Date.parse(capturedAt)
+  if (Number.isNaN(capturedMs)) return false
+  return nowMs - capturedMs > STALE_THRESHOLD_MS
 }
 
 /**
@@ -100,63 +88,43 @@ export function isStale(handoff, nowMs = Date.now()) {
  */
 export function formatHandoff(handoff, nowMs = Date.now()) {
   const lines = [
-    "Prior-session handoff -- state captured just before an earlier " +
-      "compaction, possibly from a session that has since ended:",
-    `  • Branch: \`${handoff.branch || "(unknown)"}\` at \`${
-      handoff.worktree || "(unknown)"
-    }\``,
-  ];
+    'Prior-session handoff -- state captured just before an earlier ' + 'compaction, possibly from a session that has since ended:',
+    `  • Branch: \`${handoff.branch || '(unknown)'}\` at \`${handoff.worktree || '(unknown)'}\``,
+  ]
 
-  const lastCommit = handoff.lastCommit;
-  if (
-    lastCommit &&
-    typeof lastCommit === "object" &&
-    typeof lastCommit.sha === "string"
-  ) {
-    lines.push(
-      `  • Last commit: \`${lastCommit.sha.slice(0, 12)}\` ` +
-        `(signature: \`${lastCommit.signature ?? "?"}\`)`,
-    );
+  const lastCommit = handoff.lastCommit
+  if (lastCommit && typeof lastCommit === 'object' && typeof lastCommit.sha === 'string') {
+    lines.push(`  • Last commit: \`${lastCommit.sha.slice(0, 12)}\` ` + `(signature: \`${lastCommit.signature ?? '?'}\`)`)
   }
 
-  const uncommitted = Array.isArray(handoff.uncommittedFiles)
-    ? handoff.uncommittedFiles
-    : [];
+  const uncommitted = Array.isArray(handoff.uncommittedFiles) ? handoff.uncommittedFiles : []
   if (handoff.uncommittedFiles === null) {
-    lines.push(
-      "  • Uncommitted: unknown -- git status unavailable at capture time",
-    );
+    lines.push('  • Uncommitted: unknown -- git status unavailable at capture time')
   } else if (uncommitted.length > 0) {
-    const shown = uncommitted.slice(0, 10);
-    const more = uncommitted.length - shown.length;
-    lines.push(
-      `  • Uncommitted (${uncommitted.length}): ${shown.join(", ")}` +
-        (more > 0 ? ` (+${more} more)` : ""),
-    );
+    const shown = uncommitted.slice(0, 10)
+    const more = uncommitted.length - shown.length
+    lines.push(`  • Uncommitted (${uncommitted.length}): ${shown.join(', ')}` + (more > 0 ? ` (+${more} more)` : ''))
   }
 
-  const journals = Array.isArray(handoff.journals) ? handoff.journals : [];
+  const journals = Array.isArray(handoff.journals) ? handoff.journals : []
   if (journals.length > 0) {
-    lines.push(`  • Scratchpad journal(s): ${journals.join(", ")}`);
+    lines.push(`  • Scratchpad journal(s): ${journals.join(', ')}`)
   }
 
   if (isStale(handoff, nowMs)) {
-    lines.push(
-      "  ⚠ This handoff is more than 24h old -- likely stale, verify " +
-        "carefully before trusting it.",
-    );
+    lines.push('  ⚠ This handoff is more than 24h old -- likely stale, verify ' + 'carefully before trusting it.')
   }
 
   lines.push(
-    "Re-verify this against current `git status` before acting on it -- it " +
-      "is a snapshot from just before compaction, not necessarily still " +
-      "current.",
-  );
-  return lines.join("\n");
+    'Re-verify this against current `git status` before acting on it -- it ' +
+      'is a snapshot from just before compaction, not necessarily still ' +
+      'current.',
+  )
+  return lines.join('\n')
 }
 
 /** `SessionStart` `source` values this hook re-injects the handoff for. */
-export const REINJECT_SOURCES = new Set(["compact", "resume", "startup"]);
+export const REINJECT_SOURCES = new Set(['compact', 'resume', 'startup'])
 
 /**
  * The settings.json `matcher` (`compact|resume|startup|clear|fork`) is
@@ -174,9 +142,9 @@ export const REINJECT_SOURCES = new Set(["compact", "resume", "startup"]);
  *   should re-inject the handoff for (compaction, resume, or startup)
  */
 export function shouldReinject(input) {
-  if (typeof input !== "object" || input === null) return false;
-  const source = /** @type {{ source?: unknown }} */ (input).source;
-  return typeof source === "string" && REINJECT_SOURCES.has(source);
+  if (typeof input !== 'object' || input === null) return false
+  const source = /** @type {{ source?: unknown }} */ (input).source
+  return typeof source === 'string' && REINJECT_SOURCES.has(source)
 }
 
 /**
@@ -185,19 +153,19 @@ export function shouldReinject(input) {
  *   unreadable, malformed, or not a JSON object
  */
 export function readHandoff(handoffPath) {
-  if (!existsSync(handoffPath)) return null;
+  if (!existsSync(handoffPath)) return null
   try {
-    const parsed = JSON.parse(readFileSync(handoffPath, "utf8"));
-    return typeof parsed === "object" && parsed !== null ? parsed : null;
+    const parsed = JSON.parse(readFileSync(handoffPath, 'utf8'))
+    return typeof parsed === 'object' && parsed !== null ? parsed : null
   } catch {
-    return null;
+    return null
   }
 }
 
 /** `SessionStart` sources allowed to pick up another session's handoff. */
-const ORPHAN_RECOVERY_SOURCES = new Set(["resume", "startup"]);
+const ORPHAN_RECOVERY_SOURCES = new Set(['resume', 'startup'])
 
-const HANDOFF_FILE = new RegExp(`^${HANDOFF_GLOB_PREFIX}.*\\.json$`);
+const HANDOFF_FILE = new RegExp(`^${HANDOFF_GLOB_PREFIX}.*\\.json$`)
 
 /**
  * Best-effort delete of a handoff candidate that must not be read again.
@@ -206,7 +174,7 @@ const HANDOFF_FILE = new RegExp(`^${HANDOFF_GLOB_PREFIX}.*\\.json$`);
  */
 function prune(path) {
   try {
-    unlinkSync(path);
+    unlinkSync(path)
   } catch {
     // Already gone or undeletable -- either way it is skipped, not read.
   }
@@ -220,9 +188,9 @@ function prune(path) {
  * @returns {boolean}
  */
 function isValidCandidate(path) {
-  if (readHandoff(path) !== null) return true;
-  prune(path);
-  return false;
+  if (readHandoff(path) !== null) return true
+  prune(path)
+  return false
 }
 
 /**
@@ -239,46 +207,46 @@ function isValidCandidate(path) {
  *   candidates and stale other-session files are pruned along the way.
  */
 export function findHandoffPath(root, sessionId, source, nowMs = Date.now()) {
-  const own = join(root, handoffRelPath(sessionId));
-  if (existsSync(own) && isValidCandidate(own)) return own;
-  if (!ORPHAN_RECOVERY_SOURCES.has(source)) return null;
+  const own = join(root, handoffRelPath(sessionId))
+  if (existsSync(own) && isValidCandidate(own)) return own
+  if (!ORPHAN_RECOVERY_SOURCES.has(source)) return null
 
-  const tmpDir = join(root, "tmp");
-  let entries;
+  const tmpDir = join(root, 'tmp')
+  let entries
   try {
-    entries = readdirSync(tmpDir, { withFileTypes: true });
+    entries = readdirSync(tmpDir, { withFileTypes: true })
   } catch {
     // Missing/unreadable tmp/ -- nothing to recover.
-    return null;
+    return null
   }
 
   /** @type {Array<{ path: string, mtimeMs: number }>} */
-  const eligible = [];
+  const eligible = []
   for (const entry of entries) {
-    if (!entry.isFile() || !HANDOFF_FILE.test(entry.name)) continue;
-    const candidate = join(tmpDir, entry.name);
-    if (candidate === own) continue;
-    let mtimeMs;
+    if (!entry.isFile() || !HANDOFF_FILE.test(entry.name)) continue
+    const candidate = join(tmpDir, entry.name)
+    if (candidate === own) continue
+    let mtimeMs
     try {
-      mtimeMs = statSync(candidate).mtimeMs;
+      mtimeMs = statSync(candidate).mtimeMs
     } catch {
       // Vanished or unstat-able mid-scan -- skip this entry, keep scanning.
-      continue;
+      continue
     }
-    const ageMs = nowMs - mtimeMs;
-    if (ageMs < ORPHAN_MIN_AGE_MS) continue;
+    const ageMs = nowMs - mtimeMs
+    if (ageMs < ORPHAN_MIN_AGE_MS) continue
     if (ageMs > STALE_THRESHOLD_MS) {
-      prune(candidate);
-      continue;
+      prune(candidate)
+      continue
     }
-    eligible.push({ path: candidate, mtimeMs });
+    eligible.push({ path: candidate, mtimeMs })
   }
 
-  eligible.sort((a, b) => b.mtimeMs - a.mtimeMs);
+  eligible.sort((a, b) => b.mtimeMs - a.mtimeMs)
   for (const { path } of eligible) {
-    if (isValidCandidate(path)) return path;
+    if (isValidCandidate(path)) return path
   }
-  return null;
+  return null
 }
 
 // Deliberately inlined in every hook rather than shared, so each hook stays
@@ -288,46 +256,46 @@ export function findHandoffPath(root, sessionId, source, nowMs = Date.now()) {
 // never run -- exit 0.
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
 // Only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  let input;
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  let input
   try {
-    input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    input = JSON.parse(Buffer.concat(chunks).toString('utf8'))
   } catch {
-    process.exit(0);
+    process.exit(0)
   }
 
-  if (!shouldReinject(input)) process.exit(0);
+  if (!shouldReinject(input)) process.exit(0)
 
-  const root = currentWorktree(resolveRoot(input, process.env, process.cwd()));
-  const handoffPath = findHandoffPath(root, input.session_id, input.source);
-  if (handoffPath === null) process.exit(0);
-  const handoff = readHandoff(handoffPath);
-  if (handoff === null) process.exit(0);
+  const root = currentWorktree(resolveRoot(input, process.env, process.cwd()))
+  const handoffPath = findHandoffPath(root, input.session_id, input.source)
+  if (handoffPath === null) process.exit(0)
+  const handoff = readHandoff(handoffPath)
+  if (handoff === null) process.exit(0)
 
   const output = {
     hookSpecificOutput: {
-      hookEventName: "SessionStart",
+      hookEventName: 'SessionStart',
       additionalContext: formatHandoff(handoff),
     },
-  };
-  process.stdout.write(JSON.stringify(output));
+  }
+  process.stdout.write(JSON.stringify(output))
 
   // One-shot: a stale handoff re-injected after a SECOND compaction would
   // describe state from before the FIRST, no longer current. Consumed once --
   // and only the file actually read, never another session's.
   try {
-    unlinkSync(handoffPath);
+    unlinkSync(handoffPath)
   } catch {
     // Not fatal -- the next PreCompact overwrites it regardless.
   }
-  process.exit(0);
+  process.exit(0)
 }

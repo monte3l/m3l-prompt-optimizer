@@ -60,24 +60,16 @@
  * `write-compact-handoff: handoff not written (<reason>)` line goes to
  * stderr.
  */
-import process from "node:process";
-import {
-  writeFileSync,
-  mkdirSync,
-  readdirSync,
-  existsSync,
-  realpathSync,
-  renameSync,
-  unlinkSync,
-} from "node:fs";
-import { fileURLToPath } from "node:url";
-import { join, resolve } from "node:path";
-import { execFileSync } from "node:child_process";
+import process from 'node:process'
+import { writeFileSync, mkdirSync, readdirSync, existsSync, realpathSync, renameSync, unlinkSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join, resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 /** Filename prefix shared by every keyed and legacy handoff artifact. */
-export const HANDOFF_GLOB_PREFIX = "compact-handoff";
+export const HANDOFF_GLOB_PREFIX = 'compact-handoff'
 
-const SAFE_SESSION_ID = /^[A-Za-z0-9_-]{1,128}$/;
+const SAFE_SESSION_ID = /^[A-Za-z0-9_-]{1,128}$/
 
 /**
  * Root-relative path of the handoff artifact for one session. Only a
@@ -89,9 +81,9 @@ const SAFE_SESSION_ID = /^[A-Za-z0-9_-]{1,128}$/;
  * @returns {string}
  */
 export function handoffRelPath(sessionId) {
-  return typeof sessionId === "string" && SAFE_SESSION_ID.test(sessionId)
+  return typeof sessionId === 'string' && SAFE_SESSION_ID.test(sessionId)
     ? `tmp/${HANDOFF_GLOB_PREFIX}-${sessionId}.json`
-    : `tmp/${HANDOFF_GLOB_PREFIX}.json`;
+    : `tmp/${HANDOFF_GLOB_PREFIX}.json`
 }
 
 /**
@@ -105,14 +97,11 @@ export function handoffRelPath(sessionId) {
  * @returns {string}
  */
 export function resolveRoot(input, env, fallbackCwd) {
-  const cwd =
-    typeof input === "object" && input !== null
-      ? /** @type {{ cwd?: unknown }} */ (input).cwd
-      : undefined;
-  if (typeof cwd === "string" && cwd !== "") return cwd;
-  const projectDir = env.CLAUDE_PROJECT_DIR;
-  if (typeof projectDir === "string" && projectDir !== "") return projectDir;
-  return fallbackCwd;
+  const cwd = typeof input === 'object' && input !== null ? /** @type {{ cwd?: unknown }} */ (input).cwd : undefined
+  if (typeof cwd === 'string' && cwd !== '') return cwd
+  const projectDir = env.CLAUDE_PROJECT_DIR
+  if (typeof projectDir === 'string' && projectDir !== '') return projectDir
+  return fallbackCwd
 }
 
 /**
@@ -128,21 +117,21 @@ export function resolveRoot(input, env, fallbackCwd) {
  */
 export function runGit(args, cwd = process.cwd()) {
   try {
-    return execFileSync("git", args, {
+    return execFileSync('git', args, {
       cwd,
-      encoding: "utf8",
+      encoding: 'utf8',
       timeout: 5000,
       // A non-repo `cwd` is an expected case, not an error worth printing.
-      stdio: ["ignore", "pipe", "ignore"],
-    }).replace(/\s+$/, "");
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).replace(/\s+$/, '')
   } catch {
-    return null;
+    return null
   }
 }
 
 /** @returns {string} current branch, "" if unavailable */
 export function currentBranch(cwd = process.cwd()) {
-  return runGit(["rev-parse", "--abbrev-ref", "HEAD"], cwd) ?? "";
+  return runGit(['rev-parse', '--abbrev-ref', 'HEAD'], cwd) ?? ''
 }
 
 /**
@@ -158,21 +147,18 @@ export function currentBranch(cwd = process.cwd()) {
  *   omitted
  * @returns {string}
  */
-export function currentWorktree(
-  cwd = process.cwd(),
-  toplevel = runGit(["rev-parse", "--show-toplevel"], cwd),
-) {
-  if (toplevel === null || toplevel === "") return cwd;
-  const cdup = runGit(["rev-parse", "--show-cdup"], cwd);
+export function currentWorktree(cwd = process.cwd(), toplevel = runGit(['rev-parse', '--show-toplevel'], cwd)) {
+  if (toplevel === null || toplevel === '') return cwd
+  const cdup = runGit(['rev-parse', '--show-cdup'], cwd)
   if (cdup !== null) {
-    const logical = resolve(cwd, cdup);
+    const logical = resolve(cwd, cdup)
     try {
-      if (realpathSync(logical) === realpathSync(toplevel)) return logical;
+      if (realpathSync(logical) === realpathSync(toplevel)) return logical
     } catch {
       // Fall through to git's own answer.
     }
   }
-  return toplevel;
+  return toplevel
 }
 
 /**
@@ -181,11 +167,11 @@ export function currentWorktree(
  *   `N`=unsigned, ...), or null if no commits/not a repo.
  */
 export function lastCommitInfo(cwd = process.cwd()) {
-  const raw = runGit(["log", "-1", "--format=%H%x09%G?"], cwd);
-  if (raw === null || raw === "") return null;
-  const [sha, signature] = raw.split("\t");
-  if (!sha) return null;
-  return { sha, signature: signature ?? "N" };
+  const raw = runGit(['log', '-1', '--format=%H%x09%G?'], cwd)
+  if (raw === null || raw === '') return null
+  const [sha, signature] = raw.split('\t')
+  if (!sha) return null
+  return { sha, signature: signature ?? 'N' }
 }
 
 /**
@@ -195,10 +181,10 @@ export function lastCommitInfo(cwd = process.cwd()) {
  *   missing), so a failure is never mistaken for "clean".
  */
 export function uncommittedFiles(cwd = process.cwd()) {
-  const raw = runGit(["status", "--porcelain"], cwd);
-  if (raw === null) return null;
-  if (raw === "") return [];
-  return raw.split("\n").filter((line) => line.length > 0);
+  const raw = runGit(['status', '--porcelain'], cwd)
+  if (raw === null) return null
+  if (raw === '') return []
+  return raw.split('\n').filter(line => line.length > 0)
 }
 
 /**
@@ -210,20 +196,18 @@ export function uncommittedFiles(cwd = process.cwd()) {
  * @returns {string[]} repo-relative paths, sorted
  */
 export function findScratchJournals(repoRoot) {
-  const tmpDir = join(repoRoot, "tmp");
-  if (!existsSync(tmpDir)) return [];
-  let entries;
+  const tmpDir = join(repoRoot, 'tmp')
+  if (!existsSync(tmpDir)) return []
+  let entries
   try {
-    entries = readdirSync(tmpDir, { withFileTypes: true });
+    entries = readdirSync(tmpDir, { withFileTypes: true })
   } catch {
-    return [];
+    return []
   }
   return entries
-    .filter(
-      (e) => e.isFile() && /journal/i.test(e.name) && e.name.endsWith(".md"),
-    )
-    .map((e) => `tmp/${e.name}`)
-    .sort();
+    .filter(e => e.isFile() && /journal/i.test(e.name) && e.name.endsWith('.md'))
+    .map(e => `tmp/${e.name}`)
+    .sort()
 }
 
 /**
@@ -235,10 +219,7 @@ export function findScratchJournals(repoRoot) {
  *   currentWorktree when omitted
  * @returns {Record<string, unknown>}
  */
-export function buildHandoff(
-  cwd = process.cwd(),
-  worktree = currentWorktree(cwd),
-) {
+export function buildHandoff(cwd = process.cwd(), worktree = currentWorktree(cwd)) {
   return {
     capturedAt: new Date().toISOString(),
     branch: currentBranch(cwd),
@@ -246,7 +227,7 @@ export function buildHandoff(
     lastCommit: lastCommitInfo(cwd),
     uncommittedFiles: uncommittedFiles(cwd),
     journals: findScratchJournals(worktree),
-  };
+  }
 }
 
 /**
@@ -258,13 +239,11 @@ export function buildHandoff(
  */
 function reportNotWritten(reason) {
   try {
-    process.stderr.write(
-      `write-compact-handoff: handoff not written (${reason})\n`,
-    );
+    process.stderr.write(`write-compact-handoff: handoff not written (${reason})\n`)
   } catch {
     // A broken stderr must not turn an advisory hook into a failing one.
   }
-  return null;
+  return null
 }
 
 /**
@@ -283,52 +262,40 @@ function reportNotWritten(reason) {
  *   (reported as one stderr line) -- never throws (advisory-only).
  */
 export function writeHandoff(input, env, fallbackCwd) {
-  let partialPath = null;
+  let partialPath = null
   try {
-    const root = resolveRoot(input, env, fallbackCwd);
+    const root = resolveRoot(input, env, fallbackCwd)
     if (!existsSync(root)) {
-      return reportNotWritten("target directory does not exist");
+      return reportNotWritten('target directory does not exist')
     }
-    const gitToplevel = runGit(["rev-parse", "--show-toplevel"], root);
-    if (gitToplevel === null || gitToplevel === "") {
-      return reportNotWritten("not a git repository");
+    const gitToplevel = runGit(['rev-parse', '--show-toplevel'], root)
+    if (gitToplevel === null || gitToplevel === '') {
+      return reportNotWritten('not a git repository')
     }
-    const toplevel = currentWorktree(root, gitToplevel);
-    const sessionId =
-      typeof input === "object" && input !== null
-        ? /** @type {{ session_id?: unknown }} */ (input).session_id
-        : undefined;
+    const toplevel = currentWorktree(root, gitToplevel)
+    const sessionId = typeof input === 'object' && input !== null ? /** @type {{ session_id?: unknown }} */ (input).session_id : undefined
     const handoff = {
       ...buildHandoff(toplevel, toplevel),
-      sessionId: typeof sessionId === "string" ? sessionId : null,
-    };
-    const handoffPath = join(toplevel, handoffRelPath(sessionId));
-    mkdirSync(join(toplevel, "tmp"), { recursive: true });
-    partialPath = `${handoffPath}.${process.pid}.partial`;
-    writeFileSync(partialPath, `${JSON.stringify(handoff, null, 2)}\n`);
-    renameSync(partialPath, handoffPath);
-    partialPath = null;
-    return handoffPath;
+      sessionId: typeof sessionId === 'string' ? sessionId : null,
+    }
+    const handoffPath = join(toplevel, handoffRelPath(sessionId))
+    mkdirSync(join(toplevel, 'tmp'), { recursive: true })
+    partialPath = `${handoffPath}.${process.pid}.partial`
+    writeFileSync(partialPath, `${JSON.stringify(handoff, null, 2)}\n`)
+    renameSync(partialPath, handoffPath)
+    partialPath = null
+    return handoffPath
   } catch (error) {
     if (partialPath !== null) {
       try {
-        unlinkSync(partialPath);
+        unlinkSync(partialPath)
       } catch {
         // Best-effort -- a leftover `.partial` never matches the reinject scan.
       }
     }
     // Advisory-only -- never block or fail a compaction over this.
-    const code =
-      typeof error === "object" && error !== null && "code" in error
-        ? error.code
-        : undefined;
-    return reportNotWritten(
-      typeof code === "string"
-        ? code
-        : error instanceof Error
-          ? error.message
-          : String(error),
-    );
+    const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined
+    return reportNotWritten(typeof code === 'string' ? code : error instanceof Error ? error.message : String(error))
   }
 }
 
@@ -339,9 +306,9 @@ export function writeHandoff(input, env, fallbackCwd) {
 // never run -- exit 0.
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -349,15 +316,15 @@ function isEntryPoint() {
 if (isEntryPoint()) {
   // Read the payload for `cwd`/`session_id`; a malformed payload degrades to
   // `{}` (CLAUDE_PROJECT_DIR / process.cwd(), legacy unkeyed file).
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  let input;
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  let input
   try {
-    input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    input = JSON.parse(Buffer.concat(chunks).toString('utf8'))
   } catch {
-    input = {};
+    input = {}
   }
 
-  writeHandoff(input, process.env, process.cwd());
-  process.exit(0);
+  writeHandoff(input, process.env, process.cwd())
+  process.exit(0)
 }

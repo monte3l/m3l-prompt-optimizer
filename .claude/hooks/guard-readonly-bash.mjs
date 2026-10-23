@@ -89,18 +89,18 @@
  * with, so each is judged against an ALLOWLIST of its read-only flags
  * (GIT_BRANCH_READ_FLAGS, GIT_TAG_READ_FLAGS) -- anything else blocks.
  */
-import process from "node:process";
-import { existsSync, readdirSync, readFileSync, realpathSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import { WRITER_SPOKES } from "./lib/agent-roster.mjs";
+import process from 'node:process'
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+import { WRITER_SPOKES } from './lib/agent-roster.mjs'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 /**
@@ -113,16 +113,16 @@ async function readStdin() {
  * correctly against `WRITER_SPOKES` and the incoming `agent_type`.
  */
 function frontmatterName(filePath) {
-  const content = readFileSync(filePath, "utf8")
-    .replace(/^\uFEFF/, "") // a leading BOM (a realistic artifact of a Windows editor)
-    .replace(/\r\n/g, "\n");
-  const match = content.match(/^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)/);
-  if (match === null) return undefined;
-  const nameLine = match[1].split("\n").find((line) => /^name:\s*/.test(line));
+  const content = readFileSync(filePath, 'utf8')
+    .replace(/^\uFEFF/, '') // a leading BOM (a realistic artifact of a Windows editor)
+    .replace(/\r\n/g, '\n')
+  const match = content.match(/^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)/)
+  if (match === null) return undefined
+  const nameLine = match[1].split('\n').find(line => /^name:\s*/.test(line))
   return nameLine
-    ?.replace(/^name:\s*/, "")
+    ?.replace(/^name:\s*/, '')
     .trim()
-    .replace(/^["']|["']$/g, "");
+    .replace(/^["']|["']$/g, '')
 }
 
 /**
@@ -133,14 +133,14 @@ function frontmatterName(filePath) {
  * @returns {Set<string>}
  */
 export function readOnlyAgentNames(agentsDir) {
-  const names = new Set();
-  if (!existsSync(agentsDir)) return names;
+  const names = new Set()
+  if (!existsSync(agentsDir)) return names
   for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
-    const name = frontmatterName(join(agentsDir, entry.name));
-    if (name !== undefined && !WRITER_SPOKES.has(name)) names.add(name);
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue
+    const name = frontmatterName(join(agentsDir, entry.name))
+    if (name !== undefined && !WRITER_SPOKES.has(name)) names.add(name)
   }
-  return names;
+  return names
 }
 
 /**
@@ -157,15 +157,15 @@ export function readOnlyAgentNames(agentsDir) {
  * @returns {number}
  */
 function chainOperatorLength(command, i) {
-  const c = command[i];
-  const next = command[i + 1];
-  if ((c === "&" && next === "&") || (c === "|" && next === "|")) return 2;
-  if (c === "|") return command[i - 1] === ">" ? 0 : 1;
-  if (c === "&") {
-    const prev = command[i - 1];
-    return prev === ">" || prev === "<" || next === ">" ? 0 : 1;
+  const c = command[i]
+  const next = command[i + 1]
+  if ((c === '&' && next === '&') || (c === '|' && next === '|')) return 2
+  if (c === '|') return command[i - 1] === '>' ? 0 : 1
+  if (c === '&') {
+    const prev = command[i - 1]
+    return prev === '>' || prev === '<' || next === '>' ? 0 : 1
   }
-  return c === ";" || c === "\n" ? 1 : 0;
+  return c === ';' || c === '\n' ? 1 : 0
 }
 
 /**
@@ -184,35 +184,35 @@ function chainOperatorLength(command, i) {
  */
 function splitUnquoted(command, boundaryAt) {
   /** @type {string[]} */
-  const parts = [];
-  let start = 0;
+  const parts = []
+  let start = 0
   /** @type {"'" | '"' | "$'" | undefined} */
-  let quote;
+  let quote
   for (let i = 0; i < command.length; i++) {
-    const c = command[i];
+    const c = command[i]
     if (quote === "'") {
-      if (c === "'") quote = undefined;
-    } else if (c === "\\") {
-      i++; // escapes the next character (outside single quotes)
+      if (c === "'") quote = undefined
+    } else if (c === '\\') {
+      i++ // escapes the next character (outside single quotes)
     } else if (quote !== undefined) {
-      if (c === quote.at(-1)) quote = undefined;
+      if (c === quote.at(-1)) quote = undefined
     } else if (c === "'" || c === '"') {
-      quote = c;
-    } else if (c === "$" && command[i + 1] === "'") {
-      quote = "$'";
-      i++;
+      quote = c
+    } else if (c === '$' && command[i + 1] === "'") {
+      quote = "$'"
+      i++
     } else {
-      const length = boundaryAt(command, i);
+      const length = boundaryAt(command, i)
       if (length > 0) {
-        parts.push(command.slice(start, i));
-        i += length - 1;
-        start = i + 1;
+        parts.push(command.slice(start, i))
+        i += length - 1
+        start = i + 1
       }
     }
   }
-  if (quote !== undefined) return undefined;
-  parts.push(command.slice(start));
-  return parts;
+  if (quote !== undefined) return undefined
+  parts.push(command.slice(start))
+  return parts
 }
 
 /**
@@ -226,10 +226,8 @@ function splitUnquoted(command, boundaryAt) {
  * @returns {string[]}
  */
 function segments(command) {
-  const parts =
-    splitUnquoted(command, chainOperatorLength) ??
-    command.split(/&&|\|\||(?<!>)\||(?<![<>])&(?!>)|;|\n/);
-  return parts.map((s) => s.trim());
+  const parts = splitUnquoted(command, chainOperatorLength) ?? command.split(/&&|\|\||(?<!>)\||(?<![<>])&(?!>)|;|\n/)
+  return parts.map(s => s.trim())
 }
 
 /**
@@ -242,10 +240,8 @@ function segments(command) {
  * @returns {string[]}
  */
 function words(segment) {
-  const parts =
-    splitUnquoted(segment, (s, i) => (/\s/.test(s[i]) ? 1 : 0)) ??
-    segment.split(/\s+/);
-  return parts.filter(Boolean);
+  const parts = splitUnquoted(segment, (s, i) => (/\s/.test(s[i]) ? 1 : 0)) ?? segment.split(/\s+/)
+  return parts.filter(Boolean)
 }
 
 /**
@@ -261,33 +257,33 @@ function words(segment) {
  * @returns {string | undefined}
  */
 function shellWordValue(word) {
-  if (word.includes("$'")) return undefined;
-  let out = "";
+  if (word.includes("$'")) return undefined
+  let out = ''
   for (let i = 0; i < word.length; i++) {
-    const c = word[i];
+    const c = word[i]
     if (c === "'") {
-      const end = word.indexOf("'", i + 1);
-      if (end === -1) return undefined;
-      out += word.slice(i + 1, end);
-      i = end;
+      const end = word.indexOf("'", i + 1)
+      if (end === -1) return undefined
+      out += word.slice(i + 1, end)
+      i = end
     } else if (c === '"') {
-      let j = i + 1;
+      let j = i + 1
       for (; j < word.length && word[j] !== '"'; j++) {
-        if (word[j] === "\\" && j + 1 < word.length) {
-          if ('$`"\\\n'.includes(word[j + 1])) j++;
+        if (word[j] === '\\' && j + 1 < word.length) {
+          if ('$`"\\\n'.includes(word[j + 1])) j++
         }
-        out += word[j];
+        out += word[j]
       }
-      if (j >= word.length) return undefined;
-      i = j;
-    } else if (c === "\\") {
-      i++;
-      out += word[i] ?? "";
+      if (j >= word.length) return undefined
+      i = j
+    } else if (c === '\\') {
+      i++
+      out += word[i] ?? ''
     } else {
-      out += c;
+      out += c
     }
   }
-  return out;
+  return out
 }
 
 /**
@@ -303,28 +299,28 @@ function shellWordValue(word) {
 
 /** @param {string} raw @returns {Word} */
 function toWord(raw) {
-  return { raw, value: shellWordValue(raw) };
+  return { raw, value: shellWordValue(raw) }
 }
 
 /** The text a word is matched by: its unquoted value, else its raw text. */
 function wordText(word) {
-  return word.value ?? word.raw;
+  return word.value ?? word.raw
 }
 
 /** Strip a leading path (e.g. `/usr/bin/rm` -> `rm`) for verb comparison. */
 function baseName(token) {
-  const parts = token.split(/[/\\]/);
-  return parts[parts.length - 1];
+  const parts = token.split(/[/\\]/)
+  return parts[parts.length - 1]
 }
 
 // A "prefix verb" runs some OTHER command as its argument rather than
 // mutating anything itself -- without unwrapping it, the real command
 // hidden behind `sudo rm -rf x`, `env FOO=bar rm x`, or `xargs rm` is never
 // inspected at all, and passes as if it were the harmless prefix alone.
-const PREFIX_VERBS = new Set(["sudo", "env", "xargs", "command"]);
+const PREFIX_VERBS = new Set(['sudo', 'env', 'xargs', 'command'])
 
 // A leading `VAR=value` environment assignment; group 1 is the name.
-const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=/;
+const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=/
 
 /**
  * The index just past the `VAR=value` assignment starting at `tokens[i]`. The
@@ -337,36 +333,25 @@ const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=/;
  * @returns {number}
  */
 function assignmentEnd(tokens, i) {
-  const value = tokens[i].slice(tokens[i].indexOf("=") + 1);
-  const quote = value[0];
-  if (quote !== "'" && quote !== '"') return i + 1;
-  if (value.length > 1 && value.endsWith(quote)) return i + 1;
-  let j = i + 1;
-  while (j < tokens.length && !tokens[j].endsWith(quote)) j++;
-  return Math.min(j + 1, tokens.length);
+  const value = tokens[i].slice(tokens[i].indexOf('=') + 1)
+  const quote = value[0]
+  if (quote !== "'" && quote !== '"') return i + 1
+  if (value.length > 1 && value.endsWith(quote)) return i + 1
+  let j = i + 1
+  while (j < tokens.length && !tokens[j].endsWith(quote)) j++
+  return Math.min(j + 1, tokens.length)
 }
 
 // Shell reserved words (and `time`, a keyword in bash/zsh) that can sit in
 // front of the command a segment actually runs -- `do rm x`, `then rm x`,
 // `! rm x`, `{ rm x`, `time rm x`. `segments` already splits on `;`/newline,
 // so each of these is the first word of the segment holding its command.
-const LEADING_RESERVED_WORDS = new Set([
-  "if",
-  "then",
-  "else",
-  "elif",
-  "do",
-  "while",
-  "until",
-  "!",
-  "{",
-  "time",
-]);
+const LEADING_RESERVED_WORDS = new Set(['if', 'then', 'else', 'elif', 'do', 'while', 'until', '!', '{', 'time'])
 
 // Reserved words opening a segment that names no command at all: the `for
 // NAME in WORDS` / `select NAME in WORDS` / `case WORD in` header. The body
 // that follows (`do ...`, `pattern) ...`) is its own segment.
-const HEADER_RESERVED_WORDS = new Set(["for", "select", "case"]);
+const HEADER_RESERVED_WORDS = new Set(['for', 'select', 'case'])
 
 /**
  * Drops a chain of leading shell reserved words/grouping tokens
@@ -387,65 +372,65 @@ const HEADER_RESERVED_WORDS = new Set(["for", "select", "case"]);
  */
 function stripPrefixVerbs(input) {
   /** @type {string[]} */
-  const assignments = [];
-  const words = [...input];
-  const raw = (k) => words[k].raw;
-  const text = (k) => wordText(words[k]);
-  let i = 0;
-  const skipAssignments = (allowFlags) => {
+  const assignments = []
+  const words = [...input]
+  const raw = k => words[k].raw
+  const text = k => wordText(words[k])
+  let i = 0
+  const skipAssignments = allowFlags => {
     while (i < words.length) {
-      const name = ASSIGNMENT.exec(raw(i))?.[1];
+      const name = ASSIGNMENT.exec(raw(i))?.[1]
       if (name !== undefined) {
-        assignments.push(name);
+        assignments.push(name)
         i = assignmentEnd(
-          words.map((w) => w.raw),
+          words.map(w => w.raw),
           i,
-        );
-      } else if (allowFlags && text(i).startsWith("-")) {
-        i++;
+        )
+      } else if (allowFlags && text(i).startsWith('-')) {
+        i++
       } else {
-        return;
+        return
       }
     }
-  };
+  }
   const skipReserved = () => {
     while (i < words.length) {
-      const glued = /^[({]+/.exec(raw(i))?.[0];
+      const glued = /^[({]+/.exec(raw(i))?.[0]
       if (glued !== undefined) {
-        const rest = raw(i).slice(glued.length);
-        if (rest === "") i++;
-        else words[i] = toWord(rest);
+        const rest = raw(i).slice(glued.length)
+        if (rest === '') i++
+        else words[i] = toWord(rest)
       } else if (LEADING_RESERVED_WORDS.has(text(i))) {
-        const isTime = text(i) === "time";
-        i++;
-        if (isTime) while (i < words.length && text(i).startsWith("-")) i++;
+        const isTime = text(i) === 'time'
+        i++
+        if (isTime) while (i < words.length && text(i).startsWith('-')) i++
       } else {
-        return;
+        return
       }
     }
-  };
+  }
   for (;;) {
-    const start = i;
-    skipReserved();
+    const start = i
+    skipReserved()
     if (i < words.length && HEADER_RESERVED_WORDS.has(text(i))) {
-      return { words: [], assignments };
+      return { words: [], assignments }
     }
-    skipAssignments(false);
+    skipAssignments(false)
     if (i < words.length && PREFIX_VERBS.has(baseName(text(i)))) {
       // `command -v`/`-V` looks a name up (prints its path/description) and
       // does not run it -- unlike every other use of `command` (and unlike
       // `sudo`/`env`/`xargs`), the following token is never executed, so it
       // must not be peeled off as the "real" verb.
-      const next = i + 1 < words.length ? text(i + 1) : undefined;
-      if (baseName(text(i)) === "command" && (next === "-v" || next === "-V")) {
-        break;
+      const next = i + 1 < words.length ? text(i + 1) : undefined
+      if (baseName(text(i)) === 'command' && (next === '-v' || next === '-V')) {
+        break
       }
-      i++;
-      skipAssignments(true);
+      i++
+      skipAssignments(true)
     }
-    if (i === start) break;
+    if (i === start) break
   }
-  return { words: words.slice(i), assignments };
+  return { words: words.slice(i), assignments }
 }
 
 /**
@@ -458,20 +443,16 @@ function stripPrefixVerbs(input) {
  * @returns {Word[]}
  */
 function stripClosingParens(list) {
-  const last = list.at(-1);
-  if (last === undefined) return list;
-  let end = last.raw;
-  const opens = (end.match(/\(/g) ?? []).length;
-  while (
-    end.endsWith(")") &&
-    !end.endsWith("\\)") &&
-    (end.match(/\)/g) ?? []).length > opens
-  ) {
-    end = end.slice(0, -1);
+  const last = list.at(-1)
+  if (last === undefined) return list
+  let end = last.raw
+  const opens = (end.match(/\(/g) ?? []).length
+  while (end.endsWith(')') && !end.endsWith('\\)') && (end.match(/\)/g) ?? []).length > opens) {
+    end = end.slice(0, -1)
   }
-  if (end === last.raw) return list;
-  const head = list.slice(0, -1);
-  return end === "" ? head : [...head, toWord(end)];
+  if (end === last.raw) return list
+  const head = list.slice(0, -1)
+  return end === '' ? head : [...head, toWord(end)]
 }
 
 // Global/wrapper flags -- per verb -- that consume the FOLLOWING token as
@@ -483,23 +464,23 @@ function stripClosingParens(list) {
 // parseTokens already skips as "starts with -").
 const FLAGS_WITH_VALUE = {
   git: new Set([
-    "-c",
-    "-C",
-    "--git-dir",
-    "--work-tree",
-    "--namespace",
-    "--exec-path",
-    "--config-env",
-    "--attr-source",
-    "--super-prefix",
-    "--list-cmds",
+    '-c',
+    '-C',
+    '--git-dir',
+    '--work-tree',
+    '--namespace',
+    '--exec-path',
+    '--config-env',
+    '--attr-source',
+    '--super-prefix',
+    '--list-cmds',
   ]),
-  pnpm: new Set(["-C", "--dir", "-F", "--filter", "--filter-prod"]),
-  npm: new Set(["-C", "--prefix"]),
+  pnpm: new Set(['-C', '--dir', '-F', '--filter', '--filter-prod']),
+  npm: new Set(['-C', '--prefix']),
   // `npx -p pkg tool` / `pnpm dlx --package pkg tool`: the package to fetch,
   // not the tool that runs.
-  npx: new Set(["-p", "--package"]),
-};
+  npx: new Set(['-p', '--package']),
+}
 
 /**
  * Index of the first positional (non-flag) token at or after `start`,
@@ -512,18 +493,18 @@ const FLAGS_WITH_VALUE = {
  * @returns {number}
  */
 function firstPositionalIndex(tokens, start, valueFlags) {
-  let j = start;
+  let j = start
   while (j < tokens.length) {
-    const t = tokens[j];
+    const t = tokens[j]
     if (valueFlags.has(t)) {
-      j += 2; // skip the flag AND its value token
-    } else if (t.startsWith("-")) {
-      j += 1; // a flag that doesn't consume a following value
+      j += 2 // skip the flag AND its value token
+    } else if (t.startsWith('-')) {
+      j += 1 // a flag that doesn't consume a following value
     } else {
-      return j;
+      return j
     }
   }
-  return -1;
+  return -1
 }
 
 /**
@@ -539,27 +520,23 @@ function firstPositionalIndex(tokens, start, valueFlags) {
  * @returns {{ verb: string, sub: string | undefined, subIndex: number, words: Word[], tokens: string[], assignments: string[] }}
  */
 function parseTokens(rawWords) {
-  const { words, assignments } = stripPrefixVerbs(rawWords);
-  const tokens = words.map(wordText);
+  const { words, assignments } = stripPrefixVerbs(rawWords)
+  const tokens = words.map(wordText)
   if (tokens.length === 0) {
     return {
-      verb: "",
+      verb: '',
       sub: undefined,
       subIndex: -1,
       words,
       tokens,
       assignments,
-    };
+    }
   }
 
-  const verb = baseName(tokens[0]);
-  const subIndex = firstPositionalIndex(
-    tokens,
-    1,
-    FLAGS_WITH_VALUE[verb] ?? new Set(),
-  );
-  const sub = subIndex === -1 ? undefined : tokens[subIndex];
-  return { verb, sub, subIndex, words, tokens, assignments };
+  const verb = baseName(tokens[0])
+  const subIndex = firstPositionalIndex(tokens, 1, FLAGS_WITH_VALUE[verb] ?? new Set())
+  const sub = subIndex === -1 ? undefined : tokens[subIndex]
+  return { verb, sub, subIndex, words, tokens, assignments }
 }
 
 // Mutating subcommands per top-level verb (e.g. "git" -> "commit"). A verb
@@ -567,62 +544,62 @@ function parseTokens(rawWords) {
 // MUTATING_VERBS below instead.
 const MUTATING_SUBCOMMANDS = {
   git: new Set([
-    "add",
-    "commit",
-    "push",
-    "pull", // fetch + merge/rebase into the working tree
-    "merge",
-    "rebase",
-    "cherry-pick",
-    "reset",
-    "checkout",
-    "switch",
-    "branch",
-    "tag",
-    "clean",
-    "apply",
-    "am",
-    "revert",
-    "restore",
-    "rm",
-    "mv",
-    "gc",
-    "worktree", // add/remove mutate the tree layout
-    "config",
-    "stash", // push/pop/drop/apply mutate the working tree; the read-only
+    'add',
+    'commit',
+    'push',
+    'pull', // fetch + merge/rebase into the working tree
+    'merge',
+    'rebase',
+    'cherry-pick',
+    'reset',
+    'checkout',
+    'switch',
+    'branch',
+    'tag',
+    'clean',
+    'apply',
+    'am',
+    'revert',
+    'restore',
+    'rm',
+    'mv',
+    'gc',
+    'worktree', // add/remove mutate the tree layout
+    'config',
+    'stash', // push/pop/drop/apply mutate the working tree; the read-only
     // forms (`stash list`/`stash show`) are exempted by
     // READ_ONLY_GIT_FORMS below.
   ]),
   pnpm: new Set([
-    "install",
-    "i",
-    "add",
-    "remove",
-    "rm",
-    "update",
-    "publish",
-    "version",
-    "link",
-    "unlink",
-    "format", // the conventional formatter-write script
-    "lint:fix", // the conventional lint-autofix script
+    'install',
+    'i',
+    'add',
+    'remove',
+    'rm',
+    'update',
+    'publish',
+    'version',
+    'link',
+    'unlink',
+    'format', // the conventional formatter-write script
+    'lint:fix', // the conventional lint-autofix script
   ]),
   npm: new Set([
-    "install",
-    "i",
-    "add",
-    "remove",
-    "rm",
-    "uninstall",
-    "update",
-    "publish",
-    "version",
-    "link",
-    "unlink",
-    "format",
-    "lint:fix",
+    'install',
+    'i',
+    'add',
+    'remove',
+    'rm',
+    'uninstall',
+    'update',
+    'publish',
+    'version',
+    'link',
+    'unlink',
+    'format',
+    'lint:fix',
   ]),
-};
+}
 
 /** @typedef {{ value: "none" | "optional" | "required", pattern?: true }} ReadFlagSpec */
 
@@ -636,59 +613,59 @@ const MUTATING_SUBCOMMANDS = {
 // newb` creates `newb`).
 const GIT_BRANCH_READ_FLAGS = new Map(
   /** @type {[string, ReadFlagSpec][]} */ ([
-    ["--show-current", { value: "none" }],
-    ["-a", { value: "none" }],
-    ["--all", { value: "none" }],
-    ["-r", { value: "none" }],
-    ["--remotes", { value: "none" }],
-    ["-v", { value: "none" }],
-    ["-vv", { value: "none" }],
-    ["--verbose", { value: "none" }],
-    ["-i", { value: "none" }],
-    ["--ignore-case", { value: "none" }],
-    ["--omit-empty", { value: "none" }],
-    ["--no-color", { value: "none" }],
-    ["--no-column", { value: "none" }],
-    ["--no-abbrev", { value: "none" }],
-    ["--color", { value: "optional" }],
-    ["--column", { value: "optional" }],
-    ["--abbrev", { value: "optional" }],
-    ["--sort", { value: "required" }],
-    ["--format", { value: "required" }],
-    ["--list", { value: "none", pattern: true }],
-    ["-l", { value: "none", pattern: true }],
-    ["--merged", { value: "optional", pattern: true }],
-    ["--no-merged", { value: "optional", pattern: true }],
-    ["--contains", { value: "optional", pattern: true }],
-    ["--no-contains", { value: "optional", pattern: true }],
-    ["--points-at", { value: "optional", pattern: true }],
+    ['--show-current', { value: 'none' }],
+    ['-a', { value: 'none' }],
+    ['--all', { value: 'none' }],
+    ['-r', { value: 'none' }],
+    ['--remotes', { value: 'none' }],
+    ['-v', { value: 'none' }],
+    ['-vv', { value: 'none' }],
+    ['--verbose', { value: 'none' }],
+    ['-i', { value: 'none' }],
+    ['--ignore-case', { value: 'none' }],
+    ['--omit-empty', { value: 'none' }],
+    ['--no-color', { value: 'none' }],
+    ['--no-column', { value: 'none' }],
+    ['--no-abbrev', { value: 'none' }],
+    ['--color', { value: 'optional' }],
+    ['--column', { value: 'optional' }],
+    ['--abbrev', { value: 'optional' }],
+    ['--sort', { value: 'required' }],
+    ['--format', { value: 'required' }],
+    ['--list', { value: 'none', pattern: true }],
+    ['-l', { value: 'none', pattern: true }],
+    ['--merged', { value: 'optional', pattern: true }],
+    ['--no-merged', { value: 'optional', pattern: true }],
+    ['--contains', { value: 'optional', pattern: true }],
+    ['--no-contains', { value: 'optional', pattern: true }],
+    ['--points-at', { value: 'optional', pattern: true }],
   ]),
-);
+)
 
 // `git tag`'s counterpart of GIT_BRANCH_READ_FLAGS. `-n` also accepts attached
 // digits (`-n3`), normalized to `-n` before lookup by isReadOnlyGitTag; it
 // implies list mode, so a following positional is a pattern.
 const GIT_TAG_READ_FLAGS = new Map(
   /** @type {[string, ReadFlagSpec][]} */ ([
-    ["-n", { value: "none", pattern: true }],
-    ["-i", { value: "none" }],
-    ["--ignore-case", { value: "none" }],
-    ["--omit-empty", { value: "none" }],
-    ["--no-color", { value: "none" }],
-    ["--no-column", { value: "none" }],
-    ["--color", { value: "optional" }],
-    ["--column", { value: "optional" }],
-    ["--sort", { value: "required" }],
-    ["--format", { value: "required" }],
-    ["-l", { value: "none", pattern: true }],
-    ["--list", { value: "none", pattern: true }],
-    ["--contains", { value: "optional", pattern: true }],
-    ["--no-contains", { value: "optional", pattern: true }],
-    ["--merged", { value: "optional", pattern: true }],
-    ["--no-merged", { value: "optional", pattern: true }],
-    ["--points-at", { value: "required", pattern: true }],
+    ['-n', { value: 'none', pattern: true }],
+    ['-i', { value: 'none' }],
+    ['--ignore-case', { value: 'none' }],
+    ['--omit-empty', { value: 'none' }],
+    ['--no-color', { value: 'none' }],
+    ['--no-column', { value: 'none' }],
+    ['--color', { value: 'optional' }],
+    ['--column', { value: 'optional' }],
+    ['--sort', { value: 'required' }],
+    ['--format', { value: 'required' }],
+    ['-l', { value: 'none', pattern: true }],
+    ['--list', { value: 'none', pattern: true }],
+    ['--contains', { value: 'optional', pattern: true }],
+    ['--no-contains', { value: 'optional', pattern: true }],
+    ['--merged', { value: 'optional', pattern: true }],
+    ['--no-merged', { value: 'optional', pattern: true }],
+    ['--points-at', { value: 'required', pattern: true }],
   ]),
-);
+)
 
 /**
  * Whether `<args>` is a read-only invocation per the flag allowlist `table`:
@@ -702,36 +679,36 @@ const GIT_TAG_READ_FLAGS = new Map(
  * @returns {boolean}
  */
 function isReadOnlyByFlagTable(table, args) {
-  let listMode = false;
-  let positional = false;
+  let listMode = false
+  let positional = false
   for (let k = 0; k < args.length; k++) {
-    const arg = args[k];
-    if (!arg.startsWith("-")) {
-      positional = true;
-      continue;
+    const arg = args[k]
+    if (!arg.startsWith('-')) {
+      positional = true
+      continue
     }
-    const eq = arg.indexOf("=");
-    const name = eq === -1 ? arg : arg.slice(0, eq);
-    const spec = table.get(name);
-    if (spec === undefined) return false; // unknown, abbreviated or bundled
-    if (eq !== -1 && spec.value === "none") return false;
-    if (spec.pattern === true) listMode = true;
-    if (eq === -1 && spec.value === "required") k++; // consume its value
+    const eq = arg.indexOf('=')
+    const name = eq === -1 ? arg : arg.slice(0, eq)
+    const spec = table.get(name)
+    if (spec === undefined) return false // unknown, abbreviated or bundled
+    if (eq !== -1 && spec.value === 'none') return false
+    if (spec.pattern === true) listMode = true
+    if (eq === -1 && spec.value === 'required') k++ // consume its value
   }
-  return !positional || listMode;
+  return !positional || listMode
 }
 
 /** `git branch <args>` is read-only, per GIT_BRANCH_READ_FLAGS. */
 function isReadOnlyGitBranch(args) {
-  return isReadOnlyByFlagTable(GIT_BRANCH_READ_FLAGS, args);
+  return isReadOnlyByFlagTable(GIT_BRANCH_READ_FLAGS, args)
 }
 
 /** `git tag <args>` is read-only, per GIT_TAG_READ_FLAGS (`-n3` -> `-n`). */
 function isReadOnlyGitTag(args) {
   return isReadOnlyByFlagTable(
     GIT_TAG_READ_FLAGS,
-    args.map((a) => (/^-n\d+$/.test(a) ? "-n" : a)),
-  );
+    args.map(a => (/^-n\d+$/.test(a) ? '-n' : a)),
+  )
 }
 
 // `git -c <key>=<value>` / `--config-env=<key>=<env>` keys that make git run
@@ -762,9 +739,9 @@ const GIT_EXEC_CONFIG_KEY = new RegExp(
     // Not an exec key itself, but pulls in an arbitrary config file that can
     // set any of the keys above.
     String.raw`include(?:if\..+)?\.path`,
-  ].join("|")})$`,
-  "i",
-);
+  ].join('|')})$`,
+  'i',
+)
 
 /**
  * The first `-c`/`--config-env` override among git's global flags (the
@@ -775,17 +752,17 @@ const GIT_EXEC_CONFIG_KEY = new RegExp(
  */
 function gitExecConfigKey(globalTokens) {
   for (let k = 0; k < globalTokens.length; k++) {
-    const t = globalTokens[k];
-    let assignment;
-    if (t === "-c" || t === "--config-env") assignment = globalTokens[k + 1];
-    else if (t.startsWith("--config-env=")) {
-      assignment = t.slice("--config-env=".length);
+    const t = globalTokens[k]
+    let assignment
+    if (t === '-c' || t === '--config-env') assignment = globalTokens[k + 1]
+    else if (t.startsWith('--config-env=')) {
+      assignment = t.slice('--config-env='.length)
     }
-    if (assignment === undefined) continue;
-    const key = assignment.replace(/^["']/, "").split("=")[0];
-    if (GIT_EXEC_CONFIG_KEY.test(key)) return key;
+    if (assignment === undefined) continue
+    const key = assignment.replace(/^["']/, '').split('=')[0]
+    if (GIT_EXEC_CONFIG_KEY.test(key)) return key
   }
-  return undefined;
+  return undefined
 }
 
 // Environment variables that make git run an arbitrary command (a diff
@@ -796,48 +773,38 @@ function gitExecConfigKey(globalTokens) {
 // (GIT_CONFIG, GIT_CONFIG_GLOBAL/SYSTEM, GIT_CONFIG_NOSYSTEM), which can set
 // any exec key. Any value blocks -- the variable itself is the exec surface.
 const GIT_EXEC_ENV =
-  /^GIT_(?:EXTERNAL_DIFF|PAGER|EDITOR|SEQUENCE_EDITOR|SSH|SSH_COMMAND|ASKPASS|PROXY_COMMAND|CONFIG|CONFIG_GLOBAL|CONFIG_SYSTEM|CONFIG_NOSYSTEM|CONFIG_PARAMETERS|CONFIG_COUNT|CONFIG_KEY_\w+|CONFIG_VALUE_\w+|EXEC_PATH|TEMPLATE_DIR)$/;
+  /^GIT_(?:EXTERNAL_DIFF|PAGER|EDITOR|SEQUENCE_EDITOR|SSH|SSH_COMMAND|ASKPASS|PROXY_COMMAND|CONFIG|CONFIG_GLOBAL|CONFIG_SYSTEM|CONFIG_NOSYSTEM|CONFIG_PARAMETERS|CONFIG_COUNT|CONFIG_KEY_\w+|CONFIG_VALUE_\w+|EXEC_PATH|TEMPLATE_DIR)$/
 
-const GIT_CONFIG_READ = new Set([
-  "--get",
-  "--get-all",
-  "--get-regexp",
-  "--get-urlmatch",
-  "--list",
-  "-l",
-]);
+const GIT_CONFIG_READ = new Set(['--get', '--get-all', '--get-regexp', '--get-urlmatch', '--list', '-l'])
 const GIT_CONFIG_WRITE = new Set([
-  "--add",
-  "--unset",
-  "--unset-all",
-  "--replace-all",
-  "--edit",
-  "-e",
-  "--rename-section",
-  "--remove-section",
-]);
+  '--add',
+  '--unset',
+  '--unset-all',
+  '--replace-all',
+  '--edit',
+  '-e',
+  '--rename-section',
+  '--remove-section',
+])
 // Git subcommands in MUTATING_SUBCOMMANDS that also have a purely read-only
 // form, keyed by subcommand: each predicate takes the subcommand's arguments
 // and returns true only for that read-only form. Anything else falls through
 // to the MUTATING_SUBCOMMANDS block, so an unrecognized flag still blocks.
 const READ_ONLY_GIT_FORMS = {
   branch: isReadOnlyGitBranch,
-  worktree: (args) => args[0] === "list",
-  stash: (args) => args[0] === "list" || args[0] === "show",
+  worktree: args => args[0] === 'list',
+  stash: args => args[0] === 'list' || args[0] === 'show',
   // The legacy read flags (`--get`, `--list`, ...) or git >= 2.46's `get`/
   // `list` subcommands; its `set`/`unset`/`edit`/... subcommands and the
   // legacy `git config <name> <value>` write form still block.
-  config: (args) =>
-    (args[0] === "get" ||
-      args[0] === "list" ||
-      args.some((a) => GIT_CONFIG_READ.has(a))) &&
-    !args.some((a) => GIT_CONFIG_WRITE.has(a)),
+  config: args =>
+    (args[0] === 'get' || args[0] === 'list' || args.some(a => GIT_CONFIG_READ.has(a))) && !args.some(a => GIT_CONFIG_WRITE.has(a)),
   tag: isReadOnlyGitTag,
-};
+}
 
 // ESLint's one writing flag: `--fix` (or `--fix=<bool>`). `--fix-dry-run`
 // only reports, and `--fix-type` merely narrows what a `--fix` would touch.
-const ESLINT_FIX = /^--fix(?:=.*)?$/;
+const ESLINT_FIX = /^--fix(?:=.*)?$/
 
 /**
  * Whether a formatter/linter invocation writes files: `prettier --write`/`-w`
@@ -848,16 +815,16 @@ const ESLINT_FIX = /^--fix(?:=.*)?$/;
  * @returns {string | undefined} the offending flag, or undefined
  */
 function fixerWriteFlag(verb, tokens) {
-  if (verb === "prettier") {
-    return tokens.find((t) => t === "--write" || t === "-w");
+  if (verb === 'prettier') {
+    return tokens.find(t => t === '--write' || t === '-w')
   }
-  if (verb === "eslint") return tokens.find((t) => ESLINT_FIX.test(t));
-  return undefined;
+  if (verb === 'eslint') return tokens.find(t => ESLINT_FIX.test(t))
+  return undefined
 }
 
 // A package spec pinned to a version or dist-tag (`prettier@3`,
 // `@scope/tool@latest`); group 1 is the bare package name, scope kept.
-const PINNED_PACKAGE = /^(@[^/@]+\/[^@]+|[^@]+)@[^/]+$/;
+const PINNED_PACKAGE = /^(@[^/@]+\/[^@]+|[^@]+)@[^/]+$/
 
 /**
  * The tool a wrapper runs, with any `@<version>` pin stripped, so a pinned
@@ -867,64 +834,38 @@ const PINNED_PACKAGE = /^(@[^/@]+\/[^@]+|[^@]+)@[^/]+$/;
  * @returns {string}
  */
 function unpinnedToolName(spec) {
-  return PINNED_PACKAGE.exec(spec)?.[1] ?? spec;
+  return PINNED_PACKAGE.exec(spec)?.[1] ?? spec
 }
 
 // Conventional lint/format script names (run via `pnpm <script>`/`pnpm run
 // <script>`/`npm run <script>`) that forward trailing args to a fixer-capable
 // tool, and the fixer flags that make one of them rewrite files.
-const FIXER_SCRIPTS = new Set([
-  "lint",
-  "eslint",
-  "prettier",
-  "format",
-  "lint:fix",
-]);
-const FIXER_FLAG = /^(?:--fix(?:=.*)?|--write|-w)$/;
+const FIXER_SCRIPTS = new Set(['lint', 'eslint', 'prettier', 'format', 'lint:fix'])
+const FIXER_FLAG = /^(?:--fix(?:=.*)?|--write|-w)$/
 
 // Verbs that mutate the filesystem regardless of subcommand.
-const MUTATING_VERBS = new Set([
-  "rm",
-  "mv",
-  "cp",
-  "mkdir",
-  "rmdir",
-  "touch",
-  "chmod",
-  "chown",
-  "truncate",
-  "dd",
-  "tee",
-]);
+const MUTATING_VERBS = new Set(['rm', 'mv', 'cp', 'mkdir', 'rmdir', 'touch', 'chmod', 'chown', 'truncate', 'dd', 'tee'])
 
 // `bash -c '...'`/`sh -c "..."` (optionally through a path like
 // `/bin/bash`), capturing the quoted argument's inner content.
-const SHELL_DASH_C =
-  /^\s*(?:\S*\/)?(?:bash|sh)\s+(?:-\S+\s+)*-c\s+(['"])([\s\S]*)\1\s*$/;
+const SHELL_DASH_C = /^\s*(?:\S*\/)?(?:bash|sh)\s+(?:-\S+\s+)*-c\s+(['"])([\s\S]*)\1\s*$/
 
 // Shells whose `-c <command>` is unwrapped wherever a verb resolves to one --
 // behind a prefix verb, an env assignment or a tool wrapper -- and the shell
 // options that consume the following token as their value.
-const SHELLS = new Set(["bash", "sh", "zsh", "dash", "ksh"]);
-const SHELL_VALUE_OPTIONS = new Set([
-  "-o",
-  "+o",
-  "-O",
-  "+O",
-  "--rcfile",
-  "--init-file",
-]);
+const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh'])
+const SHELL_VALUE_OPTIONS = new Set(['-o', '+o', '-O', '+O', '--rcfile', '--init-file'])
 
 // A tool wrapper's own flags that run their value(s) as a shell command
 // (`npx -c '<cmd>'`, `npm exec --call '<cmd>'`, `pnpm exec --shell-mode
 // <cmd>`), keyed by wrapper verb.
-const NPX_SHELL_FLAGS = new Set(["-c", "--call"]);
+const NPX_SHELL_FLAGS = new Set(['-c', '--call'])
 const WRAPPER_SHELL_FLAGS = {
   npx: NPX_SHELL_FLAGS,
   pnpx: NPX_SHELL_FLAGS,
   npm: NPX_SHELL_FLAGS,
-  pnpm: new Set(["-c", "--shell-mode"]),
-};
+  pnpm: new Set(['-c', '--shell-mode']),
+}
 
 /**
  * For a shell invocation (`tokens[0]` is the shell), the index of the command
@@ -937,19 +878,19 @@ const WRAPPER_SHELL_FLAGS = {
  * @returns {number}
  */
 function shellCommandIndex(tokens) {
-  let dashC = false;
+  let dashC = false
   for (let j = 1; j < tokens.length; j++) {
-    const t = tokens[j];
-    if (t === "--" || t === "-") return dashC ? j + 1 : -1;
+    const t = tokens[j]
+    if (t === '--' || t === '-') return dashC ? j + 1 : -1
     if (SHELL_VALUE_OPTIONS.has(t)) {
-      j++; // skip the option's value
+      j++ // skip the option's value
     } else if (/^[-+]/.test(t)) {
-      if (/^-[A-Za-z]*c[A-Za-z]*$/.test(t)) dashC = true;
+      if (/^-[A-Za-z]*c[A-Za-z]*$/.test(t)) dashC = true
     } else {
-      return dashC ? j : -1;
+      return dashC ? j : -1
     }
   }
-  return dashC ? tokens.length : -1;
+  return dashC ? tokens.length : -1
 }
 
 /**
@@ -963,19 +904,19 @@ function shellCommandIndex(tokens) {
  * @returns {{ blocked: true, reason: string } | undefined}
  */
 function classifyNestedCommand(via, payloadWords) {
-  const values = payloadWords.map((w) => w.value);
+  const values = payloadWords.map(w => w.value)
   if (values.length === 0 || values.includes(undefined)) {
     return {
       blocked: true,
       reason: `runs a nested shell command via ${via} whose command string could not be read`,
-    };
+    }
   }
-  const nested = classifyBashCommand(values.join(" "));
-  if (!nested.blocked) return undefined;
+  const nested = classifyBashCommand(values.join(' '))
+  if (!nested.blocked) return undefined
   return {
     blocked: true,
     reason: `runs a nested shell command via ${via} that ${nested.reason}`,
-  };
+  }
 }
 
 /**
@@ -986,26 +927,26 @@ function classifyNestedCommand(via, payloadWords) {
  * @returns {{ blocked: boolean, reason?: string }}
  */
 export function classifyBashCommand(command) {
-  if (typeof command !== "string" || command.trim().length === 0) {
-    return { blocked: false };
+  if (typeof command !== 'string' || command.trim().length === 0) {
+    return { blocked: false }
   }
 
   for (const segment of segments(command)) {
-    if (segment.length === 0) continue;
+    if (segment.length === 0) continue
 
     // `bash -c '<command>'`/`sh -c '<command>'` runs the quoted argument as
     // its own shell command -- unwrap and recurse rather than reading only
     // the outer `bash -c` invocation, which is never itself mutating.
-    const nestedShell = SHELL_DASH_C.exec(segment);
+    const nestedShell = SHELL_DASH_C.exec(segment)
     if (nestedShell !== null) {
-      const nested = classifyBashCommand(nestedShell[2]);
+      const nested = classifyBashCommand(nestedShell[2])
       if (nested.blocked) {
         return {
           blocked: true,
           reason: `runs a nested shell command via -c that ${nested.reason}`,
-        };
+        }
       }
-      continue;
+      continue
     }
 
     // Write-redirection to a real file (not a discard target). No digit
@@ -1034,37 +975,30 @@ export function classifyBashCommand(command) {
     // redirect that follows (`echo $'\'' > out #'`).
     const scan = segment.includes("$'")
       ? segment
-      : segment.replace(
-          /(>{1,2}[|&]?\s*)?(?<!\\)(?:'[^']*'|"(?:\\[\s\S]|[^\\"])*")/g,
-          (match, redirectOp) =>
-            redirectOp !== undefined ||
-            (match[0] === '"' && /\$\(|`/.test(match))
-              ? match
-              : `${match[0]}${match[0]}`,
-        );
+      : segment.replace(/(>{1,2}[|&]?\s*)?(?<!\\)(?:'[^']*'|"(?:\\[\s\S]|[^\\"])*")/g, (match, redirectOp) =>
+          redirectOp !== undefined || (match[0] === '"' && /\$\(|`/.test(match)) ? match : `${match[0]}${match[0]}`,
+        )
     //
     // `>&word` is fd duplication only when `word` is a digit string or `-`
     // (`>&2`, `2>&1`, `>&-`); any other word is a FILE both stdout and stderr
     // are written to (`>&out.txt`, `>& out.txt`), so that form is matched as
     // its own operator and its target examined like any other.
     for (const redirect of scan.matchAll(/(>&|>{1,2}\|?)\s*([^\s&|;]+)/g)) {
-      const target = redirect[2].replace(/^["']|["']$/g, "");
-      if (redirect[1] === ">&" && /^(?:\d+|-)$/.test(target)) continue;
+      const target = redirect[2].replace(/^["']|["']$/g, '')
+      if (redirect[1] === '>&' && /^(?:\d+|-)$/.test(target)) continue
       if (!/^(\/dev\/null|nul)$/i.test(target)) {
         return {
           blocked: true,
           reason: `writes to "${redirect[2]}" via shell redirection ("${redirect[0]}")`,
-        };
+        }
       }
     }
 
-    const verdict = classifyTokens(
-      stripClosingParens(words(segment).map(toWord)),
-    );
-    if (verdict !== undefined) return verdict;
+    const verdict = classifyTokens(stripClosingParens(words(segment).map(toWord)))
+    if (verdict !== undefined) return verdict
   }
 
-  return { blocked: false };
+  return { blocked: false }
 }
 
 /**
@@ -1078,23 +1012,17 @@ export function classifyBashCommand(command) {
  * @returns {number}
  */
 function wrappedToolStart(verb, sub, subIndex) {
-  if (verb === "npx" || verb === "pnpx") return 1;
-  if (verb === "pnpm" && (sub === "dlx" || sub === "exec")) {
-    return subIndex + 1;
+  if (verb === 'npx' || verb === 'pnpx') return 1
+  if (verb === 'pnpm' && (sub === 'dlx' || sub === 'exec')) {
+    return subIndex + 1
   }
-  if (verb === "npm" && (sub === "exec" || sub === "x")) return subIndex + 1;
-  return -1;
+  if (verb === 'npm' && (sub === 'exec' || sub === 'x')) return subIndex + 1
+  return -1
 }
 
 // `npm exec`'s own value flags on top of npm's global ones: the workspace to
 // run in and the package to fetch, neither of them the tool that runs.
-const NPM_EXEC_FLAGS_WITH_VALUE = new Set([
-  ...FLAGS_WITH_VALUE.npm,
-  "-w",
-  "--workspace",
-  "-p",
-  "--package",
-]);
+const NPM_EXEC_FLAGS_WITH_VALUE = new Set([...FLAGS_WITH_VALUE.npm, '-w', '--workspace', '-p', '--package'])
 
 /**
  * The value-taking flags of a tool wrapper (see wrappedToolStart), keyed by
@@ -1106,12 +1034,12 @@ const NPM_EXEC_FLAGS_WITH_VALUE = new Set([
  */
 function wrapperValueFlags(verb) {
   switch (verb) {
-    case "pnpm":
-      return FLAGS_WITH_VALUE.pnpm;
-    case "npm":
-      return NPM_EXEC_FLAGS_WITH_VALUE;
+    case 'pnpm':
+      return FLAGS_WITH_VALUE.pnpm
+    case 'npm':
+      return NPM_EXEC_FLAGS_WITH_VALUE
     default:
-      return FLAGS_WITH_VALUE.npx;
+      return FLAGS_WITH_VALUE.npx
   }
 }
 
@@ -1130,74 +1058,64 @@ function wrapperValueFlags(verb) {
  * @returns {{ blocked: true, reason: string } | undefined}
  */
 function classifyTokens(rawWords, inherited = []) {
-  const parsed = parseTokens(rawWords);
-  const { verb, sub, subIndex, words, tokens } = parsed;
-  const assignments = [...inherited, ...parsed.assignments];
-  if (tokens.length === 0) return undefined;
+  const parsed = parseTokens(rawWords)
+  const { verb, sub, subIndex, words, tokens } = parsed
+  const assignments = [...inherited, ...parsed.assignments]
+  if (tokens.length === 0) return undefined
   const unreadable =
     words[0].value === undefined
       ? words[0]
-      : subIndex !== -1 &&
-          MUTATING_SUBCOMMANDS[verb] !== undefined &&
-          words[subIndex].value === undefined
+      : subIndex !== -1 && MUTATING_SUBCOMMANDS[verb] !== undefined && words[subIndex].value === undefined
         ? words[subIndex]
-        : undefined;
+        : undefined
   if (unreadable !== undefined) {
     return {
       blocked: true,
       reason: `runs a command word (${unreadable.raw}) whose quoting could not be read`,
-    };
+    }
   }
-  if (verb.length === 0) return undefined;
+  if (verb.length === 0) return undefined
 
   if (SHELLS.has(verb)) {
-    const commandIndex = shellCommandIndex(tokens);
+    const commandIndex = shellCommandIndex(tokens)
     if (commandIndex !== -1) {
-      return classifyNestedCommand(
-        `${verb} -c`,
-        words.slice(commandIndex, commandIndex + 1),
-      );
+      return classifyNestedCommand(`${verb} -c`, words.slice(commandIndex, commandIndex + 1))
     }
   }
 
   if (MUTATING_VERBS.has(verb)) {
-    return { blocked: true, reason: `runs "${verb}", a mutating command` };
+    return { blocked: true, reason: `runs "${verb}", a mutating command` }
   }
 
-  if (
-    verb === "sed" &&
-    tokens.some(
-      (t) => t === "-i" || t.startsWith("-i") || t.startsWith("--in-place"),
-    )
-  ) {
-    return { blocked: true, reason: `runs "sed -i" (in-place edit)` };
+  if (verb === 'sed' && tokens.some(t => t === '-i' || t.startsWith('-i') || t.startsWith('--in-place'))) {
+    return { blocked: true, reason: `runs "sed -i" (in-place edit)` }
   }
 
-  if (verb === "find") {
-    if (tokens.includes("-delete")) {
+  if (verb === 'find') {
+    if (tokens.includes('-delete')) {
       return {
         blocked: true,
         reason: `runs "find ... -delete", which mutates matched files`,
-      };
+      }
     }
-    const execIndex = tokens.indexOf("-exec");
+    const execIndex = tokens.indexOf('-exec')
     if (execIndex !== -1) {
-      const execVerb = baseName(tokens[execIndex + 1] ?? "");
+      const execVerb = baseName(tokens[execIndex + 1] ?? '')
       if (MUTATING_VERBS.has(execVerb)) {
         return {
           blocked: true,
           reason: `runs "find ... -exec ${execVerb}", which mutates matched files`,
-        };
+        }
       }
     }
   }
 
-  const writeFlag = fixerWriteFlag(verb, tokens);
+  const writeFlag = fixerWriteFlag(verb, tokens)
   if (writeFlag !== undefined) {
     return {
       blocked: true,
       reason: `runs "${verb} ${writeFlag}", which rewrites files`,
-    };
+    }
   }
 
   // A wrapper that runs another tool -- judge `<tool> ...` itself, its
@@ -1206,51 +1124,41 @@ function classifyTokens(rawWords, inherited = []) {
   // whose value is a shell command rather than a tool name. pnpm's shell-mode
   // flag is a boolean switch, not a value flag, so its command is the words
   // from the tool position on -- any `--filter x` between them is pnpm's own.
-  const wrapperEnd = wrappedToolStart(verb, sub, subIndex);
+  const wrapperEnd = wrappedToolStart(verb, sub, subIndex)
   if (wrapperEnd !== -1) {
-    const toolIndex = firstPositionalIndex(
-      tokens,
-      wrapperEnd,
-      wrapperValueFlags(verb),
-    );
-    const flagsEnd = toolIndex === -1 ? tokens.length : toolIndex;
+    const toolIndex = firstPositionalIndex(tokens, wrapperEnd, wrapperValueFlags(verb))
+    const flagsEnd = toolIndex === -1 ? tokens.length : toolIndex
     for (let k = wrapperEnd; k < flagsEnd; k++) {
-      const t = tokens[k];
+      const t = tokens[k]
       if (WRAPPER_SHELL_FLAGS[verb].has(t)) {
-        const payloadStart = verb === "pnpm" ? flagsEnd : k + 1;
-        return classifyNestedCommand(`${verb} ${t}`, words.slice(payloadStart));
+        const payloadStart = verb === 'pnpm' ? flagsEnd : k + 1
+        return classifyNestedCommand(`${verb} ${t}`, words.slice(payloadStart))
       }
-      if (t.startsWith("--call=") && WRAPPER_SHELL_FLAGS[verb].has("--call")) {
-        const inline = t.slice("--call=".length);
+      if (t.startsWith('--call=') && WRAPPER_SHELL_FLAGS[verb].has('--call')) {
+        const inline = t.slice('--call='.length)
         return classifyNestedCommand(`${verb} --call`, [
           {
             raw: inline,
             value: words[k].value === undefined ? undefined : inline,
           },
           ...words.slice(k + 1),
-        ]);
+        ])
       }
     }
     // pnpm also accepts its shell-mode flag BEFORE the subcommand (`pnpm -c
     // exec '<cmd>'`, `pnpm -r --shell-mode exec ...`): the words from the
     // tool position on are then the shell command.
-    const preFlag =
-      verb === "pnpm"
-        ? tokens.slice(1, subIndex).find((t) => WRAPPER_SHELL_FLAGS.pnpm.has(t))
-        : undefined;
+    const preFlag = verb === 'pnpm' ? tokens.slice(1, subIndex).find(t => WRAPPER_SHELL_FLAGS.pnpm.has(t)) : undefined
     if (preFlag !== undefined) {
-      return classifyNestedCommand(
-        `pnpm ${preFlag} ${sub}`,
-        toolIndex === -1 ? [] : words.slice(toolIndex),
-      );
+      return classifyNestedCommand(`pnpm ${preFlag} ${sub}`, toolIndex === -1 ? [] : words.slice(toolIndex))
     }
-    if (toolIndex === -1) return undefined;
+    if (toolIndex === -1) return undefined
     // Fail closed: a "tool" word holding whitespace once unquoted (`npx "rm
     // -rf src"`) is no package name -- judge it as the command string it is.
-    if (/\s/.test(words[toolIndex].value ?? "")) {
-      return classifyNestedCommand(verb, words.slice(toolIndex));
+    if (/\s/.test(words[toolIndex].value ?? '')) {
+      return classifyNestedCommand(verb, words.slice(toolIndex))
     }
-    const tool = unpinnedToolName(tokens[toolIndex]);
+    const tool = unpinnedToolName(tokens[toolIndex])
     return classifyTokens(
       [
         {
@@ -1260,70 +1168,64 @@ function classifyTokens(rawWords, inherited = []) {
         ...words.slice(toolIndex + 1),
       ],
       assignments,
-    );
+    )
   }
-  if (verb === "pnpm" && (sub === "eslint" || sub === "prettier")) {
-    return classifyTokens(words.slice(subIndex), assignments);
+  if (verb === 'pnpm' && (sub === 'eslint' || sub === 'prettier')) {
+    return classifyTokens(words.slice(subIndex), assignments)
   }
 
-  if (verb === "git") {
-    const envVar = assignments.find((name) => GIT_EXEC_ENV.test(name));
+  if (verb === 'git') {
+    const envVar = assignments.find(name => GIT_EXEC_ENV.test(name))
     if (envVar !== undefined) {
       return {
         blocked: true,
         reason: `sets ${envVar}, which makes git run an arbitrary command`,
-      };
+      }
     }
-    const key = gitExecConfigKey(
-      tokens.slice(1, subIndex === -1 ? undefined : subIndex),
-    );
+    const key = gitExecConfigKey(tokens.slice(1, subIndex === -1 ? undefined : subIndex))
     if (key !== undefined) {
       return {
         blocked: true,
         reason: `overrides git config "${key}", which runs an arbitrary command`,
-      };
+      }
     }
   }
 
-  const mutatingSubs = MUTATING_SUBCOMMANDS[verb];
-  if (mutatingSubs === undefined || sub === undefined) return undefined;
-  const args = tokens.slice(subIndex + 1);
+  const mutatingSubs = MUTATING_SUBCOMMANDS[verb]
+  if (mutatingSubs === undefined || sub === undefined) return undefined
+  const args = tokens.slice(subIndex + 1)
 
-  if (verb === "git" && READ_ONLY_GIT_FORMS[sub]?.(args) === true) {
-    return undefined;
+  if (verb === 'git' && READ_ONLY_GIT_FORMS[sub]?.(args) === true) {
+    return undefined
   }
 
   // `pnpm run <script>`/`npm run <script>`: the script name is what runs, so
   // classify it as the subcommand (`run format` blocks, `run format:check`
   // does not). Its own value flags (`run --filter x format`) are skipped.
   const scriptIndex =
-    (verb === "pnpm" || verb === "npm") && sub === "run"
-      ? firstPositionalIndex(tokens, subIndex + 1, FLAGS_WITH_VALUE[verb])
-      : subIndex;
-  if (scriptIndex === -1) return undefined;
-  const script = tokens[scriptIndex];
-  const shown = sub === script ? sub : `run ${script}`;
+    (verb === 'pnpm' || verb === 'npm') && sub === 'run' ? firstPositionalIndex(tokens, subIndex + 1, FLAGS_WITH_VALUE[verb]) : subIndex
+  if (scriptIndex === -1) return undefined
+  const script = tokens[scriptIndex]
+  const shown = sub === script ? sub : `run ${script}`
   if (mutatingSubs.has(script)) {
     return {
       blocked: true,
       reason: `runs "${verb} ${shown}", a mutating subcommand`,
-    };
+    }
   }
 
   // A lint/format script handed a fixer flag (`pnpm lint --fix`, `pnpm run
   // lint -- --fix`) forwards it to the tool, which then rewrites files.
   if (FIXER_SCRIPTS.has(script)) {
-    const fixFlag = tokens
-      .slice(scriptIndex + 1)
-      .find((t) => FIXER_FLAG.test(t));
+    const fixFlag = tokens.slice(scriptIndex + 1).find(t => FIXER_FLAG.test(t))
     if (fixFlag !== undefined) {
       return {
         blocked: true,
         reason: `runs "${verb} ${shown} ${fixFlag}", which rewrites files`,
-      };
+      }
     }
   }
-  return undefined;
+  return undefined
 }
 
 // Deliberately inlined in every hook rather than shared, so each hook stays
@@ -1333,38 +1235,36 @@ function classifyTokens(rawWords, inherited = []) {
 // never run -- exit 0.
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
   } catch {
-    return false;
+    return false
   }
 }
 
 // Only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  const raw = await readStdin();
-  let input;
+  const raw = await readStdin()
+  let input
   try {
-    input = JSON.parse(raw);
+    input = JSON.parse(raw)
   } catch {
-    process.exit(0);
+    process.exit(0)
   }
 
-  const agentType = input.agent_type;
-  if (typeof agentType !== "string" || agentType.length === 0) process.exit(0);
+  const agentType = input.agent_type
+  if (typeof agentType !== 'string' || agentType.length === 0) process.exit(0)
 
-  let readOnly;
+  let readOnly
   try {
-    readOnly = readOnlyAgentNames(join(root, ".claude/agents"));
+    readOnly = readOnlyAgentNames(join(root, '.claude/agents'))
   } catch {
-    process.exit(0); // can't determine the roster -> defer, don't wedge
+    process.exit(0) // can't determine the roster -> defer, don't wedge
   }
-  if (!readOnly.has(agentType)) process.exit(0);
+  if (!readOnly.has(agentType)) process.exit(0)
 
-  const command = input.tool_input?.command;
-  const verdict = classifyBashCommand(
-    typeof command === "string" ? command : "",
-  );
-  if (!verdict.blocked) process.exit(0);
+  const command = input.tool_input?.command
+  const verdict = classifyBashCommand(typeof command === 'string' ? command : '')
+  if (!verdict.blocked) process.exit(0)
 
   process.stderr.write(`\
 [guard-readonly-bash] Blocked: the "${agentType}" spoke is read-only, but this
@@ -1374,6 +1274,6 @@ Read-only spokes may inspect the repo but never mutate it -- that separation
 is structural (CLAUDE.md § Agent Operating Model). If this command is
 genuinely needed, hand the mutation back to the hub or to a writer spoke
 (code-implementer / test-author) instead of running it here.
-`);
-  process.exit(2);
+`)
+  process.exit(2)
 }

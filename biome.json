@@ -1,0 +1,45 @@
+{
+  "$schema": "./.github/test-tools/node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "hooks/**",
+      "tests/**",
+      "scripts/**",
+      "evals/**/*.ts",
+      "evals/**/*.mjs",
+      "fuzz/**",
+      ".claude/hooks/**",
+      "docs.config.mjs",
+      "!**/.claude-plugin/types"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 140
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noTemplateCurlyInString": "off",
+        "noControlCharactersInRegex": "off",
+        "noShadowRestrictedNames": "off",
+        "noAssignInExpressions": "off"
+      }
+    }
+  },
+  "assist": { "enabled": false }
+}

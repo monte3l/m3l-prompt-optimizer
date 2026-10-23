@@ -2,8 +2,14 @@
 import { readFileSync } from 'node:fs'
 
 const OWNERS = [
-  [/(^|\/)design\/source\//, 'design/source/ is vendored m3l-design: re-run bin/sync-design.sh vX.Y.Z from an m3l-design checkout, and keep local changes in design/local/'],
-  [/(^|\/)design\/tokens\.css$/, 'design/tokens.css is generated: edit design/source/dtcg/ upstream, then run bin/sync-design.sh vX.Y.Z . from an m3l-design checkout'],
+  [
+    /(^|\/)design\/source\//,
+    'design/source/ is vendored m3l-design: re-run bin/sync-design.sh vX.Y.Z from an m3l-design checkout, and keep local changes in design/local/',
+  ],
+  [
+    /(^|\/)design\/tokens\.css$/,
+    'design/tokens.css is generated: edit design/source/dtcg/ upstream, then run bin/sync-design.sh vX.Y.Z . from an m3l-design checkout',
+  ],
   [/(^|\/)\.claude-plugin\/types\//, '.claude-plugin/types/ is written by the engine when the mod is installed from this folder'],
 ]
 

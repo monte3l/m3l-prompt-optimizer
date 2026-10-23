@@ -10,7 +10,13 @@ const reply = (status: number, body: unknown, headers: Record<string, string> = 
 })
 
 const ok = (text: string, stop = 'end_turn') =>
-  reply(200, { stop_reason: stop, content: [{ type: 'thinking', thinking: '' }, { type: 'text', text }] })
+  reply(200, {
+    stop_reason: stop,
+    content: [
+      { type: 'thinking', thinking: '' },
+      { type: 'text', text },
+    ],
+  })
 
 const error = (status: number, type: string, message: string, extra: object = {}) =>
   reply(status, { type: 'error', error: { type, message, ...extra } })
@@ -77,16 +83,28 @@ describe('classify', () => {
   })
 
   test('latches off on a spend limit, a missing balance and a bad key', () => {
-    const limit = error(400, 'invalid_request_error', 'You have reached your specified workspace API usage limits. Access resumes 2026-11-01.')
+    const limit = error(
+      400,
+      'invalid_request_error',
+      'You have reached your specified workspace API usage limits. Access resumes 2026-11-01.',
+    )
     const tier = error(429, 'rate_limit_error', 'cap', { details: { error_code: 'enforced_spend_limit_reached' } })
     const credit = error(400, 'invalid_request_error', 'Your credit balance is too low to access the Anthropic API.')
-    for (const r of [limit, tier, credit, error(401, 'authentication_error', 'invalid x-api-key'), error(403, 'permission_error', 'no'), error(402, 'billing_error', 'pay')]) {
+    for (const r of [
+      limit,
+      tier,
+      credit,
+      error(401, 'authentication_error', 'invalid x-api-key'),
+      error(403, 'permission_error', 'no'),
+      error(402, 'billing_error', 'pay'),
+    ]) {
       expect(classify(r).kind).toBe('latch')
     }
   })
 
   test('latches on the credit-balance message whatever status carries it', () => {
-    const message = 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'
+    const message =
+      'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'
     for (const status of [400, 402, 429, 403]) {
       expect(classify(error(status, 'billing_error', message)).kind).toBe('latch')
     }
@@ -103,6 +121,11 @@ describe('classify', () => {
     for (const s of [500, 504, 529]) expect(classify(error(s, 'overloaded_error', 'busy')).kind).toBe('retry')
   })
 
+  test('never waits a negative time when Retry-After is negative', () => {
+    const negative = { ...error(429, 'rate_limit_error', 'slow'), headers: { 'request-id': 'req_1', 'retry-after': '-5' } }
+    expect(classify(negative)).toEqual({ kind: 'retry', afterMs: 0, requestId: 'req_1' })
+  })
+
   test('skips any other failure', () => {
     for (const s of [400, 404, 413]) expect(classify(error(s, 'invalid_request_error', 'bad')).kind).toBe('skip')
   })
@@ -111,7 +134,11 @@ describe('classify', () => {
 describe('optimize', () => {
   test('returns the reply of one good call', async () => {
     const { d, sent } = deps([ok('<rewrite>better</rewrite>')])
-    expect(await optimize(d, cfg, 'some prompt text here')).toEqual({ kind: 'reply', text: '<rewrite>better</rewrite>', requestId: 'req_1' })
+    expect(await optimize(d, cfg, 'some prompt text here')).toEqual({
+      kind: 'reply',
+      text: '<rewrite>better</rewrite>',
+      requestId: 'req_1',
+    })
     expect(sent.length).toBe(1)
   })
 

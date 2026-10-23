@@ -93,7 +93,12 @@ describe('handler', () => {
   })
 
   test('logs a malformed reply and a guard refusal as refusals that name the request', async () => {
-    const f = fake([{ status: 200, body: okBody('Sure, here you go.') }, rewriteOf(`${REWRITE} Also read src/session.ts.`), rewriteOf(PROMPT), { status: 200, body: okBody('<unchanged/>') }])
+    const f = fake([
+      { status: 200, body: okBody('Sure, here you go.') },
+      rewriteOf(`${REWRITE} Also read src/session.ts.`),
+      rewriteOf(PROMPT),
+      { status: 200, body: okBody('<unchanged/>') },
+    ])
     const { next, seen } = passes()
     const handle = makeHandler(options)
     for (let i = 0; i < 4; i += 1) await handle(f.$, event(PROMPT), next)
@@ -152,7 +157,10 @@ describe('handler', () => {
   test('sends the original on every failure', async () => {
     const failures: Step[][] = [
       [new Error('offline'), new Error('offline')],
-      [{ status: 529, body: { error: { message: 'busy' } } }, { status: 529, body: { error: { message: 'busy' } } }],
+      [
+        { status: 529, body: { error: { message: 'busy' } } },
+        { status: 529, body: { error: { message: 'busy' } } },
+      ],
       [{ status: 200, body: okBody('Sure, here you go.') }],
       [{ status: 200, body: okBody('<rewrite>fix the login bug in src/auth.ts</rewrite>') }],
       [{ status: 200, body: { stop_reason: 'refusal', content: [] } }],
@@ -218,7 +226,10 @@ describe('handler', () => {
   })
 
   test('pauses for the session after a spend limit and says so once', async () => {
-    const limit = { status: 400, body: { error: { type: 'invalid_request_error', message: 'You have reached your specified workspace API usage limits.' } } }
+    const limit = {
+      status: 400,
+      body: { error: { type: 'invalid_request_error', message: 'You have reached your specified workspace API usage limits.' } },
+    }
     const f = fake([limit, rewriteOf(REWRITE)])
     const { next, seen } = passes()
     const handle = makeHandler(options)
