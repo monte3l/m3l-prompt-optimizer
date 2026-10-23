@@ -15,8 +15,13 @@ export default {
   pages: [
     { src: 'README.md', out: 'index.html', group: 'Start', label: 'Overview' },
     { src: 'CONTRIBUTING.md', out: 'CONTRIBUTING.html', group: 'Project', label: 'Contributing' },
+    { src: 'GOVERNANCE.md', out: 'GOVERNANCE.html', group: 'Project', label: 'Governance' },
+    { src: 'ROADMAP.md', out: 'ROADMAP.html', group: 'Project', label: 'Roadmap' },
+    { src: 'CODE_OF_CONDUCT.md', out: 'CODE_OF_CONDUCT.html', group: 'Project', label: 'Code of conduct' },
     { src: 'UNVERIFIED.md', out: 'UNVERIFIED.html', group: 'Project', label: 'Open items' },
     { src: 'SECURITY.md', out: 'SECURITY.html', group: 'Security', label: 'Security policy' },
+    { src: 'docs/architecture.md', out: 'docs/architecture.html', group: 'Internals', label: 'Architecture' },
+    { src: 'docs/assurance-case.md', out: 'docs/assurance-case.html', group: 'Security', label: 'Assurance case' },
     { src: 'docs/research-notes.md', out: 'docs/research-notes.html', group: 'Internals', label: 'Research notes' },
     { src: 'evals/results.md', out: 'evals/results.html', group: 'Internals', label: 'Eval results' },
     { src: 'design/README.md', out: 'design/README.html', group: 'Internals', label: 'Design system' },
