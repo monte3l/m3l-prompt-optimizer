@@ -33,6 +33,8 @@ each system-prompt rule to its source.
 | `cd design && shasum -a 256 -c SHA256SUMS` | Fails if anything under `design/source/` or `design/tokens.css` was edited. Update with `bin/sync-design.sh vX.Y.Z .` from an `m3l-design` checkout |
 | `node evals/run.mjs` | Live eval with `ANTHROPIC_API_KEY` set for that one command (see README "Evaluation"). Writes `evals/results.md` |
 
+Scripts need the Node version in `.node-version` (24); `node --test` on `.ts` relies on its type stripping.
+
 Local testing: there is no `marketplace.json` here; the plugin is listed in the `monte3l/m3l-plugins` catalog. Install it with `claude plugin marketplace add monte3l/m3l-plugins` then `claude plugin install m3l-prompt-optimizer@monte3l --scope user`, and load the checkout with `claude --plugin-dir .`; edits apply after `/reload-plugins`. The `--plugin-dir` copy replaces the installed one for the session.
 
 ## Claude Code automations in this folder
@@ -40,7 +42,7 @@ Local testing: there is no `marketplace.json` here; the plugin is listed in the 
 - **`/add-safety-check`** (`.claude/skills/add-safety-check/`): the workflow for a new or reworded gate, guard or client check, with its test, mutant and README rows. It rarely triggers on its own, so invoke it by name. `evals/check-run.mjs` in that folder grades a run's worktree with the repo's own checks.
 - **`/verify`** (`.claude/skills/verify/`): runs the `verify.yml` steps plus `tsc -p .` and reports one table. User-invoked only.
 - **`invariant-reviewer`** (`.claude/agents/`): a read-only reviewer for the invariants in this file. Run it on a diff before opening a PR.
-- **Hooks** (`.claude/settings.json`): a pre-edit hook refuses edits to `design/source/`, `design/tokens.css` and `.claude-plugin/types/`, and a post-edit hook runs `guard-break.mjs --stale-only`. Added by `/customize`: `.claude/hooks/guard-js-extension.mjs` (relative imports in `.ts` need a `.js` specifier), `.claude/hooks/guard-secret-writes.mjs` (no `.env` writes or literal secrets), `.claude/hooks/guard-double-background.mjs`, `.claude/hooks/guard-readonly-bash.mjs` (limits read-only subagents such as `invariant-reviewer` to non-mutating Bash; its roster is `.claude/hooks/lib/agent-roster.mjs`, empty because the repo has no writer agents), the compaction handoff pair `.claude/hooks/write-compact-handoff.mjs` and `.claude/hooks/reinject-compact-handoff.mjs` (they write `tmp/`, which is gitignored), and the statusline scripts `.claude/hooks/statusline.mjs`, `.claude/hooks/statusline-layout.mjs` and `.claude/hooks/subagent-statusline.mjs`.
+- **Hooks** (`.claude/settings.json`): a pre-edit hook (`.claude/hooks/block-generated-edit.mjs`) refuses edits to `design/source/`, `design/tokens.css` and `.claude-plugin/types/`, and a post-edit hook runs `guard-break.mjs --stale-only`. Added by `/customize`: `.claude/hooks/guard-js-extension.mjs` (relative imports in `.ts` need a `.js` specifier), `.claude/hooks/guard-secret-writes.mjs` (no `.env` writes or literal secrets), `.claude/hooks/guard-double-background.mjs`, `.claude/hooks/guard-readonly-bash.mjs` (limits read-only subagents such as `invariant-reviewer` to non-mutating Bash; its roster is `.claude/hooks/lib/agent-roster.mjs`, empty because the repo has no writer agents), the compaction handoff pair `.claude/hooks/write-compact-handoff.mjs` and `.claude/hooks/reinject-compact-handoff.mjs` (they write `tmp/`, which is gitignored), and the statusline scripts `.claude/hooks/statusline.mjs`, `.claude/hooks/statusline-layout.mjs` and `.claude/hooks/subagent-statusline.mjs`.
 - **Git skills** (retargeted from the baseline, so read them before trusting a detail): `.claude/skills/writing-commits/` (Conventional Commits with `git commit -s`, because the DCO lane needs `Signed-off-by`), `.claude/skills/creating-prs/` (the `verify.yml` steps plus `tsc -p .`, then the PR template, then a hand-off with no auto-merge) and `.claude/skills/triaging-ci/` (maps a red run to the `verify.yml` lanes).
 - **Guidance skills**: `.claude/skills/harness-guidance/` and `.claude/skills/typescript-guidance/` check this setup against current Anthropic and TypeScript guidance, tracked in `docs/research/harness-refresh.md` and `docs/research/typescript-refresh.md`. The GitHub skills `.claude/skills/reviewing-dependabot-prs/`, `.claude/skills/triaging-scan-alerts/` and `.claude/skills/watching-pr-checks/` use the `gh` CLI. `.github/workflows/scorecard.yml` needs a public repository or `publish_results: false`.
 
@@ -60,10 +62,11 @@ path sends the original text unchanged (fail open).
 | `hooks/system-prompt.ts` | The rewriter's system prompt |
 | `docs.config.mjs` | The docs site's pages, navigation, exclusions and parity modules. The builder is the docs kit in `design/source/docs-kit/`, vendored from m3l-design |
 | `scripts/doc-parity.mjs`, `scripts/lib/parity-checks.ts` | The README-against-code checks, run by the docs check; the helpers are pure and tested in `tests/parity-checks.test.ts` |
-| `design/` | Vendored m3l-design (`source/`, never hand-edited, including the docs kit), the vendored `tokens.css`, and `local/` for overrides of the kit's page shell (none today) |
+| `design/` | Vendored m3l-design (`source/`, never hand-edited, including the docs kit), the vendored `tokens.css`, and `local/` (create it when needed) for overrides of the kit's page shell |
 | `.github/workflows/docs.yml` | Deploys the site to Cloudflare Workers Static Assets at prompt-optimizer.monte3l.com on every push to `main`, then a `smoke` job compares the live site with the build |
 | `.github/workflows/docs-live.yml` | Daily: rebuilds the site from `main` and compares it with the live site, and compares the plugin manifest's description and homepage with the GitHub repository (keywords too, if the manifest ever gains them) |
 | `.github/workflows/verify.yml` | The required `verify` check: lanes `checks` (offline), `plugin` (the only one that installs Claude Code), `quality` (Biome, coverage and the property tests, installed from `.github/test-tools` with scripts disabled) and `dco`, rolled into one fail-closed `verify` job, the same shape as m3l-groundwork's `ci.yml` |
+| `.github/workflows/commit-lint.yml`, `gitleaks.yml`, `dependency-review.yml` | PR checks outside `verify`: `Commit lint` (PR title and every non-merge commit must be a Conventional Commit) and `Gitleaks` are required by the `main` ruleset; Dependency Review fails on high-severity or disallowed-license dependency changes |
 | `.github/workflows/release.yml` | Calls the org's shared `release-prepare.yml` and `release-finalize.yml`. Between them an `assets` job builds the `git archive` tarball, writes its CycloneDX SBOM with `scripts/release-sbom.mjs`, attests both and attaches them with the provenance bundle to the draft, because immutable releases lock assets at publish. `finalize` runs with `attest: false` |
 | `fuzz/*.fuzz.ts`, `scripts/node-tests.mjs`, `scripts/lib/` | fast-check properties and the `node --test` runner, with the loader and the matcher shim that stand in for the engine's `claude-code/testing`. `scripts/lib/sbom.ts` holds the pure SBOM builder, tested in `tests/sbom.test.ts` |
 | `.github/workflows/environments.yml` | Weekly cleanup of stale GitHub Deployments and Environments. The policy is `.github/environments.json` (`docs-cloudflare` and `env-janitor`); the planner lives in m3l-groundwork and is checked out at a pinned commit. Copied from the org's `workflow-templates/` |
@@ -92,6 +95,12 @@ Constraints that are not obvious from one file:
   rejects all-caps words, `!`, and negative phrasing ("never", "do not",
   "avoid", ...), and checks for specific phrases and examples. `evals/run.mjs`
   refuses to run if an eval prompt appears verbatim as a system-prompt example.
+- **Releases are driven by commit messages.** `fix:` is a patch, `feat:` a minor
+  and `!` a major (release-please). Merge with a merge commit, never a squash.
+  The release PR owns `version` in `.claude-plugin/plugin.json` and
+  `CHANGELOG.md`, so do not hand-edit them. Before merging the release PR, run
+  `node evals/run.mjs --rewrites 3` and commit `evals/results.md`
+  (CONTRIBUTING.md, "Releases").
 - **Latch vs skip.** A spend limit, empty balance or rejected key (401/402/403)
   latches the mod off for the session with one toast. Rate limits, overload,
   network errors and timeouts skip only that prompt.
