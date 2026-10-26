@@ -34,22 +34,45 @@ Read this project's rendered docs site at
 You need [Claude Code](https://docs.claude.com/en/docs/claude-code/overview)
 and an Anthropic account (see [Requirements](#requirements) for versions).
 
-1. Install the mod:
+1. Install the mod. From your shell:
 
+   ```bash
+   claude plugin marketplace add monte3l/m3l-plugins
+   claude plugin install m3l-prompt-optimizer@monte3l
    ```
+
+   Or inside a Claude Code session:
+
+   ```text
    /plugin marketplace add monte3l/m3l-plugins
    /plugin install m3l-prompt-optimizer@monte3l
    ```
 
-   Pick the user scope so the mod is active in every repository.
+   To add the marketplace and install in one step, use
+   `claude plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-plugins`
+   (Claude Code 2.1.292 or newer) or
+   `/plugin install m3l-prompt-optimizer --marketplace monte3l/m3l-plugins`
+   (2.1.275 or newer).
+
+   Use the user scope so the mod is active in every repository. The shell form
+   installs at user scope unless you pass `--scope project` or `--scope local`.
+   The session form opens the plugin's details and asks you to pick a scope.
 
    If you installed it before the catalog existed, from the
-   `monte3l-prompt-optimizer` marketplace, remove that marketplace first with
-   `claude plugin marketplace remove monte3l-prompt-optimizer`, so the plugin is
-   not installed twice. The plugin name does not change, but its id becomes
-   `m3l-prompt-optimizer@monte3l`. Run
-   `claude plugin configure m3l-prompt-optimizer@monte3l` and check that the key
-   is still set.
+   `monte3l-prompt-optimizer` marketplace, remove that marketplace first, so the
+   plugin is not installed twice:
+
+   ```bash
+   claude plugin marketplace remove monte3l-prompt-optimizer
+   ```
+
+   ```text
+   /plugin marketplace remove monte3l-prompt-optimizer
+   ```
+
+   The plugin name does not change, but its id becomes
+   `m3l-prompt-optimizer@monte3l`. Check that the key is still set, as
+   described under [Settings](#settings).
 
 2. Create a dedicated, spend-limited key and store it, following
    [Set up the key](#set-up-the-key).
@@ -57,15 +80,8 @@ and an Anthropic account (see [Requirements](#requirements) for versions).
    `fix the login thing its broken again`. The message you see is the refined
    one. [First run](#first-run) shows how to confirm what the mod did.
 
-To skip one prompt, start it with `\raw `. To turn the mod off, see
-[When it pauses](#when-it-pauses).
-
-`monte3l` is not an official Anthropic marketplace, so Claude Code does not
-update its plugins automatically. To get a new release, run
-`claude plugin update m3l-prompt-optimizer@monte3l`. The catalog lists one
-release at a time, pinned to its tag. To run an older one, check out its tag,
-`m3l-prompt-optimizer--vX.Y.Z`, and load that folder as described in
-[Install from a checkout](#install-from-a-checkout).
+To skip one prompt, start it with `\raw `. To turn the mod off, update it or
+remove it, see [Manage the plugin](#manage-the-plugin).
 
 ## How it works
 
@@ -181,6 +197,46 @@ end every key in it at once.
 | **Rewrite prompts** (`enabled`) | on | Turns the optimizer on or off without uninstalling it |
 | **Model** (`model`) | `claude-haiku-5-5` | The Claude model that refines prompts |
 
+### Set them
+
+| Way | From your shell | Inside a session |
+| --- | --- | --- |
+| At install | `claude plugin install m3l-prompt-optimizer@monte3l --config key=value`, repeatable | Not available; configure after the install |
+| Later | `claude plugin configure m3l-prompt-optimizer@monte3l --values-stdin`, with a JSON object of single-line strings on stdin | `/plugin`, then **Installed**, the plugin, **Configure options** |
+| Check what is set | `claude plugin configure m3l-prompt-optimizer@monte3l`, which never prints the key | The same dialog |
+
+For example, to install with a different model, or with the optimizer switched
+off until you want it:
+
+```bash
+claude plugin install m3l-prompt-optimizer@monte3l --config model=claude-sonnet-5-5
+claude plugin install m3l-prompt-optimizer@monte3l --config enabled=false
+```
+
+Options you leave out keep their values. You can also turn the optimizer on or
+off with **Rewrite prompts** in `/config`.
+
+> [!WARNING]
+> Never pass `apiKey` with `--config`: the key would land in your shell history.
+> Store it with the command in [Set up the key](#set-up-the-key) or the
+> **Configure options** dialog.
+
+## Manage the plugin
+
+| Task | From your shell | Inside a session |
+| --- | --- | --- |
+| Update | `claude plugin update m3l-prompt-optimizer@monte3l` | `/plugin`, then **Installed**, the plugin, **Update now** |
+| Update automatically | Not available | `/plugin`, then **Marketplaces**, `monte3l`, **Enable auto-update** |
+| Turn off or on | `claude plugin disable m3l-prompt-optimizer@monte3l`, then `claude plugin enable m3l-prompt-optimizer@monte3l` | `/plugin disable m3l-prompt-optimizer@monte3l`, then `/plugin enable m3l-prompt-optimizer@monte3l` |
+| Uninstall | `claude plugin uninstall m3l-prompt-optimizer@monte3l` | `/plugin uninstall m3l-prompt-optimizer@monte3l` |
+| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-prompt-optimizer`, see [Install from a checkout](#install-from-a-checkout) | Not available |
+| Run an older release | Check out its tag, `m3l-prompt-optimizer--vX.Y.Z`, then use `--plugin-dir` | Not available |
+
+`monte3l` is not an official Anthropic marketplace, so Claude Code does not
+update its plugins automatically unless you turn auto-update on. The catalog
+lists one release at a time, pinned to its tag. After a change inside a session,
+run `/reload-plugins` to apply it.
+
 ## First run
 
 These probes confirm the results recorded in [`UNVERIFIED.md`](UNVERIFIED.md). Start a
@@ -248,8 +304,8 @@ In the log, `<n>` is the HTTP status code.
 
 The host cannot cancel a request already in flight, so one that outlasts the 6.5-second
 deadline is simply abandoned and ends at the host's own 30-second timeout. To
-turn the mod off, set **Rewrite prompts** off in `/config`, or run
-`claude plugin disable m3l-prompt-optimizer@monte3l`.
+turn the mod off, set **Rewrite prompts** off in `/config`, or disable the
+plugin as described in [Manage the plugin](#manage-the-plugin).
 
 ### If the log says `key rejected (401)`
 
