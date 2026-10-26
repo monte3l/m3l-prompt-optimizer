@@ -4,7 +4,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-prompt-optimizer/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-prompt-optimizer)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15705/badge)](https://www.bestpractices.dev/projects/15705)
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/15705/baseline)](https://www.bestpractices.dev/projects/15705)
-[![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-prompt-optimizer)](https://api.reuse.software/info/github.com/monte3l/m3l-prompt-optimizer)
+[![REUSE](https://github.com/monte3l/m3l-prompt-optimizer/actions/workflows/reuse.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-prompt-optimizer/actions/workflows/reuse.yml)
 
 m3l-prompt-optimizer is a Claude Code mod that refines the prompts you type,
 following Anthropic's current prompt-engineering guidance. A clear prompt passes
