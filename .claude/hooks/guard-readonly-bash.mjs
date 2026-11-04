@@ -15,9 +15,8 @@
  *
  * The read-only roster is derived here, not hardcoded: every defined agent
  * under `.claude/agents/*.md` whose frontmatter `name` is not in
- * `WRITER_SPOKES` (`.claude/hooks/lib/agent-roster.mjs` -- the same source
- * `guard-hub-src-writes.mjs` uses) counts as read-only, so the two
- * enforcement points can't drift apart on who's authorized to write what.
+ * `WRITER_SPOKES` (`.claude/hooks/lib/agent-roster.mjs`) counts as
+ * read-only, so the roster is the one place that says who may write.
  *
  * Scope: only tool calls made from inside one of those read-only subagents
  * are checked -- identified via the hook payload's `agent_type` field
@@ -1271,9 +1270,8 @@ if (isEntryPoint()) {
 command ${verdict.reason}.
 
 Read-only spokes may inspect the repo but never mutate it -- that separation
-is structural (CLAUDE.md § Agent Operating Model). If this command is
-genuinely needed, hand the mutation back to the hub or to a writer spoke
-(code-implementer / test-author) instead of running it here.
+is structural. If this command is genuinely needed, hand the mutation
+back to the hub instead of running it here.
 `)
   process.exit(2)
 }
