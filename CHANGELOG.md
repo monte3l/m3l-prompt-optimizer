@@ -3,6 +3,13 @@
 Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## [1.1.1](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.0...m3l-prompt-optimizer--v1.1.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* turn thinking off only on Haiku and skip the backoff after the last try ([b5de435](https://github.com/monte3l/m3l-prompt-optimizer/commit/b5de4355d4e1b673e9086f6aa2da93a9606fd698))
+
 ## [1.1.0](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.0.0...m3l-prompt-optimizer--v1.1.0) (2026-10-22)
 
 - Removed `.claude-plugin/marketplace.json`: the plugin is now listed only in the
