@@ -48,7 +48,7 @@ node scripts/guard-break.mjs
 tsc -p .
 ```
 
-The `/verify` skill runs the same list and reports one table (a user-invoked
+The `/run-checks` skill runs the same list and reports one table (a user-invoked
 skill, so ask for it by name). Fix everything it reports before pushing — a
 red check becomes a red CI run and a round-trip that costs more than fixing
 it now. Never run `node evals/run.mjs` without `--gate-only`: the live eval
