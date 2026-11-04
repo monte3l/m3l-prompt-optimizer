@@ -214,6 +214,12 @@ claude plugin install m3l-prompt-optimizer@monte3l --config model=claude-sonnet-
 claude plugin install m3l-prompt-optimizer@monte3l --config enabled=false
 ```
 
+**Only Haiku is tested.** The mod turns thinking off only for Haiku models,
+because Sonnet, Opus and Fable reject that setting. Any other model is sent
+the request without it and thinks before it answers, which can run past the
+6.5-second deadline. A prompt that misses the deadline goes through unchanged
+and the debug log shows a `timeout` line.
+
 Options you leave out keep their values. You can also turn the optimizer on or
 off with **Rewrite prompts** in `/config`.
 
