@@ -64,6 +64,14 @@ describe('buildRequest', () => {
     expect(body.messages).toEqual([{ role: 'user', content: '<prompt>make the tab persist</prompt>' }])
   })
 
+  test('turns thinking off on Haiku only, because other models reject it with a 400', () => {
+    for (const model of ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-fable-5-1']) {
+      const body = JSON.parse(buildRequest({ ...cfg, model }, 'x').init.body ?? '{}')
+      expect('thinking' in body).toBe(false)
+      expect(body.output_config).toEqual({ effort: 'low' })
+    }
+  })
+
   test('sends no sampling parameters', () => {
     const body = JSON.parse(buildRequest(cfg, 'x').init.body ?? '{}')
     for (const key of ['temperature', 'top_p', 'top_k']) expect(key in body).toBe(false)
@@ -152,6 +160,12 @@ describe('optimize', () => {
     const { d, sent } = deps([error(529, 'overloaded_error', 'busy'), error(529, 'overloaded_error', 'busy'), ok('x')])
     expect((await optimize(d, cfg, 'some prompt text here')).kind).toBe('skip')
     expect(sent.length).toBe(2)
+  })
+
+  test('backs off before the retry but not after the last try', async () => {
+    const { d, clock } = deps([error(529, 'overloaded_error', 'busy'), error(529, 'overloaded_error', 'busy')])
+    await optimize(d, cfg, 'some prompt text here')
+    expect(clock.t).toBe(500)
   })
 
   test('does not retry a spend limit and reports the latch', async () => {

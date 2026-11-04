@@ -247,7 +247,7 @@ This mode ships no answers, only where to look and what to ask.
      say plainly that no live research ran, and recommend nothing — an
      unverified recommendation is worse than none.
    - **Hand-off** — point any accepted recommendation at a feature branch
-     and the `/add-safety-check` or `/verify` workflows, then
+     and the `/add-safety-check` or `/run-checks` workflows, then
      `invariant-reviewer` on the diff. This mode never writes the change
      itself.
 

@@ -32,7 +32,7 @@ export type Result =
   | { kind: 'latch'; reason: string; requestId: string }
   | { kind: 'skip'; reason: string; requestId: string }
 
-/** Builds the Messages API call: no sampling parameters, thinking off, low effort. */
+/** Builds the Messages API call: no sampling parameters, low effort, thinking off where the model accepts it (Haiku only). */
 export const buildRequest = (config: ClientConfig, text: string): { url: string; init: HttpInit } => ({
   url: API_URL,
   init: {
@@ -45,7 +45,7 @@ export const buildRequest = (config: ClientConfig, text: string): { url: string;
     body: JSON.stringify({
       model: config.model,
       max_tokens: MAX_TOKENS,
-      thinking: { type: 'disabled' },
+      ...(config.model.startsWith('claude-haiku') ? { thinking: { type: 'disabled' } } : {}),
       output_config: { effort: 'low' },
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `<prompt>${text}</prompt>` }],
@@ -132,7 +132,7 @@ export const optimize = async (deps: Deps, config: ClientConfig, text: string): 
     if (last.kind === 'latch') return { kind: 'latch', reason: last.reason, requestId: last.requestId }
     if (last.kind === 'skip') return { kind: 'skip', reason: last.reason, requestId: last.requestId }
 
-    await deps.sleep(last.afterMs)
+    if (tries === 0) await deps.sleep(last.afterMs)
   }
 
   return last === TIMED_OUT
