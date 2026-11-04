@@ -1,6 +1,6 @@
 ---
-name: verify
-description: Run the repo's full verification locally in the same order as the required `verify` CI check, plus the `tsc -p .` type-check CI cannot run, and report one pass/fail table. Use when the user types /verify or asks to run everything CI runs before opening a PR.
+name: run-checks
+description: Run the repo's full verification locally in the same order as the required `verify` CI check, plus the `tsc -p .` type-check CI cannot run, and report one pass/fail table. Use when the user types /run-checks or asks to run everything CI runs before opening a PR.
 disable-model-invocation: true
 ---
 

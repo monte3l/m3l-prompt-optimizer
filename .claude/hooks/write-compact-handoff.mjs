@@ -12,7 +12,7 @@
  * reconstructing state after a compaction (branch, last commit, uncommitted
  * files) doesn't depend on the summary having retained it.
  * `reinject-compact-handoff.mjs` (`SessionStart`, matcher
- * `compact|resume|startup`) reads this artifact back as `additionalContext`.
+ * `compact|resume|startup|clear|fork`) reads this artifact back as `additionalContext`.
  *
  * Deliberately git/fs-only, no network calls (no lookup for a PR number) --
  * a PreCompact hook runs on the hot path of every compaction, so a network
