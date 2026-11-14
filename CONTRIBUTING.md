@@ -16,11 +16,11 @@ agents, so expect more detail than you need for a first change.
 ## Prerequisites
 
 - **Claude Code 2.1.296 or later.** The engine loads the TypeScript in
-  `hooks/` directly. The mod has no `package.json`, no npm install and no build. Only CI has npm packages, under `.github/ci-tools`, `.github/test-tools` and `.github/deploy-tools`.
+  `hooks/` directly. The mod has no `package.json`, no npm install and no build. Only CI has npm packages, under `tools/ci`, `tools/test` and `tools/deploy`.
 - **Node 24 or later**, for the docs and eval scripts under `scripts/` and
   `evals/`.
-- **npm**, only to install the pinned Biome and fast-check from `.github/test-tools/`
-  (`npm ci --ignore-scripts --prefix .github/test-tools`). Nothing is installed globally.
+- **npm**, only to install the pinned Biome and fast-check from `tools/test/`
+  (`npm ci --ignore-scripts --prefix tools/test`). Nothing is installed globally.
 
 ## Setup
 
@@ -47,7 +47,7 @@ installed. A headless `-p` run does not write them.
 | `claude plugin validate --strict .`    | The manifest, the hook shape and the `$` calls the mod makes    |
 | `claude plugin test .`                 | Every `*.test.ts` under the folder                              |
 | `tsc -p .`                             | Types                                                           |
-| `.github/test-tools/node_modules/.bin/biome ci .` | Style and lint, as the `quality` lane runs it |
+| `tools/test/node_modules/.bin/biome ci .` | Style and lint, as the `quality` lane runs it |
 | `node scripts/node-tests.mjs --coverage` | The suite under `node --test`, with the coverage bar on `hooks/` |
 | `node scripts/node-tests.mjs --fuzz` | The fast-check property tests in `fuzz/` |
 | `node scripts/guard-break.mjs`         | Removing each gate, guard or client check makes the suite fail  |

@@ -1,5 +1,5 @@
 {
-  "$schema": "./.github/test-tools/node_modules/@biomejs/biome/configuration_schema.json",
+  "$schema": "./tools/test/node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "includes": [
