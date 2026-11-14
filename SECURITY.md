@@ -81,7 +81,7 @@ analysis (SCA), meaning known vulnerabilities and licenses in dependencies, and
 static analysis (SAST), meaning CodeQL. It describes what is enforced today.
 
 The mod ships no dependencies, so SCA covers the tools CI installs from
-`.github/ci-tools/`, `.github/test-tools/` and `.github/deploy-tools/`, and the
+`tools/ci/`, `tools/test/` and `tools/deploy/`, and the
 GitHub Actions the workflows use.
 
 ### What runs
@@ -156,7 +156,7 @@ Read from the workflows on 2026-10-23:
 
 > [!NOTE]
 > Accepted risk: the `plugin` lane of `verify.yml` installs
-> `@anthropic-ai/claude-code` from `.github/ci-tools/` **with** its install script, because the script fetches
+> `@anthropic-ai/claude-code` from `tools/ci/` **with** its install script, because the script fetches
 > the native binary. The lockfile pins the package by integrity hash, Dependabot
 > proposes bumps after a one-day cooldown, and the job holds read-only
 > permissions and no secrets. `docs.yml` and the `quality` lane install their tools

@@ -5,9 +5,9 @@ node_modules/
 .env.*
 .DS_Store
 _site/
-.github/deploy-tools/node_modules/
-.github/ci-tools/node_modules/
-.github/test-tools/node_modules/
+tools/deploy/node_modules/
+tools/ci/node_modules/
+tools/test/node_modules/
 
 # Claude Code compaction handoff (harness-extras)
 tmp/

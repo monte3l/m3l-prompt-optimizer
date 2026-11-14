@@ -9,9 +9,9 @@ name: Verify
 # `checks` (offline, no npm packages), `plugin` (Claude Code), `quality`
 # (Biome, coverage, property tests), `dco`.
 #
-# Two lanes install packages. Claude Code comes from .github/ci-tools/ and
+# Two lanes install packages. Claude Code comes from tools/ci/ and
 # runs its install script (it fetches the native binary). Biome and fast-check
-# come from .github/test-tools/ and install with scripts disabled. Both
+# come from tools/test/ and install with scripts disabled. Both
 # lockfiles pin by integrity hash, and every lane holds read-only permissions
 # and no secrets. `claude plugin validate` and
 # `claude plugin test` run without an API key. `tsc -p .` is not run here: it
@@ -64,9 +64,9 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - run: npm ci --prefix .github/ci-tools
+      - run: npm ci --prefix tools/ci
 
-      - run: echo "$PWD/.github/ci-tools/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: echo "$PWD/tools/ci/node_modules/.bin" >> "$GITHUB_PATH"
 
       - run: claude plugin validate --strict .
       - run: claude plugin test .
@@ -77,7 +77,7 @@ jobs:
   # do. Biome checks style and lint. `node-tests.mjs --coverage` reruns the
   # suite under `node --test` with the coverage bars in that script, and
   # `--fuzz` runs the fast-check properties in fuzz/. The packages come from
-  # .github/test-tools/ with install scripts disabled.
+  # tools/test/ with install scripts disabled.
   quality:
     name: Quality
     runs-on: ubuntu-latest
@@ -91,9 +91,9 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - run: npm ci --ignore-scripts --prefix .github/test-tools
+      - run: npm ci --ignore-scripts --prefix tools/test
 
-      - run: .github/test-tools/node_modules/.bin/biome ci --error-on-warnings .
+      - run: tools/test/node_modules/.bin/biome ci --error-on-warnings .
       - run: node scripts/node-tests.mjs --coverage
       - run: node scripts/node-tests.mjs --fuzz
 

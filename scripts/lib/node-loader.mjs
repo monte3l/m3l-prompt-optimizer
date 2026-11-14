@@ -1,6 +1,6 @@
 // Preloaded by scripts/node-tests.mjs (`node --import`). Resolves what the engine normally supplies:
 // the mod's `./x.js` imports to their `.ts` sources, `claude-code/testing` to the shim, and `fast-check`
-// to the copy pinned in .github/test-tools.
+// to the copy pinned in tools/test.
 import { existsSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SHIM = pathToFileURL(join(root, 'scripts/lib/testing-shim.mjs')).href
-const FAST_CHECK = join(root, '.github/test-tools/node_modules/fast-check/lib/fast-check.js')
+const FAST_CHECK = join(root, 'tools/test/node_modules/fast-check/lib/fast-check.js')
 
 registerHooks({
   resolve(specifier, context, next) {

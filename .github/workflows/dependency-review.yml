@@ -29,14 +29,14 @@ jobs:
         with:
           fail-on-severity: high
           # BlueOak-1.0.0, Artistic-2.0 and CC-BY-3.0 cover the dependency
-          # tree of wrangler in .github/deploy-tools. All are permissive;
+          # tree of wrangler in tools/deploy. All are permissive;
           # this repo never redistributes them.
           allow-licenses: MIT, MIT-0, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, CC0-1.0, Unlicense, CC-BY-4.0, BlueOak-1.0.0, Artistic-2.0, CC-BY-3.0
           # Per-package, not per-license: wrangler pulls in sharp's prebuilt
           # libvips binaries, which carry LGPL-3.0-or-later. They are only
           # installed (--ignore-scripts) in a CI job that uploads static
           # HTML to Cloudflare, never shipped to anyone.
-          # Also per-package: the pinned Claude Code CLI in .github/ci-tools
+          # Also per-package: the pinned Claude Code CLI in tools/ci
           # (verify.yml) carries Anthropic's proprietary licence. It is only
           # installed in a CI job and never redistributed.
           allow-dependencies-licenses: >-

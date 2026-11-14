@@ -374,7 +374,7 @@ node design/source/docs-kit/build.mjs --check  # docs site: builds it, checks li
 node scripts/doc-parity.mjs         # only the README-against-code checks
 node scripts/node-tests.mjs --coverage  # the unit tests under node --test, with the coverage bar on hooks/
 node scripts/node-tests.mjs --fuzz      # the fast-check property tests in fuzz/
-.github/test-tools/node_modules/.bin/biome ci .  # style and lint (install first: npm ci --ignore-scripts --prefix .github/test-tools)
+tools/test/node_modules/.bin/biome ci .  # style and lint (install first: npm ci --ignore-scripts --prefix tools/test)
 node evals/run.mjs --gate-only      # offline check of which eval prompts are sent
 (cd design && shasum -a 256 -c SHA256SUMS)  # fails if vendored design files were edited
 ```
