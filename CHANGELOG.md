@@ -3,6 +3,13 @@
 Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## [1.1.2](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.1...m3l-prompt-optimizer--v1.1.2) (2026-11-17)
+
+
+### Miscellaneous Chores
+
+* release 1.1.2 ([3dc5062](https://github.com/monte3l/m3l-prompt-optimizer/commit/3dc50628ccf92f06981ab2c1d8350ee35f37b0b6))
+
 ## [1.1.1](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.0...m3l-prompt-optimizer--v1.1.1) (2026-11-04)
 
 
