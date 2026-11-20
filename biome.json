@@ -10,6 +10,7 @@
       "evals/**/*.mjs",
       "fuzz/**",
       ".claude/hooks/**",
+      "!.claude/hooks/guard-shared-checkout.mjs",
       "docs.config.mjs",
       "!**/.claude-plugin/types"
     ]
