@@ -3,6 +3,13 @@
 Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## [1.1.3](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.2...m3l-prompt-optimizer--v1.1.3) (2026-11-20)
+
+
+### Bug Fixes
+
+* run the worktree guard under a symlink or a spaced path ([c60908f](https://github.com/monte3l/m3l-prompt-optimizer/commit/c60908f133df40d29a2e8b1068ec4568b593aebe))
+
 ## [1.1.2](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.1...m3l-prompt-optimizer--v1.1.2) (2026-11-17)
 
 
