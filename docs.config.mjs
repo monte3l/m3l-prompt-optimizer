@@ -18,6 +18,7 @@ export default {
     { src: 'CONTRIBUTING.md', out: 'CONTRIBUTING.html', group: 'Project', label: 'Contributing' },
     { src: 'GOVERNANCE.md', out: 'GOVERNANCE.html', group: 'Project', label: 'Governance' },
     { src: 'ROADMAP.md', out: 'ROADMAP.html', group: 'Project', label: 'Roadmap' },
+    { src: 'docs/decisions/README.md', out: 'decisions.html', group: 'Project', label: 'Decisions' },
     { src: 'CODE_OF_CONDUCT.md', out: 'CODE_OF_CONDUCT.html', group: 'Project', label: 'Code of conduct' },
     { src: 'UNVERIFIED.md', out: 'UNVERIFIED.html', group: 'Project', label: 'Open items' },
     { src: 'SECURITY.md', out: 'SECURITY.html', group: 'Security', label: 'Security policy' },
@@ -28,6 +29,7 @@ export default {
     { src: 'design/README.md', out: 'design/README.html', group: 'Internals', label: 'Design system' },
   ],
   exclude: [
+    { glob: 'docs/decisions/0000-template.md', reason: 'decision-record skeleton with placeholders, copied rather than read' },
     { glob: 'CHANGELOG.md', reason: 'release notes live on the GitHub releases page' },
     { glob: 'docs/research/*.md', reason: 'living trackers for the harness and TypeScript guidance skills, written for maintainers' },
     { glob: '.claude/**', reason: 'instructions, skills and agents for coding agents, not reader-facing' },

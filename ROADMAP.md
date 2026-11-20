@@ -1,8 +1,16 @@
+---
+reviewed: 2026-11-20
+---
+
 # Roadmap
 
 What this project intends to do, and not do, over roughly the next year. It
 lists what is still ahead. What has shipped is in the git history, the
-[changelog](CHANGELOG.md) and the GitHub Releases.
+[changelog](CHANGELOG.md) and the GitHub Releases. Work that can be closed is a
+GitHub issue, linked from here. What stays true until something changes is
+written here, so it survives outside any one tool. The rule for which goes where
+is the org's [tracking
+policy](https://github.com/monte3l/.github/blob/main/blueprint/tracking.md).
 
 ## Now: the 1.x series
 
@@ -18,20 +26,32 @@ a minor release. Removing or renaming any of them is a major release
   [`evals/`](evals/run.mjs) gates each release. The plan is to grow its cases
   from real, anonymized failures people report, so the bars keep meaning
   something.
-- **Follow the host.** Several behaviours depend on the Claude Code engine and
-  are tracked in [`UNVERIFIED.md`](UNVERIFIED.md). Each engine release that
-  changes one gets a probe and, if needed, a fix.
 - **Track Anthropic's prompt guidance.** The system prompt is traced to its
   sources in [`docs/research-notes.md`](docs/research-notes.md). When the
   guidance changes, the prompt and the notes change together.
-- **Type-check in CI.** `tsc -p .` needs types the engine writes when the mod is
-  installed from a checkout, so it runs only locally. A CI step that installs
-  from a checkout and writes them is the aim, once the engine does it in a
-  headless run (`UNVERIFIED.md`, item 11).
-- **Grow the bus factor past 1.** See
-  [`GOVERNANCE.md`](GOVERNANCE.md#bus-factor). It needs people, not code: a
-  second maintainer who can author and release, and contributors from outside
-  the organization. There is no committed timeline.
+
+## Known limits
+
+- **One person authors and releases.** See
+  [`GOVERNANCE.md`](GOVERNANCE.md#bus-factor). Growing the bus factor past 1
+  needs people, not code: a second maintainer who can author and release, and
+  contributors from outside the organization. There is no committed timeline.
+- **CI does not type-check.** Tracked in
+  [#77](https://github.com/monte3l/m3l-prompt-optimizer/issues/77). `tsc -p .`
+  needs types the engine writes when the mod is installed from a checkout, so it
+  runs only locally.
+- **Several behaviours depend on the Claude Code engine.** They are tracked in
+  [`UNVERIFIED.md`](UNVERIFIED.md), and each engine release that changes one
+  gets a probe and, if needed, a fix.
+- **A rewrite can still be judged worse than the prompt it came from.** On the
+  1.0.0 prompt the gate suite had 22 worse of 1,299 decided samples (1.7%, upper
+  limit 2.4%). It is much reduced and is item 14 in `UNVERIFIED.md`.
+
+## Unverified
+
+The open claims are in [`UNVERIFIED.md`](UNVERIFIED.md), each with its result
+and the date it was last looked at. One is open: how often the rewriter changes a
+prompt in a way the judge calls worse (item 14, above). Nothing else blocks use.
 
 ## What this project will not do
 
