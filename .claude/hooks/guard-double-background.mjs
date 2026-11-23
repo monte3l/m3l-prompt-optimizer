@@ -24,9 +24,9 @@
  * strict parse of the shell grammar -- extend `hasShellDetach` as new gaps
  * are found rather than reaching for a real shell parser.
  */
-import process from 'node:process'
-import { realpathSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import process from "node:process";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 /**
  * Does `command` contain a shell-level detach construct: `nohup`, `disown`,
@@ -50,8 +50,8 @@ import { fileURLToPath } from 'node:url'
  * @returns {boolean}
  */
 export function hasShellDetach(command) {
-  if (/(?:^|[;&|(])\s*(?:nohup|disown)\b/.test(command)) return true
-  return /(?<![&>])&(?![&>\S])/.test(command)
+  if (/(?:^|[;&|(])\s*(?:nohup|disown)\b/.test(command)) return true;
+  return /(?<![&>])&(?![&>\S])/.test(command);
 }
 
 /**
@@ -64,15 +64,15 @@ export function hasShellDetach(command) {
  * @returns {boolean} true = block, false = allow
  */
 export function shouldBlockDoubleBackground(command, runInBackground) {
-  if (runInBackground !== true) return false
-  if (typeof command !== 'string' || command.length === 0) return false
-  return hasShellDetach(command)
+  if (runInBackground !== true) return false;
+  if (typeof command !== "string" || command.length === 0) return false;
+  return hasShellDetach(command);
 }
 
 async function readStdin() {
-  const chunks = []
-  for await (const chunk of process.stdin) chunks.push(chunk)
-  return Buffer.concat(chunks).toString('utf8')
+  const chunks = [];
+  for await (const chunk of process.stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8");
 }
 
 // Kept as a duplicated, self-contained block in every hook file rather than
@@ -84,26 +84,33 @@ async function readStdin() {
 // i.e. silently fail open (exit 0) instead of blocking.
 function isEntryPoint() {
   try {
-    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
   } catch {
-    return false
+    return false;
   }
 }
 
 // Only run when invoked directly, not when imported for testing.
 if (isEntryPoint()) {
-  const raw = await readStdin()
-  let input
+  const raw = await readStdin();
+  let input;
   try {
-    input = JSON.parse(raw)
+    input = JSON.parse(raw);
   } catch {
-    process.exit(0)
+    input = null;
+  }
+  // A payload that cannot be read cannot be judged, so fail closed. The hook is
+  // registered with onFailure: "block", which covers a crash but not a
+  // deliberate exit 0, and exit 0 means allow.
+  if (typeof input !== "object" || input === null) {
+    process.stderr.write("[guard-double-background] could not read the hook payload; blocking.\n");
+    process.exit(2);
   }
 
-  const command = input.tool_input?.command
-  const runInBackground = input.tool_input?.run_in_background
+  const command = input.tool_input?.command;
+  const runInBackground = input.tool_input?.run_in_background;
 
-  if (!shouldBlockDoubleBackground(command, runInBackground)) process.exit(0)
+  if (!shouldBlockDoubleBackground(command, runInBackground)) process.exit(0);
 
   process.stderr.write(`\
 [guard-double-background] Blocked: this command combines \`run_in_background:
@@ -113,6 +120,6 @@ harness loses track of a process the shell already detached. Pick exactly one:
   - \`run_in_background: true\` alone, polled via TaskOutput/Monitor, or
   - a foreground \`nohup <cmd> > <log> 2>&1 & disown\`, polled separately
     against the raw PID (\`kill -0 $PID\`) -- with run_in_background left false.
-`)
-  process.exit(2)
+`);
+  process.exit(2);
 }

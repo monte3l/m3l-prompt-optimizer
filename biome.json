@@ -11,6 +11,8 @@
       "fuzz/**",
       ".claude/hooks/**",
       "!.claude/hooks/guard-shared-checkout.mjs",
+      "!.claude/hooks/guard-secret-writes.mjs",
+      "!.claude/hooks/guard-double-background.mjs",
       "docs.config.mjs",
       "!**/.claude-plugin/types"
     ]
