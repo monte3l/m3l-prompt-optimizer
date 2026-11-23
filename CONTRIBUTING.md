@@ -45,6 +45,7 @@ installed. A headless `-p` run does not write them.
 | Command                                | What it checks                                                  |
 | -------------------------------------- | --------------------------------------------------------------- |
 | `claude plugin validate --strict .`    | The manifest, the hook shape and the `$` calls the mod makes    |
+| `node tools/ci/check-plugin-metadata.mjs --repo monte3l/m3l-prompt-optimizer` | `plugin.json` says what the GitHub repository says (needs `gh` signed in; the `plugin` lane runs it) |
 | `claude plugin test .`                 | Every `*.test.ts` under the folder                              |
 | `tsc -p .`                             | Types                                                           |
 | `tools/test/node_modules/.bin/biome ci .` | Style and lint, as the `quality` lane runs it |
