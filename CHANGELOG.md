@@ -3,6 +3,14 @@
 Releases are tagged `m3l-prompt-optimizer--vX.Y.Z`. See "Releasing" in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## [1.1.4](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.3...m3l-prompt-optimizer--v1.1.4) (2026-11-23)
+
+
+### Bug Fixes
+
+* **harness:** adopt the org guard starters ([2cc03ad](https://github.com/monte3l/m3l-prompt-optimizer/commit/2cc03adc3d5191222a8a76d9a6d2393354e6d9d2))
+* **harness:** route NotebookEdit through the write guards ([92f41a5](https://github.com/monte3l/m3l-prompt-optimizer/commit/92f41a585eaddbea490181397a5330ff67985c17))
+
 ## [1.1.3](https://github.com/monte3l/m3l-prompt-optimizer/compare/m3l-prompt-optimizer--v1.1.2...m3l-prompt-optimizer--v1.1.3) (2026-11-20)
 
 
