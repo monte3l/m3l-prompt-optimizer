@@ -40,3 +40,12 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Enrico Lionello (enri3l), Giulia Montevecchi (giulmonte), monte3l"
 SPDX-License-Identifier = "LicenseRef-MONTE3L-Brand"
+
+# The engine's declaration files, copied unchanged by scripts/engine-types.mjs so
+# CI can run `tsc -p .`. They are Anthropic's work, not MIT, and carry no licence
+# text of their own, so this points at a placeholder naming where terms would be.
+[[annotations]]
+path = ["vendor/engine-types/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Anthropic PBC"
+SPDX-License-Identifier = "LicenseRef-Anthropic-Claude-Code"

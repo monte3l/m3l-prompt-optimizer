@@ -35,10 +35,12 @@ claude --plugin-dir .
 This repository ships no `marketplace.json`: the plugin is listed in the
 `monte3l/m3l-plugins` catalog. The `--plugin-dir` copy replaces the installed
 one for that session, and edits apply after `/reload-plugins`. `tsc -p .` needs
-the engine-written types in `.claude-plugin/types/`. An interactive
-`claude --plugin-dir .` session writes them (`UNVERIFIED.md`, item 11), so run
-that once in a fresh clone, then `npx -p typescript tsc -p .` if `tsc` is not
-installed. A headless `-p` run does not write them.
+the engine-written types in `.claude-plugin/types/`. In a fresh clone run
+`node scripts/engine-types.mjs --install` to copy the vendored snapshot there,
+then `tools/test/node_modules/.bin/tsc -p .` (CI does the same). An interactive
+`claude --plugin-dir .` session also writes them (`UNVERIFIED.md`, item 11); a
+headless `-p` run does not. When `tools/ci/package.json` bumps Claude Code, run
+that session on the new version and `node scripts/engine-types.mjs --refresh`.
 
 ## Before opening a PR
 

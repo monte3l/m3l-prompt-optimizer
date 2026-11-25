@@ -1,0 +1,11 @@
+Anthropic Claude Code generated type declarations
+
+The files under vendor/engine-types/ were written by Claude Code (the engine)
+into .claude-plugin/types/ and are copied here unchanged, so that CI can
+type-check without an interactive Claude Code session. They are Anthropic's
+work and are not covered by this repository's MIT licence. Their terms are
+those of the Claude Code distribution they were written by:
+https://code.claude.com/docs/en/legal-and-compliance
+
+The files carry no licence text of their own. If Anthropic states terms for
+them, replace this file with those terms.

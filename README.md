@@ -381,7 +381,8 @@ node evals/run.mjs --gate-only      # offline check of which eval prompts are se
 
 `tsc -p .` reads [`tsconfig.json`](tsconfig.json), which extends the declarations Claude
 Code lays in `.claude-plugin/types/` (gitignored) when it loads the mod from a folder.
-In a fresh clone, install the mod once from the folder so the engine writes them.
+In a fresh clone, run `node scripts/engine-types.mjs --install` to copy the snapshot in
+`vendor/engine-types/` there, or load the mod once from the folder so the engine writes them.
 
 The `$` calls live only in [`hooks/register.ts`](hooks/register.ts), because
 `claude plugin validate` follows `$` only within one file. The gate, guard, client
