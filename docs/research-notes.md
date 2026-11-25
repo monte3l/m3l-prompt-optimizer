@@ -130,7 +130,7 @@ Read on 2026-10-19 from the raw Markdown of each official page (the page URL plu
 | A second judge | DT | "Generally best practice to use a different model to evaluate than the model used to generate the evaluated output" (a code comment). The page does not ask for a second grader | Claude Fable 5.1 re-judged the stored rewrites of the generated prompts twice; agreement and the rate of worse verdicts under each judge are in `UNVERIFIED.md` item 19 |
 | Paired comparison for a prompt change | none (local choice) | No official passage on comparing two prompts. Identical wording varied by 8 worse samples between runs | `evals/compare.mjs` interleaves the two prompts on the same prompts and tests the pairs, so shared noise cancels |
 | Repeated judging | DT | Lists "Consistency" as a success criterion for the system under test, and asks nothing of the grader. | `--repeat` is local hardening, labelled optional |
-| Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's four examples have no outer `<examples>` tag. Not changed for 1.0.0: it is a system-prompt edit that needs a before and after eval |
+| Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's four examples now sit inside one `<examples>` tag. It was not changed for 1.0.0 because a system-prompt edit needs a before and after eval. The paired comparison found no regression, so it was adopted (`UNVERIFIED.md` item 23) |
 
 ### Decision rules fixed before the comparison (2026-10-19)
 
@@ -161,6 +161,17 @@ The release-style run found most of its worse samples in two kinds: a non-Englis
 | Limits of this cycle | One revision of B at most without asking. A neutral Test 1 is not adopted. The guard is not changed: refused rewrites are about three better for each worse one (`UNVERIFIED.md` item 21), and a guard change is a separate `hooks/` change |
 
 Outcome: Test 1 (p 0.038, and B kept its better rewrites) and Test 2 (p 0.0005, no loss of better rewrites) both held, so B was adopted. The Test 1 gain is the translation kind alone, and 79 held-out prompts were used where the rule said 80. The figures are in `UNVERIFIED.md` item 22.
+
+### Rules for wrapping the examples in an examples tag (fixed before its comparison)
+
+The best-practices page recommends `<examples>` around several `<example>` blocks, and the rewriter's four examples have no outer tag (issue 95). This is a conformance edit, not a fix for a measured defect, so the rule asks for no improvement, only no regression.
+
+| Question | Rule |
+| --- | --- |
+| The candidate (B) | The current prompt with its four `<example>` blocks inside one `<examples>` and `</examples>` pair. Nothing else changes. The exact text is the diff of the commit that adds it |
+| Test, no regression | Paired comparison of the current prompt (A) and B on the gate suite (the 175 generated prompts and the maintainer's history prompts), 2 rewrites per prompt per arm, the same shape as Test 2 of the translation cycle. Adopt B only if the p that B has more worse is above 0.10 and the p that B has fewer better is above 0.10 |
+| Reporting | If B is adopted, the release-style run (`node evals/run.mjs --rewrites 3`) on B, with every bar reported, met or not |
+| Limits | No revision of B. A regression is recorded in `UNVERIFIED.md` and the prompt stays as it is |
 
 ## Follow-up research: the open items (2026-10-10)
 
