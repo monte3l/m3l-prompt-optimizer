@@ -162,6 +162,17 @@ The release-style run found most of its worse samples in two kinds: a non-Englis
 
 Outcome: Test 1 (p 0.038, and B kept its better rewrites) and Test 2 (p 0.0005, no loss of better rewrites) both held, so B was adopted. The Test 1 gain is the translation kind alone, and 79 held-out prompts were used where the rule said 80. The figures are in `UNVERIFIED.md` item 22.
 
+### Rules for wrapping the examples in an examples tag (fixed before its comparison)
+
+The best-practices page recommends `<examples>` around several `<example>` blocks, and the rewriter's four examples have no outer tag (issue 95). This is a conformance edit, not a fix for a measured defect, so the rule asks for no improvement, only no regression.
+
+| Question | Rule |
+| --- | --- |
+| The candidate (B) | The current prompt with its four `<example>` blocks inside one `<examples>` and `</examples>` pair. Nothing else changes. The exact text is the diff of the commit that adds it |
+| Test, no regression | Paired comparison of the current prompt (A) and B on the gate suite (the 175 generated prompts and the maintainer's history prompts), 2 rewrites per prompt per arm, the same shape as Test 2 of the translation cycle. Adopt B only if the p that B has more worse is above 0.10 and the p that B has fewer better is above 0.10 |
+| Reporting | If B is adopted, the release-style run (`node evals/run.mjs --rewrites 3`) on B, with every bar reported, met or not |
+| Limits | No revision of B. A regression is recorded in `UNVERIFIED.md` and the prompt stays as it is |
+
 ## Follow-up research: the open items (2026-10-10)
 
 Two read-only research passes and three local experiments. Base URLs:
