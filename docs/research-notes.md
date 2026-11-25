@@ -130,7 +130,7 @@ Read on 2026-10-19 from the raw Markdown of each official page (the page URL plu
 | A second judge | DT | "Generally best practice to use a different model to evaluate than the model used to generate the evaluated output" (a code comment). The page does not ask for a second grader | Claude Fable 5.1 re-judged the stored rewrites of the generated prompts twice; agreement and the rate of worse verdicts under each judge are in `UNVERIFIED.md` item 19 |
 | Paired comparison for a prompt change | none (local choice) | No official passage on comparing two prompts. Identical wording varied by 8 worse samples between runs | `evals/compare.mjs` interleaves the two prompts on the same prompts and tests the pairs, so shared noise cancels |
 | Repeated judging | DT | Lists "Consistency" as a success criterion for the system under test, and asks nothing of the grader. | `--repeat` is local hardening, labelled optional |
-| Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's four examples have no outer `<examples>` tag. Not changed for 1.0.0: it is a system-prompt edit that needs a before and after eval |
+| Examples in an outer tag | BP | "Wrap examples in `<example>` tags (multiple examples in `<examples>` tags)". | The rewriter's four examples now sit inside one `<examples>` tag. It was not changed for 1.0.0 because a system-prompt edit needs a before and after eval. The paired comparison found no regression, so it was adopted (`UNVERIFIED.md` item 23) |
 
 ### Decision rules fixed before the comparison (2026-10-19)
 
