@@ -85,7 +85,7 @@ Other workflows fail on their own: `docs.yml` (the deploy and its `smoke`
 job), `docs-live.yml` (the daily comparison with the live site), `reuse.yml`
 (`reuse lint`), `workflow-lint.yml` (actionlint and zizmor), `gitleaks.yml`,
 `scorecard.yml` and `environments.yml`. Match the failing job's name to its
-workflow file and read that file's steps. `tsc -p .` is not in CI.
+workflow file and read that file's steps. `tsc -p .` runs in the `quality` lane of `verify.yml`, after `node scripts/engine-types.mjs --check` and `--install`.
 
 ### 4 — Report the diagnosis
 

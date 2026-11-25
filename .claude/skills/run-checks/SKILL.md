@@ -1,12 +1,12 @@
 ---
 name: run-checks
-description: Run the repo's full verification locally in the same order as the required `verify` CI check, plus the `tsc -p .` type-check CI cannot run, and report one pass/fail table. Use when the user types /run-checks or asks to run everything CI runs before opening a PR.
+description: Run the repo's full verification locally in the same order as the required `verify` CI check, plus the `tsc -p .` type-check, and report one pass/fail table. Use when the user types /run-checks or asks to run everything CI runs before opening a PR.
 disable-model-invocation: true
 ---
 
 # Verify
 
-Run every step below from the repository root, in this order, and keep going after a failure so the table is complete. The first six mirror `.github/workflows/verify.yml`. The seventh is local only, because `tsc` needs the types the engine writes when the mod is installed from a checkout.
+Run every step below from the repository root, in this order, and keep going after a failure so the table is complete. The first six mirror `.github/workflows/verify.yml`. The seventh also runs in the `quality` lane, but locally `tsc` needs the types in `.claude-plugin/types/`, which the engine writes when the mod is installed from a checkout.
 
 | # | Step | Command |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ Run every step below from the repository root, in this order, and keep going aft
 ## Notes
 
 - **Step 6 runs the suite once per mutant**, so it is the slow step. It edits source files and restores them afterwards. If it is interrupted, run `git status` and `git diff hooks/` to confirm nothing was left mutated, and restore any file that was.
-- **Step 7 needs `.claude-plugin/types/tsconfig.json`**, which is gitignored. If it is missing, report the step as `SKIPPED` with the reason "types not installed", and tell the user to run an interactive `claude --plugin-dir .` session once, which writes them (`UNVERIFIED.md`, item 11). A headless `-p` run does not. Do not report it as passed.
+- **Step 7 needs `.claude-plugin/types/tsconfig.json`**, which is gitignored. If it is missing, report the step as `SKIPPED` with the reason "types not installed", and run `node scripts/engine-types.mjs --install` (copies the vendored snapshot) or tell the user to run an interactive `claude --plugin-dir .` session once, which writes them (`UNVERIFIED.md`, item 11). A headless `-p` run does not. Do not report it as passed.
 - **Never run `node evals/run.mjs` without `--gate-only`.** The live eval needs `ANTHROPIC_API_KEY` and spends money, so CI deliberately never runs it.
 
 ## Report

@@ -14,9 +14,11 @@ name: Verify
 # come from tools/test/ and install with scripts disabled. Both
 # lockfiles pin by integrity hash, and every lane holds read-only permissions
 # and no secrets. `claude plugin validate` and
-# `claude plugin test` run without an API key. `tsc -p .` is not run here: it
-# needs types the engine writes when the mod is installed from a checkout. The
-# live eval (`evals/run.mjs` without `--gate-only`) needs a key and is
+# `claude plugin test` run without an API key. `tsc -p .` runs in `quality`
+# against vendor/engine-types/, a snapshot of the types the engine writes: a
+# headless run does not write them (UNVERIFIED.md). The snapshot must come from
+# the Claude Code version pinned in tools/ci/, which `engine-types.mjs --check`
+# enforces. The live eval (`evals/run.mjs` without `--gate-only`) needs a key and is
 # deliberately never run in CI.
 on:
   push:
@@ -109,6 +111,12 @@ jobs:
       - run: tools/test/node_modules/.bin/biome ci --error-on-warnings .
       - run: node scripts/node-tests.mjs --coverage
       - run: node scripts/node-tests.mjs --fuzz
+
+      # The engine's types come from the vendored snapshot, which must match
+      # the Claude Code version this repo pins for the `plugin` lane.
+      - run: node scripts/engine-types.mjs --check
+      - run: node scripts/engine-types.mjs --install
+      - run: tools/test/node_modules/.bin/tsc -p .
 
   # The DCO, enforced by the server and not only by a local hook. Every
   # non-merge commit a pull request adds must carry a `Signed-off-by: Name

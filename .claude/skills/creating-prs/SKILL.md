@@ -35,8 +35,9 @@ surfacing at merge time instead of now, when it's cheaper to resolve.
 ### 3 — Run the full quality gate
 
 Run these from the repository root. The first six mirror `verify.yml`; the
-last is local only, because `tsc` needs the types the engine writes when the
-mod is installed from a checkout.
+last also runs in the `quality` lane, but locally it needs the types in
+`.claude-plugin/types/`: an interactive `claude --plugin-dir .` session writes
+them, or `node scripts/engine-types.mjs --install` copies the vendored snapshot.
 
 ```bash
 (cd design && shasum -a 256 -c SHA256SUMS)

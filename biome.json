@@ -14,7 +14,8 @@
       "!.claude/hooks/guard-secret-writes.mjs",
       "!.claude/hooks/guard-double-background.mjs",
       "docs.config.mjs",
-      "!**/.claude-plugin/types"
+      "!**/.claude-plugin/types",
+      "!vendor/engine-types"
     ]
   },
   "formatter": {

@@ -133,5 +133,8 @@ Constraints that are not obvious from one file:
 - The site is deployed by `docs.yml` with a Cloudflare API token held in the
   `docs-cloudflare` environment. The Cloudflare setup is the runbook
   `blueprint/docs-site.md` in the org `.github` repository.
-- `verify.yml` does not run `tsc -p .`: it needs the types the engine writes
-  when the mod is installed from a checkout.
+- `verify.yml` runs `tsc -p .` in the `quality` lane against `vendor/engine-types/`,
+  a snapshot of the types an interactive `claude --plugin-dir .` session writes
+  (a headless run does not, `UNVERIFIED.md`). When `tools/ci/package.json` bumps
+  Claude Code, run that session on the new version, then
+  `node scripts/engine-types.mjs --refresh`; `--check` fails until you do.

@@ -5,6 +5,7 @@
   "description": "Pins the exact Biome and fast-check versions verify.yml's `quality` lane installs, so each pin is verified by a committed lockfile's integrity hash rather than a bare version string in YAML.",
   "dependencies": {
     "@biomejs/biome": "2.6.8",
-    "fast-check": "4.10.3"
+    "fast-check": "4.10.3",
+    "typescript": "7.0.2"
   }
 }
