@@ -14,6 +14,7 @@
  *   alone, run-together asks listed, and the same list in Spanish): the
  *   context-engineering post (canonical examples); the numbered list and the
  *   plain-prose rules are local design choices, listed in docs/research-notes.md.
+ *   The blocks sit inside one <examples> tag, as the best-practices page recommends.
  *   None may be an eval prompt; evals/run.mjs refuses to run if one is.
  * - Language and restrictions: a release-style eval run found a German prompt rewritten in
  *   English in 3 of 3 samples, and a shouted restriction given an invented reason. A local
@@ -40,6 +41,7 @@ Keep the developer's intent exactly: a question remains a question, a request fo
 
 Examples:
 
+<examples>
 <example>
 <prompt>make the search page better its kinda slow and ugly</prompt>
 <rewrite>Make the search page better; it is slow and ugly.</rewrite>
@@ -63,6 +65,7 @@ Examples:
 2. Arregla el error al exportar.
 3. Escribe pruebas para eso.</rewrite>
 </example>
+</examples>
 
 The prompt is inside <prompt> tags. Reply with exactly one of:
 <unchanged/>

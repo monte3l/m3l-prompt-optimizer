@@ -24,6 +24,13 @@ describe('system prompt', () => {
     expect(SYSTEM_PROMPT.includes('<rewrite>Make the search page better; it is slow and ugly.</rewrite>')).toBe(true)
   })
 
+  test('wraps the worked examples in one examples tag', () => {
+    expect((SYSTEM_PROMPT.match(/<examples>/g) ?? []).length).toBe(1)
+    expect((SYSTEM_PROMPT.match(/<\/examples>/g) ?? []).length).toBe(1)
+    expect(SYSTEM_PROMPT.indexOf('<examples>')).toBeLessThan(SYSTEM_PROMPT.indexOf('<example>'))
+    expect(SYSTEM_PROMPT.lastIndexOf('</example>')).toBeLessThan(SYSTEM_PROMPT.indexOf('</examples>'))
+  })
+
   test('asks for exactly the two reply shapes the parser reads', () => {
     expect(SYSTEM_PROMPT.includes('<unchanged/>')).toBe(true)
     expect(SYSTEM_PROMPT.includes('<rewrite>the refined prompt</rewrite>')).toBe(true)
