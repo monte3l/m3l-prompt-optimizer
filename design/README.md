@@ -6,8 +6,8 @@ styles the docs site at
 [prompt-optimizer.monte3l.com](https://prompt-optimizer.monte3l.com).
 
 - **Source:** [github.com/monte3l/m3l-design](https://github.com/monte3l/m3l-design)
-- **Version copied:** `v1.5.0`
-- **Last re-synced:** 2026-11-20
+- **Version copied:** `v1.6.0`
+- **Last re-synced:** 2026-11-26
 - **Date vendored into this repo:** 2026-10-11
 - **Tier:** vendored. Earlier the repository followed the content tier, while
   it had no CSS, fonts or rendered pages.
