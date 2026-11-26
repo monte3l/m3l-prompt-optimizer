@@ -151,7 +151,7 @@ Read from the workflows on 2026-10-23:
 | `GITLEAKS_LICENSE` | Organization secret shared with this repository | A free license for the Gitleaks action. It reads nothing in the repository | Annual renewal |
 | `CLOUDFLARE_API_TOKEN` | The `docs-cloudflare` environment, restricted to `main` | Deploys the docs Worker for `prompt-optimizer.monte3l.com` | At most 1 year; rotate at expiry |
 | `CLOUDFLARE_ACCOUNT_ID` | The `docs-cloudflare` environment | An identifier, not a credential | None |
-| `JANITOR_APP_CLIENT_ID`, `JANITOR_APP_PRIVATE_KEY` | Organization secrets shared with this repository, named only in `environments.yml` | Client ID and private key of the `monte3l-env-janitor` GitHub App, used by the weekly environment cleanup. The token it mints is limited to this repository: `administration: write`, `deployments: write`, `environments: read`, never repository secrets | The private key does not expire |
+| `JANITOR_APP_CLIENT_ID`, `JANITOR_APP_PRIVATE_KEY` | The `env-janitor` environment, restricted to `main`, named only in `environments.yml` | Client ID and private key of the `monte3l-env-janitor` GitHub App, used by the weekly environment cleanup. The token it mints is limited to this repository: `administration: write`, `deployments: write`, `environments: read`, never repository secrets | The private key does not expire |
 | `GITHUB_TOKEN` | Created for each run | Every workflow | Each job sets its own `permissions:` block, and the repository default is read-only |
 
 > [!NOTE]
@@ -192,7 +192,9 @@ Read from the workflows on 2026-10-23:
 3. **A credential that cannot expire is replaced at least once a year.** That is
    the GitHub App private keys: generate a new key in the App's settings, update
    the secret, delete the old key, then run the workflow that uses it to prove
-   the new one works.
+   the new one works. The Cloudflare and janitor secrets live in environments:
+   `bin/env-secrets.sh set NAME` in `monte3l/.github` writes one to every
+   repository's environment.
 4. **`GITLEAKS_LICENSE`** is replaced when the license changes, or on exposure.
 5. A rotation is recorded in the pull request or issue that makes it, never with
    the value.
