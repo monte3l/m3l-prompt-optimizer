@@ -83,7 +83,8 @@ project's own build and release path.
 - **A rewritten prompt is sent to a third party.** The user chooses that by
   providing a key, and the README says so at the top.
 - **The CI install of Claude Code runs its install script.** The risk is accepted
-  in [`SECURITY.md`](../SECURITY.md), limited by a hash-pinned lockfile, read-only
-  permissions and no secrets.
+  in [`SECURITY.md`](../SECURITY.md), limited by an exact version pin, a
+  hash-pinned lockfile, read-only permissions and no repository secrets (the
+  metadata check gets the read-only `GITHUB_TOKEN` after `npm ci`).
 - **The project has one author for most of its code.** See
   [`GOVERNANCE.md`](../GOVERNANCE.md#bus-factor).

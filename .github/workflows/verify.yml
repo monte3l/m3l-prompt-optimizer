@@ -13,7 +13,8 @@ name: Verify
 # runs its install script (it fetches the native binary). Biome and fast-check
 # come from tools/test/ and install with scripts disabled. Both
 # lockfiles pin by integrity hash, and every lane holds read-only permissions
-# and no secrets. `claude plugin validate` and
+# and no repository secrets (the metadata check gets the read-only
+# GITHUB_TOKEN after npm ci). `claude plugin validate` and
 # `claude plugin test` run without an API key. `tsc -p .` runs in `quality`
 # against vendor/engine-types/, a snapshot of the types the engine writes: a
 # headless run does not write them (UNVERIFIED.md). The snapshot must come from
