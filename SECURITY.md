@@ -157,10 +157,12 @@ Read from the workflows on 2026-10-23:
 > [!NOTE]
 > Accepted risk: the `plugin` lane of `verify.yml` installs
 > `@anthropic-ai/claude-code` from `tools/ci/` **with** its install script, because the script fetches
-> the native binary. The lockfile pins the package by integrity hash, Dependabot
-> proposes bumps after a one-day cooldown, and the job holds read-only
-> permissions and no secrets. `docs.yml` and the `quality` lane install their tools
-> with `--ignore-scripts`.
+> the native binary. `tools/ci/package.json` pins the exact version, the
+> lockfile pins the package by integrity hash, Dependabot proposes bumps after a
+> one-day cooldown, and the job holds read-only permissions and no repository
+> secrets. The metadata check gets the read-only `GITHUB_TOKEN` after `npm ci`.
+> `docs.yml` and the `quality` lane install their tools with `--ignore-scripts`.
+> Revisit this when Anthropic changes how the package installs.
 
 ### Storing
 
