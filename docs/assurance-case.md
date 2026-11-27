@@ -40,7 +40,7 @@ project's own build and release path.
 | The handler to the API | The client | The network and the reply | TLS to `api.anthropic.com`, a deadline, a status and stop-reason check, then the parser and the guard |
 | The mod to the host's `$` | `hooks/register.ts` | The host API | Only that file touches `$`, and it adapts it to plain objects |
 | CI jobs to the repository | The workflow's own job | Pull request code | Read-only tokens, no secrets in pull request jobs except the Gitleaks license, no `pull_request_target`, and values reach `run:` steps through `env:`. The labeler job holds `pull-requests: write` and never checks out pull request code |
-| The release job to GitHub | The `assets` and `finalize` jobs | The OIDC token | Within the release path only those jobs hold `id-token: write` (the Scorecard job holds it too, to publish its results). The `assets` job runs one repository script and installs nothing |
+| The release job to GitHub | The `assets` job | The OIDC token | Within the release path only that job holds `id-token: write` (the Scorecard job holds it too, to publish its results). The `assets` job runs one repository script and installs nothing |
 
 ## Secure design principles applied (Saltzer and Schroeder)
 

@@ -228,7 +228,7 @@ releases), so review the release pull request before you merge it.
    and open the pull request. Its daily `pins` workflow opens an issue when a pin
    is stale.
 
-The shared workflows are `release-prepare.yml` and `release-finalize.yml` in
+The shared workflows are `release-prepare.yml` and `release-publish.yml` in
 `monte3l/.github`, and `.github/workflows/release.yml` here calls them. The org
 blueprint's "Releases" section explains the flow.
 
